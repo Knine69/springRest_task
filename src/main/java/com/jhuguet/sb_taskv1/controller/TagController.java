@@ -1,7 +1,7 @@
 package com.jhuguet.sb_taskv1.controller;
 
 import com.jhuguet.sb_taskv1.models.Tag;
-import com.jhuguet.sb_taskv1.repositoryImp.TagRepositoryImpl;
+import com.jhuguet.sb_taskv1.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ import java.util.Optional;
 public class TagController {
 
     @Autowired
-    private TagRepositoryImpl tagService;
+    private TagService tagService;
 
     @GetMapping("/all")
     @ResponseBody

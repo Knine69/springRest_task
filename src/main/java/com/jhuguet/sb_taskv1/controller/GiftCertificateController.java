@@ -1,7 +1,7 @@
 package com.jhuguet.sb_taskv1.controller;
 
 import com.jhuguet.sb_taskv1.models.GiftCertificate;
-import com.jhuguet.sb_taskv1.repositoryImp.GiftCertificateImpl;
+import com.jhuguet.sb_taskv1.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequestMapping(path = "certificate")
 public class GiftCertificateController {
     @Autowired
-    private GiftCertificateImpl giftCertificateService;
+    private GiftCertificateService giftCertificateService;
 
 
     @GetMapping("/all")

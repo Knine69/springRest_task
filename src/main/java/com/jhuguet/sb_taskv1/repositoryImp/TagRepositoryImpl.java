@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Service
 public class TagRepositoryImpl implements TagService {
-    @Autowired
+
     private TagRepository tagRepository;
 
     public List<Tag> getAllTags() throws RuntimeException {
