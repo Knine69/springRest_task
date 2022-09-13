@@ -15,8 +15,8 @@ public class GiftCertificate {
     private String description;
     private double price;
     private int duration;
-    private Date create_date;
-    private Date last_update_date;
+    private String create_date;
+    private String last_update_date;
 
     public int getId() {
         return id;
@@ -54,19 +54,19 @@ public class GiftCertificate {
         this.duration = duration;
     }
 
-    public Date getCreate_date() {
+    public String getCreate_date() {
         return create_date;
     }
 
-    public void setCreate_date(Date create_date) {
+    public void setCreate_date(String create_date) {
         this.create_date = create_date;
     }
 
-    public Date getLast_update_date() {
+    public String getLast_update_date() {
         return last_update_date;
     }
 
-    public void setLast_update_date(Date last_update_date) {
+    public void setLast_update_date(String last_update_date) {
         this.last_update_date = last_update_date;
     }
 }

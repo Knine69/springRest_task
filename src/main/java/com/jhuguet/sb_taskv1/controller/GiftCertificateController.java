@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +16,6 @@ import java.util.Optional;
 public class GiftCertificateController {
     @Autowired
     private GiftCertificateService giftCertificateService;
-
 
     @GetMapping("/all")
     @ResponseBody
@@ -35,6 +36,9 @@ public class GiftCertificateController {
 
     @PostMapping("/save")
     public void saveGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
+        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        giftCertificate.setCreate_date(localDate);
+        giftCertificate.setLast_update_date(localDate);
         giftCertificateService.saveCertificate(giftCertificate);
         System.out.println("Gift certificate: " + giftCertificate.getName() + " was successfully created");
     }
