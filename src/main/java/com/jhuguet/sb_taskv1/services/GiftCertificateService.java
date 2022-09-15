@@ -8,9 +8,11 @@ import java.util.Optional;
 public interface GiftCertificateService {
     List<GiftCertificate> getAllCertificates();
 
-    Optional<GiftCertificate> getCertificate(int certificateId);
+    GiftCertificate getCertificate(int id);
 
-    void saveCertificate(GiftCertificate giftCertificate);
+    GiftCertificate saveCertificate(GiftCertificate certificate);
 
-    void deleteCertificate(int giftCertificateId);
+    GiftCertificate updateCertificate(GiftCertificate certificate);
+
+    GiftCertificate deleteCertificate(int id);
 }

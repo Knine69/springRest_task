@@ -1,10 +1,21 @@
 package com.jhuguet.sb_taskv1.models;
 
-import javax.persistence.*;
-import java.util.Date;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "gift_certificate")
+@DynamicUpdate
+@NoArgsConstructor
 public class GiftCertificate {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -13,13 +24,25 @@ public class GiftCertificate {
     private String name;
     @Column(name = "certificate_description")
     private String description;
-    private double price;
+    private BigDecimal price;
     private int duration;
-    private String create_date;
-    private String last_update_date;
+    @Column(name = "create_date")
+    private String createDate;
+    @Column(name = "last_update_date")
+    private String lastUpdateDate;
+
+    private List<Tag> associatedTag;
 
     public int getId() {
         return id;
+    }
+
+    public List<Tag> getAssociatedTag() {
+        return associatedTag;
+    }
+
+    public void setAssociatedTag(List<Tag> associatedTag) {
+        this.associatedTag = associatedTag;
     }
 
     public String getName() {
@@ -38,11 +61,11 @@ public class GiftCertificate {
         this.description = description;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -54,19 +77,19 @@ public class GiftCertificate {
         this.duration = duration;
     }
 
-    public String getCreate_date() {
-        return create_date;
+    public String getCreateDate() {
+        return createDate;
     }
 
-    public void setCreate_date(String create_date) {
-        this.create_date = create_date;
+    public void setCreateDate(String createDate) {
+        this.createDate = createDate;
     }
 
-    public String getLast_update_date() {
-        return last_update_date;
+    public String getLastUpdateDate() {
+        return lastUpdateDate;
     }
 
-    public void setLast_update_date(String last_update_date) {
-        this.last_update_date = last_update_date;
+    public void setLastUpdateDate(String lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 }

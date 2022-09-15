@@ -4,19 +4,29 @@ import com.jhuguet.sb_taskv1.models.Tag;
 import com.jhuguet.sb_taskv1.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.logging.Logger;
 
 @Controller
-@RequestMapping(path = "tag")
+@RequestMapping("/tag")
 public class TagController {
+
+    private Logger logger = Logger.getLogger(TagController.class.getName());
+
 
     @Autowired
     private TagService tagService;
 
-    @GetMapping("/all")
+    @GetMapping("/")
     @ResponseBody
     public List<Tag> getAllTags() {
         return tagService.getAllTags();
@@ -24,31 +34,23 @@ public class TagController {
 
     @GetMapping("/{id}")
     @ResponseBody
-    public String getTagById(@PathVariable String id) {
-        Optional<Tag> tagOptional = tagService.getTag(Integer.valueOf(id));
-        if (!tagOptional.isPresent()) {
-            return "Tag does not exist in db";
-        }
-
-        return "Tag retrieved: " + tagOptional.get().getName();
+    public Tag getTagById(@PathVariable String id) {
+        return tagService.getTag(Integer.valueOf(id));
     }
 
-    @PostMapping("/save")
+    @PostMapping("/newTag")
     public void saveTag(@RequestBody Tag tag) {
         tagService.saveTag(tag);
-        System.out.println("Tag: " + tag.getName() + " was successfully created");
     }
 
-    @PostMapping("/update")
+    @PutMapping
     public void updateTag(@RequestBody Tag tag) {
-        tagService.saveTag(tag);
-        System.out.println("Tag: " + tag.getName() + " was successfully updated");
+        tagService.updateTag(tag);
     }
 
-    @PostMapping("/delete")
+    @DeleteMapping
     public void deleteTag(@RequestBody Tag tag) {
         tagService.deleteTag(tag.getId());
-        System.out.println("Tag: " + tag.getName() + " was successfully deleted");
     }
 
 }

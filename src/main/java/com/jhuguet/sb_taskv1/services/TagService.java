@@ -8,9 +8,11 @@ import java.util.Optional;
 public interface TagService {
     List<Tag> getAllTags();
 
-    Optional<Tag> getTag(int tagId);
+    Tag getTag(int id);
 
-    void saveTag(Tag tagToSave);
+    Tag saveTag(Tag tag);
 
-    void deleteTag(int tagId);
+    Tag updateTag(Tag tag);
+
+    Tag deleteTag(int id);
 }

@@ -4,49 +4,55 @@ import com.jhuguet.sb_taskv1.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
+import java.util.logging.Logger;
 
 @Controller
-@RequestMapping(path = "certificate")
+@RequestMapping(path = "/certificate")
 public class GiftCertificateController {
+
+    private Logger logger = Logger.getLogger(GiftCertificateController.class.getName());
+
     @Autowired
     private GiftCertificateService giftCertificateService;
 
-    @GetMapping("/all")
+    @GetMapping("/{id}")
     @ResponseBody
-    public List<GiftCertificate> getAllCertificates() {
+    public List<GiftCertificate> getCertificateById(@PathVariable(required = false) String id) {
+        if(id != null){
+            return new ArrayList<>((Collection) giftCertificateService.getCertificate(Integer.valueOf(id)));
+        }
+
         return giftCertificateService.getAllCertificates();
     }
 
-    @GetMapping("/{id}")
-    @ResponseBody
-    public String getCertificateById(@PathVariable String id) {
-        Optional<GiftCertificate> certificateOptional = giftCertificateService.getCertificate(Integer.valueOf(id));
-        if (!certificateOptional.isPresent()) {
-            return "Certificate does not exist in db";
-        }
-
-        return "Certificate retrieved: " + certificateOptional.get().getName();
-    }
-
-    @PostMapping("/save")
+    //Create a validator to save certificate in db
+    @PostMapping("/newCertificate")
     public void saveGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
-        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        giftCertificate.setCreate_date(localDate);
-        giftCertificate.setLast_update_date(localDate);
         giftCertificateService.saveCertificate(giftCertificate);
-        System.out.println("Gift certificate: " + giftCertificate.getName() + " was successfully created");
+        //Replace sout statements with logger
+        logger.info("Successfully saved new certificate into db");
     }
 
-    @PostMapping("/update")
-    public void updateGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
-        giftCertificateService.saveCertificate(giftCertificate);
-        System.out.println("Gift certificate: " + giftCertificate.getName() + " was successfully updated");
+    //Should be PutMapping, refactor method
+    @PutMapping
+    public GiftCertificate updateGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
+        return giftCertificateService.updateCertificate(giftCertificate);
     }
 
+    @DeleteMapping("/drop/{id}")
+    public GiftCertificate deleteCertificate(@PathVariable String id){
+        return giftCertificateService.deleteCertificate(Integer.valueOf(id));
+    }
 }
