@@ -31,6 +31,7 @@ public class GiftCertificate {
     @Column(name = "last_update_date")
     private String lastUpdateDate;
 
+    @Column(name = "associated_tag")
     private List<Tag> associatedTag;
 
     public int getId() {

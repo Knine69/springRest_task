@@ -48,7 +48,7 @@ public class TagRepositoryServiceImpl implements TagService {
     @Transactional
     public Tag deleteTag(int id) throws TransactionalException {
         Tag tag = new Tag();
-        if (validateTag(id)) {
+        if (validateTag(id) && tag.getCertificates() != null) {
             tag = getTag(id);
             tagRepository.deleteById(id);
         }
