@@ -45,14 +45,14 @@ public class TagController {
         tagService.saveTag(tag);
     }
 
-    @PutMapping
+    @PutMapping("/update")
     public void updateTag(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
         tagService.updateTag(tag);
     }
 
-    @DeleteMapping
-    public void deleteTag(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
-        tagService.deleteTag(tag.getId());
+    @DeleteMapping("/drop/{id}")
+    public void deleteTag(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
+        tagService.deleteTag(Integer.valueOf(id));
     }
 
 }

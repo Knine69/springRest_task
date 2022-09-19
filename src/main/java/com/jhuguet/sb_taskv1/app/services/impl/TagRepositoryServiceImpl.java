@@ -46,9 +46,8 @@ public class TagRepositoryServiceImpl implements TagService {
 
     @Transactional
     public Tag deleteTag(int id) throws InvalidIdInputInformation, IdNotFound {
-        Tag tag = new Tag();
-        if (validateTag(id) && tag.getCertificates() != null) {
-            tag = getTag(id);
+        Tag tag = getTag(id);
+        if (tag != null) {
             tagRepository.deleteById(id);
         }
         return tag;
