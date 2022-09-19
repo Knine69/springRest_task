@@ -36,16 +36,8 @@ public class GiftCertificateController {
 
     @ResponseBody
     @GetMapping("/{id}")
-    public GiftCertificate getCertificateById(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
+    public GiftCertificate getCertificateById(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
         return giftCertificateService.getCertificate(Integer.valueOf(id));
-
-        /**
-         *  To filter one registry in case required = false works
-         *
-         *  return giftCertificateService.getAllCertificates()
-         *                 .stream().filter(x -> x.getId() == Integer.valueOf(id))
-         *                 .collect(Collectors.toList());
-         * */
     }
 
     @PostMapping("/newCertificate")
