@@ -46,6 +46,12 @@ public class GiftCertificateController {
         logger.info("Successfully saved new certificate into db");
     }
 
+    @PostMapping("/tagToCert/{certId}/tag/{tagId}")
+    public void saveTagToCert(@PathVariable("certId") String certId, @PathVariable("tagId") String tagId) throws IdNotFound, InvalidIdInputInformation {
+        giftCertificateService.addTagToCertificate(Integer.valueOf(certId), Integer.valueOf(tagId));
+        logger.info("Successfully saved new tag to certificate");
+    }
+
     @PutMapping("/update")
     public GiftCertificate updateGiftCertificate(@RequestBody GiftCertificate giftCertificate) throws IdNotFound, InvalidIdInputInformation {
         logger.info("Updating certificate: " + giftCertificate.getId());

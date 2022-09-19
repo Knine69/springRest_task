@@ -4,6 +4,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.TagsAssociatedException;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.models.Tag;
 
 import java.util.List;
 
@@ -17,4 +18,6 @@ public interface GiftCertificateService {
     GiftCertificate updateCertificate(GiftCertificate certificate) throws IdNotFound, InvalidIdInputInformation;
 
     GiftCertificate deleteCertificate(int id) throws IdNotFound, InvalidIdInputInformation, TagsAssociatedException;
+
+    Tag addTagToCertificate(int tagId, int certificateId) throws IdNotFound, InvalidIdInputInformation;
 }

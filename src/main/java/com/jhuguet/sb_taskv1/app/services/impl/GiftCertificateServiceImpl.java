@@ -2,6 +2,8 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.jhuguet.sb_taskv1.app.exceptions.TagsAssociatedException;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
+import com.jhuguet.sb_taskv1.app.models.Tag;
+import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
@@ -19,10 +21,12 @@ import java.util.List;
 public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     private GiftCertificateRepository giftRepository;
+    private TagRepository tagRepository;
 
     @Autowired
-    public GiftCertificateServiceImpl(GiftCertificateRepository giftRepository) {
+    public GiftCertificateServiceImpl(GiftCertificateRepository giftRepository, TagRepository tagRepository) {
         this.giftRepository = giftRepository;
+        this.tagRepository = tagRepository;
     }
 
     public List<GiftCertificate> getAllCertificates() {
@@ -62,6 +66,21 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         }
 
         return certificate;
+    }
+
+    @Override
+    public Tag addTagToCertificate(int tagId, int certificateId) throws IdNotFound, InvalidIdInputInformation {
+        GiftCertificate certificate;
+        Tag tag = null;
+        if(tagRepository.existsById(tagId)){
+            tag = tagRepository.findById(tagId).get();
+            certificate = getCertificate(certificateId);
+            List<Tag> tags = certificate.getAssociatedTag();
+            tags.add(tag);
+            certificate.setAssociatedTag(tags);
+        }
+
+        return tag;
     }
 
     private boolean validateCertificate(int id) throws IdNotFound, InvalidIdInputInformation {
