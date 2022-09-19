@@ -43,16 +43,19 @@ public class TagController {
     @PostMapping("/newTag")
     public void saveTag(@RequestBody Tag tag) {
         tagService.saveTag(tag);
+        logger.info("Saved new tag: " + tag.getName());
     }
 
     @PutMapping("/update")
     public void updateTag(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
         tagService.updateTag(tag);
+        logger.info("Updated tag: " + tag.getId());
     }
 
     @DeleteMapping("/drop/{id}")
     public void deleteTag(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
         tagService.deleteTag(Integer.valueOf(id));
+        logger.info("Dropped tag: " + id);
     }
 
 }
