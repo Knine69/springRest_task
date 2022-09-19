@@ -1,13 +1,15 @@
-package com.jhuguet.sb_taskv1.models;
+package com.jhuguet.sb_taskv1.app.models;
 
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.util.List;
 
@@ -21,7 +23,8 @@ public class Tag {
     private int id;
     @Column(name = "tag_name")
     private String name;
-
+    @Column(name = "certificate_id")
+    @ManyToMany(cascade = CascadeType.ALL)
     private List<GiftCertificate> certificates;
 
     public int getId() {

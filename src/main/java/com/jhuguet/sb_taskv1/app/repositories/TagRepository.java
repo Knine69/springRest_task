@@ -1,6 +1,6 @@
-package com.jhuguet.sb_taskv1.repositories;
+package com.jhuguet.sb_taskv1.app.repositories;
 
-import com.jhuguet.sb_taskv1.models.Tag;
+import com.jhuguet.sb_taskv1.app.models.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

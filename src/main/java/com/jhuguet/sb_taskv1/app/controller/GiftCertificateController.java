@@ -1,7 +1,10 @@
-package com.jhuguet.sb_taskv1.controller;
+package com.jhuguet.sb_taskv1.app.controller;
 
-import com.jhuguet.sb_taskv1.models.GiftCertificate;
-import com.jhuguet.sb_taskv1.services.GiftCertificateService;
+import com.jhuguet.sb_taskv1.app.exceptions.TagsAssociatedException;
+import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
+import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -27,32 +28,41 @@ public class GiftCertificateController {
     @Autowired
     private GiftCertificateService giftCertificateService;
 
-    @GetMapping("/{id}")
     @ResponseBody
-    public List<GiftCertificate> getCertificateById(@PathVariable(required = false) String id) {
-        if(id != null){
-            return new ArrayList<>((Collection) giftCertificateService.getCertificate(Integer.valueOf(id)));
-        }
-
+    @GetMapping("/")
+    public List<GiftCertificate> getAllCertificates() {
         return giftCertificateService.getAllCertificates();
     }
 
-    //Create a validator to save certificate in db
+    @ResponseBody
+    @GetMapping("/{id}")
+    public GiftCertificate getCertificateById(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
+        return giftCertificateService.getCertificate(Integer.valueOf(id));
+
+        /**
+         *  To filter one registry in case required = false works
+         *
+         *  return giftCertificateService.getAllCertificates()
+         *                 .stream().filter(x -> x.getId() == Integer.valueOf(id))
+         *                 .collect(Collectors.toList());
+         * */
+    }
+
     @PostMapping("/newCertificate")
     public void saveGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
         giftCertificateService.saveCertificate(giftCertificate);
-        //Replace sout statements with logger
         logger.info("Successfully saved new certificate into db");
     }
 
-    //Should be PutMapping, refactor method
-    @PutMapping
-    public GiftCertificate updateGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
+    @PutMapping("/update")
+    public GiftCertificate updateGiftCertificate(@RequestBody GiftCertificate giftCertificate) throws IdNotFound, InvalidIdInputInformation {
+        logger.info("Updating certificate: " + giftCertificate.getId());
         return giftCertificateService.updateCertificate(giftCertificate);
     }
 
     @DeleteMapping("/drop/{id}")
-    public GiftCertificate deleteCertificate(@PathVariable String id){
+    public GiftCertificate deleteCertificate(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation, TagsAssociatedException {
+        logger.info("Deleting certificate: " + id);
         return giftCertificateService.deleteCertificate(Integer.valueOf(id));
     }
 }

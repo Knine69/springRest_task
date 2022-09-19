@@ -1,15 +1,16 @@
-package com.jhuguet.sb_taskv1.services.impl;
+package com.jhuguet.sb_taskv1.app.services.impl;
 
-import com.jhuguet.sb_taskv1.models.Tag;
-import com.jhuguet.sb_taskv1.repositories.TagRepository;
-import com.jhuguet.sb_taskv1.services.TagService;
+import com.jhuguet.sb_taskv1.app.models.Tag;
+import com.jhuguet.sb_taskv1.app.services.TagService;
+import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import javax.transaction.TransactionalException;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TagRepositoryServiceImpl implements TagService {
@@ -24,8 +25,8 @@ public class TagRepositoryServiceImpl implements TagService {
         return tagRepository.findAll();
     }
 
-    public Tag getTag(int id) throws RuntimeException {
-        return tagRepository.findById(id).get();
+    public Tag getTag(int id) throws IdNotFound, InvalidIdInputInformation {
+        return validateTag(id) ? tagRepository.findById(id).get() : null;
     }
 
     @Transactional
@@ -36,17 +37,15 @@ public class TagRepositoryServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public Tag updateTag(Tag tag) throws TransactionalException {
-        Optional<Tag> validateTag = tagRepository.findById(tag.getId());
-        if (validateTag.isPresent()) {
+    public Tag updateTag(Tag tag) throws IdNotFound, InvalidIdInputInformation {
+        if (validateTag(tag.getId())) {
             tagRepository.save(tag);
         }
-
         return tag;
     }
 
     @Transactional
-    public Tag deleteTag(int id) throws TransactionalException {
+    public Tag deleteTag(int id) throws InvalidIdInputInformation, IdNotFound {
         Tag tag = new Tag();
         if (validateTag(id) && tag.getCertificates() != null) {
             tag = getTag(id);
@@ -55,8 +54,16 @@ public class TagRepositoryServiceImpl implements TagService {
         return tag;
     }
 
-    private boolean validateTag(int id) throws RuntimeException {
-        return tagRepository.existsById(id);
+    private boolean validateTag(int id) throws IdNotFound, InvalidIdInputInformation {
+        if (id < 0) {
+            throw new InvalidIdInputInformation();
+        }
+
+        if (!tagRepository.existsById(id)) {
+            throw new IdNotFound();
+        }
+
+        return true;
     }
 
 }

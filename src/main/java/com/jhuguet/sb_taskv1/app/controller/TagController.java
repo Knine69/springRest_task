@@ -1,7 +1,9 @@
-package com.jhuguet.sb_taskv1.controller;
+package com.jhuguet.sb_taskv1.app.controller;
 
-import com.jhuguet.sb_taskv1.models.Tag;
-import com.jhuguet.sb_taskv1.services.TagService;
+import com.jhuguet.sb_taskv1.app.models.Tag;
+import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,7 +36,7 @@ public class TagController {
 
     @GetMapping("/{id}")
     @ResponseBody
-    public Tag getTagById(@PathVariable String id) {
+    public Tag getTagById(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
         return tagService.getTag(Integer.valueOf(id));
     }
 
@@ -44,12 +46,12 @@ public class TagController {
     }
 
     @PutMapping
-    public void updateTag(@RequestBody Tag tag) {
+    public void updateTag(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
         tagService.updateTag(tag);
     }
 
     @DeleteMapping
-    public void deleteTag(@RequestBody Tag tag) {
+    public void deleteTag(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
         tagService.deleteTag(tag.getId());
     }
 

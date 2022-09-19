@@ -1,13 +1,15 @@
-package com.jhuguet.sb_taskv1.models;
+package com.jhuguet.sb_taskv1.app.models;
 
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.List;
@@ -31,19 +33,20 @@ public class GiftCertificate {
     @Column(name = "last_update_date")
     private String lastUpdateDate;
 
-    @Column(name = "associated_tag")
-    private List<Tag> associatedTag;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @Column(name = "tag_id")
+    private List<Tag> associatedTags;
 
     public int getId() {
         return id;
     }
 
     public List<Tag> getAssociatedTag() {
-        return associatedTag;
+        return associatedTags;
     }
 
     public void setAssociatedTag(List<Tag> associatedTag) {
-        this.associatedTag = associatedTag;
+        this.associatedTags = associatedTag;
     }
 
     public String getName() {

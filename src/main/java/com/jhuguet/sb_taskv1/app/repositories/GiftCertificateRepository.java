@@ -1,6 +1,6 @@
-package com.jhuguet.sb_taskv1.repositories;
+package com.jhuguet.sb_taskv1.app.repositories;
 
-import com.jhuguet.sb_taskv1.models.GiftCertificate;
+import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
