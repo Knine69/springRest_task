@@ -1,18 +1,21 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
-import com.jhuguet.sb_taskv1.app.exceptions.TagsAssociatedException;
-import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
-import com.jhuguet.sb_taskv1.app.models.Tag;
-import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
-import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
+import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
+import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import javax.transaction.TransactionalException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -29,16 +32,17 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         this.tagRepository = tagRepository;
     }
 
-    public List<GiftCertificate> getAllCertificates() {
+    public List<GiftCertificate> getAll() {
         return giftRepository.findAll();
     }
 
-    public GiftCertificate getCertificate(int id) throws IdNotFound, InvalidIdInputInformation {
-        return validateCertificate(id) ? giftRepository.findById(id).get() : null;
+    public GiftCertificate get(int id) throws IdNotFound, InvalidIdInputInformation {
+        validateCertificate(id);
+        return giftRepository.findById(id).get();
     }
 
     @Transactional
-    public GiftCertificate saveCertificate(GiftCertificate giftCertificate) throws TransactionalException {
+    public GiftCertificate save(GiftCertificate giftCertificate) {
         String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         giftCertificate.setCreateDate(localDate);
         giftCertificate.setLastUpdateDate(localDate);
@@ -48,42 +52,30 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public GiftCertificate updateCertificate(GiftCertificate certificate) throws IdNotFound, InvalidIdInputInformation {
-        if (validateCertificate(certificate.getId())) {
-            certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            giftRepository.save(certificate);
-        }
+    public GiftCertificate update(GiftCertificate certificate) throws IdNotFound, InvalidIdInputInformation {
+        validateCertificate(certificate.getId());
+        certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        giftRepository.save(certificate);
         return certificate;
     }
 
     @Transactional
-    public GiftCertificate deleteCertificate(int id) throws IdNotFound, InvalidIdInputInformation, TagsAssociatedException {
-        GiftCertificate certificate = getCertificate(id);
-        if(certificate.getAssociatedTag().size() > 0){
-            throw new TagsAssociatedException();
-        }else {
-            giftRepository.deleteById(id);
-        }
+    public GiftCertificate delete(int id) throws IdNotFound, InvalidIdInputInformation {
+        GiftCertificate certificate = get(id);
+        giftRepository.deleteById(id);
 
         return certificate;
     }
 
     @Override
-    public Tag addTagToCertificate(int tagId, int certificateId) throws IdNotFound, InvalidIdInputInformation {
-        GiftCertificate certificate;
-        Tag tag = null;
-        if(tagRepository.existsById(tagId)){
-            tag = tagRepository.findById(tagId).get();
-            certificate = getCertificate(certificateId);
-            List<Tag> tags = certificate.getAssociatedTag();
-            tags.add(tag);
-            certificate.setAssociatedTag(tags);
-        }
-
-        return tag;
+    public GiftCertificate addTag(int certId, JsonPatch tag) throws JsonPatchException, JsonProcessingException, BaseException {
+        GiftCertificate certificate = get(certId);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode patched = tag.apply(mapper.convertValue(certificate, JsonNode.class));
+        return mapper.treeToValue(patched, GiftCertificate.class);
     }
 
-    private boolean validateCertificate(int id) throws IdNotFound, InvalidIdInputInformation {
+    private void validateCertificate(int id) throws IdNotFound, InvalidIdInputInformation {
         if (id < 0) {
             throw new InvalidIdInputInformation();
         }
@@ -91,7 +83,5 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         if (!giftRepository.existsById(id)) {
             throw new IdNotFound();
         }
-
-        return true;
     }
 }

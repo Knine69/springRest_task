@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.models;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -9,15 +10,18 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "gift_certificate")
 @DynamicUpdate
 @NoArgsConstructor
+@Getter
 public class GiftCertificate {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,63 +38,37 @@ public class GiftCertificate {
     private String lastUpdateDate;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @Column(name = "tag_id")
-    private List<Tag> associatedTags;
+    @JoinTable(name = "certificate_tags",
+            joinColumns = {
+                    @JoinColumn(name = "certificate_id", referencedColumnName = "id")
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(name = "tag_id", referencedColumnName = "id")
+            })
+    private Set<Tag> associatedTags;
 
-    public int getId() {
-        return id;
-    }
-
-    public List<Tag> getAssociatedTag() {
-        return associatedTags;
-    }
-
-    public void setAssociatedTag(List<Tag> associatedTag) {
+    public void setAssociatedTag(Set<Tag> associatedTag) {
         this.associatedTags = associatedTag;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
     }
 
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
-    public int getDuration() {
-        return duration;
-    }
-
     public void setDuration(int duration) {
         this.duration = duration;
     }
 
-    public String getCreateDate() {
-        return createDate;
-    }
-
     public void setCreateDate(String createDate) {
         this.createDate = createDate;
-    }
-
-    public String getLastUpdateDate() {
-        return lastUpdateDate;
     }
 
     public void setLastUpdateDate(String lastUpdateDate) {

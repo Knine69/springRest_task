@@ -5,11 +5,11 @@ import java.util.Date;
 public class BaseException extends Exception {
 
     private String message;
-    private String timestamp;
+    private Date timestamp;
 
     public BaseException(String message) {
         this.message = message;
-        this.timestamp = new Date().toString();
+        this.timestamp = new Date();
     }
 
     @Override
@@ -17,7 +17,7 @@ public class BaseException extends Exception {
         return message;
     }
 
-    public String getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 }

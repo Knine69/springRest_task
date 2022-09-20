@@ -11,7 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tag")
@@ -23,9 +23,10 @@ public class Tag {
     private int id;
     @Column(name = "tag_name")
     private String name;
-    @Column(name = "certificate_id")
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<GiftCertificate> certificates;
+
+    @ManyToMany(cascade = CascadeType.ALL,
+            mappedBy = "associatedTags")
+    private Set<GiftCertificate> certificates;
 
     public int getId() {
         return id;
@@ -39,11 +40,11 @@ public class Tag {
         this.name = name;
     }
 
-    public List<GiftCertificate> getCertificates() {
+    public Set<GiftCertificate> getCertificates() {
         return certificates;
     }
 
-    public void setCertificates(List<GiftCertificate> certificates) {
+    public void setCertificates(Set<GiftCertificate> certificates) {
         this.certificates = certificates;
     }
 }

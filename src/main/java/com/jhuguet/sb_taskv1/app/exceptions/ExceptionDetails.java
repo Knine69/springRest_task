@@ -1,12 +1,18 @@
 package com.jhuguet.sb_taskv1.app.exceptions;
 
+import lombok.Getter;
+
+import java.util.Date;
+
+@Getter
 public class ExceptionDetails {
 
-    private long timestamp;
+    private Date timestamp;
     private String description;
 
-    public ExceptionDetails(long timestamp, String description) {
-        this.timestamp = timestamp;
+    public ExceptionDetails(String description) {
+        this.timestamp = new Date();
         this.description = description;
     }
+
 }

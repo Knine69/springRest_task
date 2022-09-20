@@ -1,11 +1,10 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
-import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,11 +13,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-@Controller
+@RestController
 @RequestMapping("/tag")
 public class TagController {
 
@@ -28,33 +29,32 @@ public class TagController {
     @Autowired
     private TagService tagService;
 
-    @GetMapping("/")
     @ResponseBody
-    public List<Tag> getAllTags() {
-        return tagService.getAllTags();
+    @GetMapping({"/", "/{id}"})
+    public List<Tag> getTags(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
+        if (id != null) {
+            List<Tag> tag = new ArrayList<>();
+            tag.add(tagService.get(Integer.valueOf(id)));
+            return tag;
+        }
+        return tagService.getAll();
     }
 
-    @GetMapping("/{id}")
-    @ResponseBody
-    public Tag getTagById(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
-        return tagService.getTag(Integer.valueOf(id));
-    }
-
-    @PostMapping("/newTag")
+    @PostMapping
     public void saveTag(@RequestBody Tag tag) {
-        tagService.saveTag(tag);
+        tagService.save(tag);
         logger.info("Saved new tag: " + tag.getName());
     }
 
-    @PutMapping("/update")
+    @PutMapping
     public void updateTag(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
-        tagService.updateTag(tag);
+        tagService.update(tag);
         logger.info("Updated tag: " + tag.getId());
     }
 
     @DeleteMapping("/drop/{id}")
     public void deleteTag(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
-        tagService.deleteTag(Integer.valueOf(id));
+        tagService.delete(Integer.valueOf(id));
         logger.info("Dropped tag: " + id);
     }
 
