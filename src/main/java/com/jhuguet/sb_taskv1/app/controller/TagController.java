@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
+import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
 import com.jhuguet.sb_taskv1.app.models.Tag;
@@ -53,7 +54,7 @@ public class TagController {
     }
 
     @DeleteMapping("/drop/{id}")
-    public void deleteTag(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
+    public void deleteTag(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException {
         tagService.delete(Integer.valueOf(id));
         logger.info("Dropped tag: " + id);
     }

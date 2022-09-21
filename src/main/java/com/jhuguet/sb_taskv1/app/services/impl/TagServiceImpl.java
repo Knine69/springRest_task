@@ -1,6 +1,7 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
+import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.TagService;
@@ -24,8 +25,6 @@ public class TagServiceImpl implements TagService {
         this.tagRepository = tagRepository;
         this.giftCertificateService = giftCertificateService;
     }
-
-
 
     public List<Tag> getAll() throws RuntimeException {
         return tagRepository.findAll();
@@ -52,17 +51,14 @@ public class TagServiceImpl implements TagService {
 
     //Do validation in case there are certificates associated
     @Transactional
-    public Tag delete(int id) throws InvalidIdInputInformation, IdNotFound {
+    public Tag delete(int id) throws InvalidIdInputInformation, IdNotFound, CertificateAssociatedException {
         Tag tag = get(id);
+        if(!tag.getCertificates().isEmpty()) {
+            throw new CertificateAssociatedException();
+        }
         tagRepository.deleteById(id);
         return tag;
     }
-
-//    @Override
-//    public Tag addCertificate(int certId) throws BaseException {
-//        GiftCertificate certificate = giftCertificateService.get(certId);
-//        return ;
-//    }
 
     private void validateTag(int id) throws IdNotFound, InvalidIdInputInformation {
         if (id < 0) {

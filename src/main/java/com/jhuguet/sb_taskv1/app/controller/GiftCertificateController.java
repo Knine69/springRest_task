@@ -1,13 +1,13 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
+import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import com.jhuguet.sb_taskv1.app.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @RestController
@@ -44,7 +45,7 @@ public class GiftCertificateController {
     @ResponseBody
     @GetMapping({"/", "/{id}"})
     public List<GiftCertificate> getCertificateById(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
-        if(id != null){
+        if (id != null) {
             List<GiftCertificate> returnCertificate = new ArrayList<>();
             returnCertificate.add(giftCertificateService.get(Integer.valueOf(id)));
             return returnCertificate;
@@ -62,15 +63,16 @@ public class GiftCertificateController {
     @PatchMapping(value = "/tagToCert/{certId}")
     public void saveTagToCert(
             @PathVariable("certId") String certId,
-            @RequestBody JsonPatch patchTag) throws BaseException, JsonPatchException, JsonProcessingException {
-        giftCertificateService.addTag(Integer.valueOf(certId), patchTag);
+            @RequestBody List<Tag> tag) throws BaseException {
+        giftCertificateService.addTag(Integer.valueOf(certId), tag);
         logger.info("Successfully saved new tag to certificate");
     }
 
-    @PutMapping
-    public GiftCertificate updateGiftCertificate(@RequestBody GiftCertificate giftCertificate) throws IdNotFound, InvalidIdInputInformation {
-        logger.info("Updating certificate: " + giftCertificate.getId());
-        return giftCertificateService.update(giftCertificate);
+    @PatchMapping("/{certId}")
+    public GiftCertificate updateGiftCertificate(@PathVariable("certId") String id
+            , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
+        logger.info("Updating certificate " + id);
+        return giftCertificateService.update(Integer.valueOf(id), patch);
     }
 
     @DeleteMapping("/drop/{id}")

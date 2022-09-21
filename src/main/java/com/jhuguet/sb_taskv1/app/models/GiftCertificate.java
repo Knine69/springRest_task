@@ -74,4 +74,8 @@ public class GiftCertificate {
     public void setLastUpdateDate(String lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
     }
+
+    public void assignTag(Tag tag){
+        this.associatedTags.add(tag);
+    }
 }
