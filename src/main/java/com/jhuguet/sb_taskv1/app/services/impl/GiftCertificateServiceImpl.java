@@ -92,8 +92,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     //Validate deletion of tags and amount of tags added
     @Override
-    public GiftCertificate addTag(int certId, List<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
+    public GiftCertificate updateTags(int certId, List<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(certId);
+        certificate.cleanTags();
         tags.forEach(tag -> {
             boolean isRepeated =
                     certificate.getAssociatedTags().stream()

@@ -78,4 +78,8 @@ public class GiftCertificate {
     public void assignTag(Tag tag){
         this.associatedTags.add(tag);
     }
+
+    public void cleanTags() {
+        this.associatedTags.removeAll(getAssociatedTags());
+    }
 }

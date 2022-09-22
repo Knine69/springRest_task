@@ -60,11 +60,11 @@ public class GiftCertificateController {
     }
 
     //Use patch request instead of postMapping and correct method
-    @PatchMapping(value = "/tagToCert/{certId}")
+    @PatchMapping(value = "/updateTags/{certId}")
     public void saveTagToCert(
             @PathVariable("certId") String certId,
             @RequestBody List<Tag> tag) throws BaseException {
-        giftCertificateService.addTag(Integer.valueOf(certId), tag);
+        giftCertificateService.updateTags(Integer.valueOf(certId), tag);
         logger.info("Successfully saved new tag to certificate");
     }
 
