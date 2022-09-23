@@ -1,7 +1,5 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.fge.jsonpatch.JsonPatchException;
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -53,13 +50,31 @@ public class GiftCertificateController {
         return giftCertificateService.getAll();
     }
 
+    @ResponseBody
+    @GetMapping("/byTagName/{tagName}")
+    public List<GiftCertificate> getCertificateByTagName(@PathVariable("tagName") String name) {
+        return giftCertificateService.getByTagName(name);
+    }
+
+    @ResponseBody
+    @GetMapping("/byPart/{part}")
+    public List<GiftCertificate> getCertificateByNameDescription(@PathVariable("part") String part) {
+        return giftCertificateService.getByPart(part);
+    }
+
+    @ResponseBody
+    @GetMapping("/byDateOrName/{sortBy}/{order}")
+    public List<GiftCertificate> getCertificateByDateOrName(
+            @PathVariable("sortBy") String sortBy, @PathVariable("order") String order) {
+        return giftCertificateService.getByDateOrName(sortBy, order);
+    }
+
     @PostMapping
     public void saveGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
         giftCertificateService.save(giftCertificate);
         logger.info("Successfully saved new certificate into db");
     }
 
-    //Use patch request instead of postMapping and correct method
     @PatchMapping(value = "/updateTags/{certId}")
     public void saveTagToCert(
             @PathVariable("certId") String certId,

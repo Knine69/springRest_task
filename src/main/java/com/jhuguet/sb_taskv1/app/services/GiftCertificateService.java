@@ -1,8 +1,5 @@
 package com.jhuguet.sb_taskv1.app.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.fge.jsonpatch.JsonPatchException;
-import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
@@ -16,6 +13,12 @@ public interface GiftCertificateService {
     List<GiftCertificate> getAll();
 
     GiftCertificate get(int id) throws IdNotFound, InvalidIdInputInformation;
+
+    List<GiftCertificate> getByTagName(String name);
+
+    List<GiftCertificate> getByPart(String part);
+
+    List<GiftCertificate> getByDateOrName(String sortBy, String order);
 
     GiftCertificate save(GiftCertificate certificate);
 

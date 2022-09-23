@@ -1,5 +1,7 @@
 package com.jhuguet.sb_taskv1.app.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
@@ -21,6 +23,7 @@ import java.util.Set;
 @Table(name = "gift_certificate")
 @DynamicUpdate
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 public class GiftCertificate {
     @Id
@@ -46,6 +49,17 @@ public class GiftCertificate {
                     @JoinColumn(name = "tag_id", referencedColumnName = "id")
             })
     private Set<Tag> associatedTags;
+
+    public GiftCertificate(String name, String description, BigDecimal price, int duration,
+                           String createDate, String lastUpdateDate, Set<Tag> associatedTags) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.duration = duration;
+        this.createDate = createDate;
+        this.lastUpdateDate = lastUpdateDate;
+        this.associatedTags = associatedTags;
+    }
 
     public void setAssociatedTag(Set<Tag> associatedTag) {
         this.associatedTags = associatedTag;
@@ -75,11 +89,13 @@ public class GiftCertificate {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public void assignTag(Tag tag){
+    public void assignTag(Tag tag) {
         this.associatedTags.add(tag);
     }
 
     public void cleanTags() {
         this.associatedTags.removeAll(getAssociatedTags());
     }
+
+
 }

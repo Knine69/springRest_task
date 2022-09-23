@@ -14,18 +14,19 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService {
 
-    private GiftCertificateRepository giftRepository;
-    private TagRepository tagRepository;
-    private Logger logger = Logger.getLogger(GiftCertificateServiceImpl.class.getName());
+    private final GiftCertificateRepository giftRepository;
+    private final TagRepository tagRepository;
+    private final Logger logger = Logger.getLogger(GiftCertificateServiceImpl.class.getName());
 
     @Autowired
     public GiftCertificateServiceImpl(GiftCertificateRepository giftRepository, TagRepository tagRepository) {
@@ -114,6 +115,50 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
+    @Override
+    public List<GiftCertificate> getByTagName(String name) {
+        List<GiftCertificate> certificates = new ArrayList<>();
+
+        getAll().forEach(certificate -> certificate.getAssociatedTags().forEach(tag -> {
+            if (tag.getName().equals(name)) {
+                certificates.add(certificate);
+            }
+        }));
+
+        return certificates;
+    }
+
+    @Override
+    public List<GiftCertificate> getByPart(String part) {
+        List<GiftCertificate> certificates = new ArrayList<>();
+
+        getAll().forEach(certificate -> {
+            if (certificate.getName().contains(part) || certificate.getDescription().contains(part)) {
+                certificates.add(certificate);
+            }
+        });
+
+        return certificates;
+    }
+
+    @Override
+    public List<GiftCertificate> getByDateOrName(String sortBy, String order) {
+        List<GiftCertificate> certificates = new ArrayList<>();
+        boolean ascendingOrder = order.equals("asc");
+        switch (sortBy) {
+            case "name":
+                certificates = sortCertificatesByName(ascendingOrder);
+                break;
+            case "date":
+                certificates = sortCertificatesByDate(ascendingOrder);
+                break;
+            default:
+                logger.info("Please enter an appropriate sorting type.");
+                break;
+        }
+        return certificates;
+    }
+
     @Transactional
     public GiftCertificate delete(int id) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(id);
@@ -130,5 +175,27 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         if (!giftRepository.existsById(id)) {
             throw new IdNotFound();
         }
+    }
+
+    private List<GiftCertificate> sortCertificatesByName(boolean ascending) {
+        return ascending ?
+                getAll()
+                        .stream().sorted(Comparator.comparing(GiftCertificate::getName))
+                        .collect(Collectors.toList()) :
+                getAll()
+                        .stream().sorted(Comparator.comparing(GiftCertificate::getName).reversed())
+                        .collect(Collectors.toList());
+
+    }
+
+    private List<GiftCertificate> sortCertificatesByDate(boolean ascending) {
+        return ascending ?
+                getAll()
+                        .stream().sorted(Comparator.comparing(GiftCertificate::getCreateDate))
+                        .collect(Collectors.toList()) :
+                getAll()
+                        .stream().sorted(Comparator.comparing(GiftCertificate::getCreateDate).reversed())
+                        .collect(Collectors.toList());
+
     }
 }

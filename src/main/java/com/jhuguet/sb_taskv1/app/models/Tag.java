@@ -1,6 +1,8 @@
 package com.jhuguet.sb_taskv1.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -29,6 +31,10 @@ public class Tag {
             mappedBy = "associatedTags")
     @JsonIgnore
     private Set<GiftCertificate> certificates;
+
+    public Tag(String name) {
+        this.name = name;
+    }
 
     public int getId() {
         return id;
