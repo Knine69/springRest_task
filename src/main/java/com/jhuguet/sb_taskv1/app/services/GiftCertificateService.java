@@ -24,7 +24,7 @@ public interface GiftCertificateService {
 
     GiftCertificate update(int id, Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation;
 
-    GiftCertificate delete(int id) throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException;
+    GiftCertificate delete(int id) throws IdNotFound, InvalidIdInputInformation;
 
     GiftCertificate updateTags(int id, List<Tag> tag) throws IdNotFound, InvalidIdInputInformation;
 }
