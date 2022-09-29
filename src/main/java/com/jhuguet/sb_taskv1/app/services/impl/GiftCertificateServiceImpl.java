@@ -91,7 +91,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
-    //Validate deletion of tags and amount of tags added
     @Override
     public GiftCertificate updateTags(int certId, List<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(certId);
