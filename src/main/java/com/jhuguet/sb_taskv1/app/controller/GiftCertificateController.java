@@ -1,13 +1,11 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
-import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
-import com.jhuguet.sb_taskv1.app.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,12 +29,10 @@ public class GiftCertificateController {
     private final Logger logger = Logger.getLogger(GiftCertificateController.class.getName());
 
     private final GiftCertificateService giftCertificateService;
-    private final TagService tagService;
 
     @Autowired
-    public GiftCertificateController(GiftCertificateService giftCertificateService, TagService tagService) {
+    public GiftCertificateController(GiftCertificateService giftCertificateService) {
         this.giftCertificateService = giftCertificateService;
-        this.tagService = tagService;
     }
 
     /**
@@ -50,7 +46,7 @@ public class GiftCertificateController {
     public List<GiftCertificate> getCertificateById(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
         if (id != null) {
             List<GiftCertificate> returnCertificate = new ArrayList<>();
-            returnCertificate.add(giftCertificateService.get(Integer.valueOf(id)));
+            returnCertificate.add(giftCertificateService.get(Integer.parseInt(id)));
             return returnCertificate;
         }
         return giftCertificateService.getAll();
@@ -115,21 +111,21 @@ public class GiftCertificateController {
      * @param id    ID of GiftCertificate to which will be applied the patch
      * @param patch Desired changes to apply
      * @return GiftCertificate after patched without Tags being patched to it
-     * @throws IdNotFound
-     * @throws InvalidIdInputInformation
+     * @throws IdNotFound                Refer to line 44
+     * @throws InvalidIdInputInformation Refer to line 45
      */
     @PatchMapping("/{certId}")
     public GiftCertificate updateGiftCertificate(@PathVariable("certId") String id
             , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
         logger.info("Updating certificate " + id);
-        return giftCertificateService.update(Integer.valueOf(id), patch);
+        return giftCertificateService.update(Integer.parseInt(id), patch);
     }
 
     /**
      * @param id Specific ID of GiftCertificate to be deleted
      * @return Object which was deleted
-     * @throws IdNotFound
-     * @throws InvalidIdInputInformation
+     * @throws IdNotFound                Refer to line 44
+     * @throws InvalidIdInputInformation Refer to line 45
      */
     @DeleteMapping("/drop/{id}")
     public GiftCertificate deleteCertificate(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
