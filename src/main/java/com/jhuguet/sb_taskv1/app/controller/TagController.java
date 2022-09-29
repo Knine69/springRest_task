@@ -24,11 +24,14 @@ import java.util.logging.Logger;
 @RequestMapping("/tag")
 public class TagController {
 
-    private Logger logger = Logger.getLogger(TagController.class.getName());
+    private final Logger logger = Logger.getLogger(TagController.class.getName());
 
+    private final TagService tagService;
 
     @Autowired
-    private TagService tagService;
+    public TagController(TagService tagService) {
+        this.tagService = tagService;
+    }
 
     @ResponseBody
     @GetMapping({"/", "/{id}"})
@@ -55,7 +58,7 @@ public class TagController {
 
     @DeleteMapping("/drop/{id}")
     public void deleteTag(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException {
-        tagService.delete(Integer.valueOf(id));
+        tagService.delete(Integer.parseInt(id));
         logger.info("Dropped tag: " + id);
     }
 
