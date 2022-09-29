@@ -18,5 +18,4 @@ public interface TagService {
 
     Tag delete(int id) throws InvalidIdInputInformation, IdNotFound, CertificateAssociatedException;
 
-//    Tag addCertificate(int certId) throws BaseException;
 }
