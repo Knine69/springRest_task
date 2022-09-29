@@ -42,7 +42,7 @@ public class GiftCertificateController {
     /**
      * @param id, if given will return specific GiftCertificate that has said ID
      * @return will return pertaining List-of or single GiftCertificate retrieved from DB
-     * @throws IdNotFound Exception thrown when given ID is not found
+     * @throws IdNotFound                Exception thrown when given ID is not found
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @ResponseBody
@@ -56,18 +56,31 @@ public class GiftCertificateController {
         return giftCertificateService.getAll();
     }
 
+    /**
+     * @param name name of tag to search for
+     * @return List of GiftCertificates which contain the tag looked for by name
+     */
     @ResponseBody
     @GetMapping("/byTagName/{tagName}")
     public List<GiftCertificate> getCertificateByTagName(@PathVariable("tagName") String name) {
         return giftCertificateService.getByTagName(name);
     }
 
+    /**
+     * @param part Part of GiftCertificate's description or name which will be used to filter for
+     * @return List of GiftCertificates which contain named part
+     */
     @ResponseBody
     @GetMapping("/byPart/{part}")
     public List<GiftCertificate> getCertificateByNameDescription(@PathVariable("part") String part) {
         return giftCertificateService.getByPart(part);
     }
 
+    /**
+     * @param sortBy Parameter given to sort by, either Date or Name
+     * @param order  Order in which is needed to sort list, ascendant or descendant
+     * @return List of GiftCertificates which contain filter parameter and sort type
+     */
     @ResponseBody
     @GetMapping("/byDateOrName/{sortBy}/{order}")
     public List<GiftCertificate> getCertificateByDateOrName(
@@ -75,12 +88,21 @@ public class GiftCertificateController {
         return giftCertificateService.getByDateOrName(sortBy, order);
     }
 
+    /**
+     * @param giftCertificate GiftCertificate object to save to DB
+     */
     @PostMapping
     public void saveGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
         giftCertificateService.save(giftCertificate);
         logger.info("Successfully saved new certificate into db");
     }
 
+    /**
+     * @param certId Certificate ID to apply the patch for
+     * @param tag    Tag list to be added to specific GiftCertificate
+     * @return GiftCertificate after being patched
+     * @throws BaseException extensible exception from either not found, runtime or incorrect format from inputs/process
+     */
     @PatchMapping(value = "/updateTags/{certId}")
     public GiftCertificate updateCertificateTags(
             @PathVariable("certId") String certId,
@@ -89,6 +111,13 @@ public class GiftCertificateController {
         return giftCertificateService.updateTags(Integer.parseInt(certId), tag);
     }
 
+    /**
+     * @param id    ID of GiftCertificate to which will be applied the patch
+     * @param patch Desired changes to apply
+     * @return GiftCertificate after patched without Tags being patched to it
+     * @throws IdNotFound
+     * @throws InvalidIdInputInformation
+     */
     @PatchMapping("/{certId}")
     public GiftCertificate updateGiftCertificate(@PathVariable("certId") String id
             , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
@@ -96,8 +125,14 @@ public class GiftCertificateController {
         return giftCertificateService.update(Integer.valueOf(id), patch);
     }
 
+    /**
+     * @param id Specific ID of GiftCertificate to be deleted
+     * @return Object which was deleted
+     * @throws IdNotFound
+     * @throws InvalidIdInputInformation
+     */
     @DeleteMapping("/drop/{id}")
-    public GiftCertificate deleteCertificate(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException {
+    public GiftCertificate deleteCertificate(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
         logger.info("Deleting certificate: " + id);
         return giftCertificateService.delete(Integer.parseInt(id));
     }
