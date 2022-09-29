@@ -92,9 +92,9 @@ public class GiftCertificateController {
      * @param giftCertificate GiftCertificate object to save to DB
      */
     @PostMapping
-    public void saveGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
-        giftCertificateService.save(giftCertificate);
-        logger.info("Successfully saved new certificate into db");
+    public GiftCertificate saveGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
+        logger.info("Saving new certificate into db");
+        return giftCertificateService.save(giftCertificate);
     }
 
     /**
