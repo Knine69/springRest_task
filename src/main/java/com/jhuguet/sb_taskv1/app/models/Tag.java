@@ -1,8 +1,6 @@
 package com.jhuguet.sb_taskv1.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -22,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Tag {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "tag_name")
     private String name;
@@ -34,6 +32,11 @@ public class Tag {
 
     public Tag(String name) {
         this.name = name;
+    }
+
+    public Tag(String name, Set<GiftCertificate> certificates) {
+        this.name = name;
+        this.certificates = certificates;
     }
 
     public int getId() {
@@ -52,11 +55,4 @@ public class Tag {
         return certificates;
     }
 
-    public void setCertificates(Set<GiftCertificate> certificates) {
-        this.certificates = certificates;
-    }
-
-    public void associateCertificate(GiftCertificate certificate) {
-        this.certificates.add(certificate);
-    }
 }

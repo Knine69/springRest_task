@@ -1,7 +1,6 @@
 package com.jhuguet.sb_taskv1.app.models;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
@@ -27,7 +26,7 @@ import java.util.Set;
 @Getter
 public class GiftCertificate {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "certificate_name")
     private String name;
@@ -59,10 +58,6 @@ public class GiftCertificate {
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
         this.associatedTags = associatedTags;
-    }
-
-    public void setAssociatedTag(Set<Tag> associatedTag) {
-        this.associatedTags = associatedTag;
     }
 
     public void setName(String name) {
