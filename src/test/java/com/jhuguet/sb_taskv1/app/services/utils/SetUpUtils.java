@@ -5,6 +5,7 @@ import com.jhuguet.sb_taskv1.app.models.Tag;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -18,14 +19,14 @@ public class SetUpUtils {
                 "2022-09-20T14:33:15.1301054",
                 "2022-09-20T14:33:15.1301054",
                 Set.of(
-                        new Tag("Cloud"),
+                        new Tag("Azure"),
                         new Tag("Amazon")
                 )
         );
     }
 
     public Tag sampleTag() {
-        return new Tag("Cloud");
+        return new Tag("Cloud", new HashSet<>(sampleCertificates()));
     }
 
     public List<Tag> sampleTags() {
