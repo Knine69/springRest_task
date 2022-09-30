@@ -34,15 +34,34 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         this.tagRepository = tagRepository;
     }
 
+    /**
+     * Returns all GiftCertificates found in Database
+     *
+     * @return List of GiftCertificates
+     */
     public List<GiftCertificate> getAll() {
         return giftRepository.findAll();
     }
 
+    /**
+     * Returns a single GiftCertificate retrieved based on ID
+     *
+     * @param id Given ID to filter and return specific GiftCertificate
+     * @return Will return pertaining GiftCertificate retrieved from DB
+     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+     */
     public GiftCertificate get(int id) throws IdNotFound, InvalidIdInputInformation {
         validateCertificate(id);
         return giftRepository.findById(id).get();
     }
 
+    /**
+     * Will save a GiftCertificate into Database
+     *
+     * @param giftCertificate GiftCertificate Object which will be saved
+     * @return GiftCertificate object saved into Database
+     */
     @Transactional
     public GiftCertificate save(GiftCertificate giftCertificate) {
         String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -53,6 +72,15 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return giftCertificate;
     }
 
+    /**
+     * Will patch only specified changes into GiftCertificate excluding Tags
+     *
+     * @param id    ID of GiftCertificate to which will be applied the patch
+     * @param patch Desired changes to apply
+     * @return GiftCertificate after patched without Tags being patched to it
+     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+     */
     @Override
     public GiftCertificate update(int id,
                                   Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
@@ -63,6 +91,15 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
+    /**
+     * Utility method used in order to update only required fields of GiftCertificate
+     *
+     * @param id    ID of GiftCertificate to which will be applied the patch
+     * @param patch Desired changes to apply
+     * @return GiftCertificate after patched without Tags being patched to it
+     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+     */
     private GiftCertificate partialUpdate(int id, Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(id);
         patch.forEach((key, value) -> {
@@ -91,6 +128,15 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
+    /**
+     * Will patch new Set of Tags to be linked to a GiftCertificates
+     *
+     * @param certId Certificate ID to apply the patch for
+     * @param tags   Tag list to be added to specific GiftCertificate
+     * @return GiftCertificate after being patched
+     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+     */
     @Override
     public GiftCertificate updateTags(int certId, List<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(certId);
@@ -114,6 +160,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
+    /**
+     * Filter function used to retrieve a List of GiftCertificates based on Tag name
+     *
+     * @param name Tag's name used to filter
+     * @return List of GiftCertificates
+     */
     @Override
     public List<GiftCertificate> getByTagName(String name) {
         List<GiftCertificate> certificates = new ArrayList<>();
@@ -127,6 +179,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificates;
     }
 
+    /**
+     * Filter function used to retrieve a List of GiftCertificates based on part of name or description
+     *
+     * @param part Part of name or description that will be used to filter
+     * @return List of GiftCertificates
+     */
     @Override
     public List<GiftCertificate> getByPart(String part) {
         List<GiftCertificate> certificates = new ArrayList<>();
@@ -140,6 +198,14 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificates;
     }
 
+    /**
+     * Filter function used to retrieve a List of GiftCertificates based on name or date, in ascendant
+     * or descendant order
+     *
+     * @param sortBy Parameter given to sort by, either Date or Name
+     * @param order  Order in which is needed to sort list, ascendant or descendant
+     * @return List of GiftCertificates
+     */
     @Override
     public List<GiftCertificate> getByDateOrName(String sortBy, String order) {
         List<GiftCertificate> certificates = new ArrayList<>();
@@ -158,6 +224,14 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificates;
     }
 
+    /**
+     * Deleting function of a specific GiftCertificate
+     *
+     * @param id Specific ID of GiftCertificate to be deleted
+     * @return GiftCertificate which was deleted
+     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+     */
     @Transactional
     public GiftCertificate delete(int id) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(id);
@@ -166,6 +240,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
+    /**
+     * Util function used in order to validate if ID entered is of valid format and does exist in Database
+     *
+     * @param id Specific ID of GiftCertificate to be deleted
+     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+     */
     private void validateCertificate(int id) throws IdNotFound, InvalidIdInputInformation {
         if (id < 0) {
             throw new InvalidIdInputInformation();
@@ -176,6 +257,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         }
     }
 
+    /**
+     * Util function used in order to sort by name List of GiftCertificates in ascendant or descendant order
+     *
+     * @param ascending Sorting order boolean value
+     * @return List of GiftCertificates
+     */
     private List<GiftCertificate> sortCertificatesByName(boolean ascending) {
         return ascending ?
                 getAll()
@@ -187,6 +274,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     }
 
+    /**
+     * Util function used in order to sort by date List of GiftCertificates in ascendant or descendant order
+     *
+     * @param ascending Sorting order boolean value
+     * @return List of GiftCertificates
+     */
     private List<GiftCertificate> sortCertificatesByDate(boolean ascending) {
         return ascending ?
                 getAll()
