@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @NoArgsConstructor
 public class SetUpUtils {
@@ -18,10 +19,8 @@ public class SetUpUtils {
                 10,
                 "2022-09-20T14:33:15.1301054",
                 "2022-09-20T14:33:15.1301054",
-                Set.of(
-                        new Tag("Azure"),
-                        new Tag("Amazon")
-                )
+                Stream.of(new Tag("Cloud"))
+                        .collect(Collectors.toCollection(HashSet::new))
         );
     }
 

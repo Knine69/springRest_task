@@ -85,62 +85,105 @@ Current scope:     <a href="../../index.html">all classes</a>
 <i class="no-highlight">10</i>&nbsp;import org.springframework.stereotype.Service;
 <i class="no-highlight">11</i>&nbsp;
 <i class="no-highlight">12</i>&nbsp;import javax.transaction.Transactional;
-<i class="no-highlight">13</i>&nbsp;import javax.transaction.TransactionalException;
-<i class="no-highlight">14</i>&nbsp;import java.util.List;
-<i class="no-highlight">15</i>&nbsp;
-<i class="no-highlight">16</i>&nbsp;@Service
-<i class="no-highlight">17</i>&nbsp;public class TagServiceImpl implements TagService {
-<i class="no-highlight">18</i>&nbsp;    private TagRepository tagRepository;
-<i class="no-highlight">19</i>&nbsp;
-<i class="no-highlight">20</i>&nbsp;    @Autowired
-<b class="fc"><i class="no-highlight">21</i>&nbsp;    public TagServiceImpl(TagRepository tagRepository) {</b>
-<b class="fc"><i class="no-highlight">22</i>&nbsp;        this.tagRepository = tagRepository;</b>
-<i class="no-highlight">23</i>&nbsp;    }
+<i class="no-highlight">13</i>&nbsp;import java.util.List;
+<i class="no-highlight">14</i>&nbsp;
+<i class="no-highlight">15</i>&nbsp;@Service
+<i class="no-highlight">16</i>&nbsp;public class TagServiceImpl implements TagService {
+<i class="no-highlight">17</i>&nbsp;    private final TagRepository tagRepository;
+<i class="no-highlight">18</i>&nbsp;
+<i class="no-highlight">19</i>&nbsp;    @Autowired
+<b class="fc"><i class="no-highlight">20</i>&nbsp;    public TagServiceImpl(TagRepository tagRepository) {</b>
+<b class="fc"><i class="no-highlight">21</i>&nbsp;        this.tagRepository = tagRepository;</b>
+<i class="no-highlight">22</i>&nbsp;    }
+<i class="no-highlight">23</i>&nbsp;
 <i class="no-highlight">24</i>&nbsp;
-<i class="no-highlight">25</i>&nbsp;    public List&lt;Tag&gt; getAll() throws RuntimeException {
-<b class="fc"><i class="no-highlight">26</i>&nbsp;        return tagRepository.findAll();</b>
-<i class="no-highlight">27</i>&nbsp;    }
-<i class="no-highlight">28</i>&nbsp;
-<i class="no-highlight">29</i>&nbsp;    public Tag get(int id) throws IdNotFound, InvalidIdInputInformation {
-<b class="fc"><i class="no-highlight">30</i>&nbsp;        validateTag(id);</b>
-<b class="fc"><i class="no-highlight">31</i>&nbsp;        return tagRepository.findById(id).get();</b>
+<i class="no-highlight">25</i>&nbsp;    /**
+<i class="no-highlight">26</i>&nbsp;     * Returns all GiftCertificates found in Database
+<i class="no-highlight">27</i>&nbsp;     *
+<i class="no-highlight">28</i>&nbsp;     * @return List of GiftCertificates
+<i class="no-highlight">29</i>&nbsp;     */
+<i class="no-highlight">30</i>&nbsp;    public List&lt;Tag&gt; getAll() {
+<b class="fc"><i class="no-highlight">31</i>&nbsp;        return tagRepository.findAll();</b>
 <i class="no-highlight">32</i>&nbsp;    }
 <i class="no-highlight">33</i>&nbsp;
-<i class="no-highlight">34</i>&nbsp;    @Transactional
-<i class="no-highlight">35</i>&nbsp;    public Tag save(Tag tag) throws TransactionalException {
-<b class="fc"><i class="no-highlight">36</i>&nbsp;        tagRepository.save(tag);</b>
-<b class="fc"><i class="no-highlight">37</i>&nbsp;        return tag;</b>
-<i class="no-highlight">38</i>&nbsp;    }
-<i class="no-highlight">39</i>&nbsp;
-<i class="no-highlight">40</i>&nbsp;    @Override
-<i class="no-highlight">41</i>&nbsp;    @Transactional
-<i class="no-highlight">42</i>&nbsp;    public Tag update(Tag tag) throws IdNotFound, InvalidIdInputInformation {
-<b class="fc"><i class="no-highlight">43</i>&nbsp;        validateTag(tag.getId());</b>
-<b class="fc"><i class="no-highlight">44</i>&nbsp;        tagRepository.save(tag);</b>
-<b class="fc"><i class="no-highlight">45</i>&nbsp;        return tag;</b>
-<i class="no-highlight">46</i>&nbsp;    }
-<i class="no-highlight">47</i>&nbsp;
-<i class="no-highlight">48</i>&nbsp;    //Do validation in case there are certificates associated
-<i class="no-highlight">49</i>&nbsp;    @Transactional
-<i class="no-highlight">50</i>&nbsp;    public Tag delete(int id) throws InvalidIdInputInformation, IdNotFound, CertificateAssociatedException {
-<b class="fc"><i class="no-highlight">51</i>&nbsp;        Tag tag = get(id);</b>
-<b class="fc"><i class="no-highlight">52</i>&nbsp;        if (!tag.getCertificates().isEmpty()) {</b>
-<b class="fc"><i class="no-highlight">53</i>&nbsp;            throw new CertificateAssociatedException();</b>
-<i class="no-highlight">54</i>&nbsp;        }
-<b class="fc"><i class="no-highlight">55</i>&nbsp;        tagRepository.deleteById(id);</b>
+<i class="no-highlight">34</i>&nbsp;    /**
+<i class="no-highlight">35</i>&nbsp;     * Returns a single GiftCertificate retrieved based on ID
+<i class="no-highlight">36</i>&nbsp;     *
+<i class="no-highlight">37</i>&nbsp;     * @param id Specific Tag ID to search for in Database
+<i class="no-highlight">38</i>&nbsp;     * @return Will return pertaining Tag retrieved from Database
+<i class="no-highlight">39</i>&nbsp;     * @throws IdNotFound                Exception thrown when given ID is not found
+<i class="no-highlight">40</i>&nbsp;     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+<i class="no-highlight">41</i>&nbsp;     */
+<i class="no-highlight">42</i>&nbsp;    public Tag get(int id) throws IdNotFound, InvalidIdInputInformation {
+<b class="fc"><i class="no-highlight">43</i>&nbsp;        validateTag(id);</b>
+<b class="fc"><i class="no-highlight">44</i>&nbsp;        return tagRepository.findById(id).get();</b>
+<i class="no-highlight">45</i>&nbsp;    }
+<i class="no-highlight">46</i>&nbsp;
+<i class="no-highlight">47</i>&nbsp;    /**
+<i class="no-highlight">48</i>&nbsp;     * Will save a Tag into Database
+<i class="no-highlight">49</i>&nbsp;     *
+<i class="no-highlight">50</i>&nbsp;     * @param tag Tag Object which will be saved
+<i class="no-highlight">51</i>&nbsp;     * @return Tag object saved into Database
+<i class="no-highlight">52</i>&nbsp;     */
+<i class="no-highlight">53</i>&nbsp;    @Transactional
+<i class="no-highlight">54</i>&nbsp;    public Tag save(Tag tag) {
+<b class="fc"><i class="no-highlight">55</i>&nbsp;        tagRepository.save(tag);</b>
 <b class="fc"><i class="no-highlight">56</i>&nbsp;        return tag;</b>
 <i class="no-highlight">57</i>&nbsp;    }
 <i class="no-highlight">58</i>&nbsp;
-<i class="no-highlight">59</i>&nbsp;    private void validateTag(int id) throws IdNotFound, InvalidIdInputInformation {
-<b class="fc"><i class="no-highlight">60</i>&nbsp;        if (id &lt; 0) {</b>
-<b class="fc"><i class="no-highlight">61</i>&nbsp;            throw new InvalidIdInputInformation();</b>
-<i class="no-highlight">62</i>&nbsp;        }
-<i class="no-highlight">63</i>&nbsp;
-<b class="fc"><i class="no-highlight">64</i>&nbsp;        if (!tagRepository.existsById(id)) {</b>
-<b class="fc"><i class="no-highlight">65</i>&nbsp;            throw new IdNotFound();</b>
-<i class="no-highlight">66</i>&nbsp;        }
-<i class="no-highlight">67</i>&nbsp;    }
-<i class="no-highlight">68</i>&nbsp;}
+<i class="no-highlight">59</i>&nbsp;    /**
+<i class="no-highlight">60</i>&nbsp;     * Will update whole Tag entity in Database
+<i class="no-highlight">61</i>&nbsp;     *
+<i class="no-highlight">62</i>&nbsp;     * @param tag Tag to update
+<i class="no-highlight">63</i>&nbsp;     * @return Updated Tag
+<i class="no-highlight">64</i>&nbsp;     * @throws IdNotFound                Exception thrown when given ID is not found
+<i class="no-highlight">65</i>&nbsp;     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+<i class="no-highlight">66</i>&nbsp;     */
+<i class="no-highlight">67</i>&nbsp;    @Override
+<i class="no-highlight">68</i>&nbsp;    @Transactional
+<i class="no-highlight">69</i>&nbsp;    public Tag update(Tag tag) throws IdNotFound, InvalidIdInputInformation {
+<b class="fc"><i class="no-highlight">70</i>&nbsp;        validateTag(tag.getId());</b>
+<b class="fc"><i class="no-highlight">71</i>&nbsp;        tagRepository.save(tag);</b>
+<b class="fc"><i class="no-highlight">72</i>&nbsp;        return tag;</b>
+<i class="no-highlight">73</i>&nbsp;    }
+<i class="no-highlight">74</i>&nbsp;
+<i class="no-highlight">75</i>&nbsp;    /**
+<i class="no-highlight">76</i>&nbsp;     * Will delete specific Tag entity in Database
+<i class="no-highlight">77</i>&nbsp;     *
+<i class="no-highlight">78</i>&nbsp;     * @param id Specific Tag ID to look for and drop in Database
+<i class="no-highlight">79</i>&nbsp;     * @return Tag dropped
+<i class="no-highlight">80</i>&nbsp;     * @throws IdNotFound                     Exception thrown when given ID is not found
+<i class="no-highlight">81</i>&nbsp;     * @throws InvalidIdInputInformation      Exception thrown when given ID is incorrectly entered
+<i class="no-highlight">82</i>&nbsp;     * @throws CertificateAssociatedException Exception thrown when Tag is associated to a GiftCertificate and cannot be
+<i class="no-highlight">83</i>&nbsp;     *                                        deleted
+<i class="no-highlight">84</i>&nbsp;     */
+<i class="no-highlight">85</i>&nbsp;    @Transactional
+<i class="no-highlight">86</i>&nbsp;    public Tag delete(int id) throws InvalidIdInputInformation, IdNotFound, CertificateAssociatedException {
+<b class="fc"><i class="no-highlight">87</i>&nbsp;        Tag tag = get(id);</b>
+<b class="fc"><i class="no-highlight">88</i>&nbsp;        if (!tag.getCertificates().isEmpty()) {</b>
+<b class="fc"><i class="no-highlight">89</i>&nbsp;            throw new CertificateAssociatedException();</b>
+<i class="no-highlight">90</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">91</i>&nbsp;        tagRepository.deleteById(id);</b>
+<b class="fc"><i class="no-highlight">92</i>&nbsp;        return tag;</b>
+<i class="no-highlight">93</i>&nbsp;    }
+<i class="no-highlight">94</i>&nbsp;
+<i class="no-highlight">95</i>&nbsp;    /**
+<i class="no-highlight">96</i>&nbsp;     * Will validate if ID is correctly entered and exists in Database
+<i class="no-highlight">97</i>&nbsp;     *
+<i class="no-highlight">98</i>&nbsp;     * @param id Specific ID looked for in Database
+<i class="no-highlight">99</i>&nbsp;     * @throws IdNotFound                Exception thrown when given ID is not found
+<i class="no-highlight">100</i>&nbsp;     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+<i class="no-highlight">101</i>&nbsp;     */
+<i class="no-highlight">102</i>&nbsp;    private void validateTag(int id) throws IdNotFound, InvalidIdInputInformation {
+<b class="fc"><i class="no-highlight">103</i>&nbsp;        if (id &lt; 0) {</b>
+<b class="fc"><i class="no-highlight">104</i>&nbsp;            throw new InvalidIdInputInformation();</b>
+<i class="no-highlight">105</i>&nbsp;        }
+<i class="no-highlight">106</i>&nbsp;
+<b class="fc"><i class="no-highlight">107</i>&nbsp;        if (!tagRepository.existsById(id)) {</b>
+<b class="fc"><i class="no-highlight">108</i>&nbsp;            throw new IdNotFound();</b>
+<i class="no-highlight">109</i>&nbsp;        }
+<i class="no-highlight">110</i>&nbsp;    }
+<i class="no-highlight">111</i>&nbsp;}
 </div>
 </pre>
 </div>
@@ -167,7 +210,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2022-09-27 12:23</div>
+    <div style="float:right;">generated on 2022-09-30 16:07</div>
 </div>
 </body>
 </html>

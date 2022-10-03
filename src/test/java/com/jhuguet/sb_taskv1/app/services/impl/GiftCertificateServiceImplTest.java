@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -87,12 +88,19 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    void updateTags() throws InvalidIdInputInformation {
+    void updateTags() throws InvalidIdInputInformation, IdNotFound {
+        assertEquals(service.updateTags(anyInt(), List.of(utils.sampleTag())).getAssociatedTags().size(),
+                utils.sampleCertificate().getAssociatedTags().size());
+        when(tagRepository.existsById(anyInt())).thenReturn(false);
+        when(tagRepository.save(utils.sampleTag())).thenReturn(utils.sampleTag());
+        assertEquals(service.updateTags(anyInt(), List.of(utils.sampleTag())).getAssociatedTags().size(),
+                utils.sampleCertificate().getAssociatedTags().size());
+        when(tagRepository.existsById(anyInt())).thenReturn(true);
     }
 
     @Test
     void getByTagName() {
-        assertEquals(service.getByTagName("Amazon").size(), utils.sampleCertificates().size());
+        assertEquals(service.getByTagName("Cloud").size(), utils.sampleCertificates().size());
     }
 
     @Test
