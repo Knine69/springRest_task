@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Public API Tag controller
+ */
 @RestController
 @RequestMapping("/tag")
 public class TagController {
@@ -34,7 +37,9 @@ public class TagController {
     }
 
     /**
-     * @param id, if given will return specific Tag that has said ID
+     * Will retrieve Tag/s from Database
+     *
+     * @param id ID that if given will return specific Tag that has said ID, otherwise a list of Tags
      * @return will return pertaining List-of or single Tag retrieved from DB
      * @throws IdNotFound                Exception thrown when given ID is not found
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
@@ -51,6 +56,8 @@ public class TagController {
     }
 
     /**
+     * Will save a Tag into Database
+     *
      * @param tag Given Tag to save into DB
      */
     @PostMapping
@@ -60,10 +67,12 @@ public class TagController {
     }
 
     /**
+     * Updating function
+     *
      * @param tag Tag to update
      * @return Updated Tag
-     * @throws IdNotFound                Refer to line 39
-     * @throws InvalidIdInputInformation Refer to line 40
+     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PutMapping
     public Tag updateTag(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
@@ -72,10 +81,12 @@ public class TagController {
     }
 
     /**
+     * Will drop a Tag from Database
+     *
      * @param id ID of Tag to search and drop
      * @return Deleted Tag
-     * @throws IdNotFound                     Refer to line 39
-     * @throws InvalidIdInputInformation      Refer to line 40
+     * @throws IdNotFound                     Exception thrown when given ID is not found
+     * @throws InvalidIdInputInformation      Exception thrown when given ID is incorrectly entered
      * @throws CertificateAssociatedException Exception thrown when Tag is associated to a GiftCertificate and cannot be
      *                                        deleted
      */
