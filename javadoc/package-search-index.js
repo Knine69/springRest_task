@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.jhuguet.sb_taskv1.app.services.impl"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.jhuguet.sb_taskv1.app.controller"}];updateSearchResults();
