@@ -42,7 +42,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     public GiftCertificate get(int id) throws IdNotFound, InvalidIdInputInformation {
-        validateCertificate(id);
         return giftRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
@@ -173,16 +172,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         giftRepository.deleteById(id);
 
         return certificate;
-    }
-
-    private void validateCertificate(int id) throws IdNotFound, InvalidIdInputInformation {
-        if (id < 0) {
-            throw new InvalidIdInputInformation();
-        }
-
-        if (!giftRepository.existsById(id)) {
-            throw new IdNotFound();
-        }
     }
 
     private List<GiftCertificate> sortCertificates(boolean ascending, String field) {
