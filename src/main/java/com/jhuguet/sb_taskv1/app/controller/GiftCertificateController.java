@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -48,7 +49,7 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping({"/", "/{id}"})
-    public List<GiftCertificate> getCertificateById(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
+    public List<GiftCertificate> get(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
         if (id != null) {
             List<GiftCertificate> returnCertificate = new ArrayList<>();
             returnCertificate.add(giftCertificateService.get(Integer.parseInt(id)));
@@ -65,7 +66,7 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping("/byTagName/{tagName}")
-    public List<GiftCertificate> getCertificateByTagName(@PathVariable("tagName") String name) {
+    public List<GiftCertificate> getByTagName(@PathVariable("tagName") String name) {
         return giftCertificateService.getByTagName(name);
     }
 
@@ -77,7 +78,7 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping("/byPart/{part}")
-    public List<GiftCertificate> getCertificateByNameDescription(@PathVariable("part") String part) {
+    public List<GiftCertificate> getByNameDescription(@PathVariable("part") String part) {
         return giftCertificateService.getByPart(part);
     }
 
@@ -91,7 +92,7 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping("/byDateOrName/{sortBy}/{order}")
-    public List<GiftCertificate> getCertificateByDateOrName(
+    public List<GiftCertificate> getByDateOrName(
             @PathVariable("sortBy") String sortBy, @PathVariable("order") String order) {
         return giftCertificateService.getByDateOrName(sortBy, order);
     }
@@ -104,7 +105,7 @@ public class GiftCertificateController {
      * @return GiftCertificate object saved into Database
      */
     @PostMapping
-    public GiftCertificate saveGiftCertificate(@RequestBody GiftCertificate giftCertificate) {
+    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) {
         logger.info("Saving new certificate into db");
         return giftCertificateService.save(giftCertificate);
     }
@@ -119,9 +120,9 @@ public class GiftCertificateController {
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PatchMapping(value = "/updateTags/{certId}")
-    public GiftCertificate updateCertificateTags(
+    public GiftCertificate updateTags(
             @PathVariable("certId") String certId,
-            @RequestBody List<Tag> tags) throws BaseException {
+            @RequestBody Set<Tag> tags) throws BaseException {
         logger.info("Saving new tag to certificate");
         return giftCertificateService.updateTags(Integer.parseInt(certId), tags);
     }
@@ -136,7 +137,7 @@ public class GiftCertificateController {
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PatchMapping("/{certId}")
-    public GiftCertificate updateGiftCertificate(@PathVariable("certId") String id
+    public GiftCertificate update(@PathVariable("certId") String id
             , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
         logger.info("Updating certificate " + id);
         return giftCertificateService.update(Integer.parseInt(id), patch);
@@ -150,8 +151,8 @@ public class GiftCertificateController {
      * @throws IdNotFound                Exception thrown when given ID is not found
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
-    @DeleteMapping("/drop/{id}")
-    public GiftCertificate deleteCertificate(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
+    @DeleteMapping("/{id}")
+    public GiftCertificate delete(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
         logger.info("Deleting certificate: " + id);
         return giftCertificateService.delete(Integer.parseInt(id));
     }

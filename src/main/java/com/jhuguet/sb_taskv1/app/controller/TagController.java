@@ -46,7 +46,7 @@ public class TagController {
      */
     @ResponseBody
     @GetMapping({"/", "/{id}"})
-    public List<Tag> getTags(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
+    public List<Tag> get(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
         if (id != null) {
             List<Tag> tag = new ArrayList<>();
             tag.add(tagService.get(Integer.parseInt(id)));
@@ -61,7 +61,7 @@ public class TagController {
      * @param tag Given Tag to save into DB
      */
     @PostMapping
-    public Tag saveTag(@RequestBody Tag tag) {
+    public Tag save(@RequestBody Tag tag) {
         logger.info("Saving new tag: " + tag.getName());
         return tagService.save(tag);
     }
@@ -75,7 +75,7 @@ public class TagController {
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PutMapping
-    public Tag updateTag(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
+    public Tag update(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
         logger.info("Updating tag: " + tag.getId());
         return tagService.update(tag);
     }
@@ -90,8 +90,8 @@ public class TagController {
      * @throws CertificateAssociatedException Exception thrown when Tag is associated to a GiftCertificate and cannot be
      *                                        deleted
      */
-    @DeleteMapping("/drop/{id}")
-    public Tag deleteTag(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException {
+    @DeleteMapping("/{id}")
+    public Tag delete(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException {
         logger.info("Dropping tag: " + id);
         return tagService.delete(Integer.parseInt(id));
     }
