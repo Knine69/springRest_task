@@ -1,6 +1,6 @@
 INSERT INTO tag (tag_name) VALUES ('Science');
 INSERT INTO tag (tag_name) VALUES ('Cloud');
-INSERT INTO tag (tag_name) VALUES ('Science');
+INSERT INTO tag (tag_name) VALUES ('BigData');
 INSERT INTO tag (tag_name) VALUES ('Sports');
 INSERT INTO tag (tag_name) VALUES ('Literature');
 
