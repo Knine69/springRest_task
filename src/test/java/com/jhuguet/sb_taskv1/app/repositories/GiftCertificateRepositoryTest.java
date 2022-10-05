@@ -77,9 +77,7 @@ class GiftCertificateRepositoryTest {
     public void get() {
         assertEquals("AWS", repository.findById(1).get().getName());
         assertNotNull(repository.findById(1).get().getName());
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> {
-            repository.findById(null);
-        });
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> repository.findById(null));
     }
 
 }
