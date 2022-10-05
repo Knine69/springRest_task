@@ -15,9 +15,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     private final GiftCertificateRepository giftRepository;
     private final TagRepository tagRepository;
     private final Logger logger = Logger.getLogger(GiftCertificateServiceImpl.class.getName());
+
+    private List<GiftCertificate> certificates;
 
     @Autowired
     public GiftCertificateServiceImpl(GiftCertificateRepository giftRepository, TagRepository tagRepository) {
@@ -40,7 +43,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     public GiftCertificate get(int id) throws IdNotFound, InvalidIdInputInformation {
         validateCertificate(id);
-        return giftRepository.findById(id).get();
+        return giftRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     @Transactional
@@ -56,7 +59,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     @Override
     public GiftCertificate update(int id,
                                   Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
-
         GiftCertificate certificate = partialUpdate(id, patch);
         giftRepository.save(certificate);
 
@@ -92,23 +94,38 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public GiftCertificate updateTags(int certId, List<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
+    public GiftCertificate updateTags(int certId, Set<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(certId);
         certificate.cleanTags();
         tags.forEach(tag -> {
-            boolean isRepeated =
-                    certificate.getAssociatedTags().stream()
-                            .anyMatch(c -> c.getName().equals(tag.getName()));
+            if (tag.getId() != 0) {
+                boolean isRepeated =
+                        certificate.getAssociatedTags().stream()
+                                .anyMatch(c -> c.getName().equalsIgnoreCase(tag.getName()));
+                boolean isTagIDInRepository = tagRepository.findAll().stream()
+                        .anyMatch(x -> x.getId() == tag.getId());
 
-            if (!isRepeated) {
-                certificate.assignTag(tag);
+                boolean isTagNameInRepository = tagRepository.findAll().stream()
+                        .anyMatch(x -> x.getName().equalsIgnoreCase(tag.getName()));
+
+                if (!isRepeated) {
+                    if ((isTagIDInRepository && isTagNameInRepository) ||
+                            (!isTagIDInRepository && !isTagNameInRepository)
+                    ) {
+                        certificate.assignTag(tag);
+                    } else {
+                        logger.warning("Please input Tag information correctly, information conflict: "
+                                + tag.getName());
+                    }
+                }
+
+                if (!isTagIDInRepository && !isTagNameInRepository) {
+                    tagRepository.save(tag);
+                    logger.info("Adding non-existing tag into database.");
+                }
+            } else {
+                logger.warning("Please input Tag with it's ID: " + tag.getName());
             }
-
-            if (!tagRepository.existsById(tag.getId())) {
-                tagRepository.save(tag);
-                logger.info("Adding non-existing tag into database.");
-            }
-
         });
         giftRepository.save(certificate);
         return certificate;
@@ -116,8 +133,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public List<GiftCertificate> getByTagName(String name) {
-        List<GiftCertificate> certificates = new ArrayList<>();
-
+        certificates = new ArrayList<>();
         getAll().forEach(certificate -> certificate.getAssociatedTags().forEach(tag -> {
             if (tag.getName().equals(name)) {
                 certificates.add(certificate);
@@ -129,8 +145,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public List<GiftCertificate> getByPart(String part) {
-        List<GiftCertificate> certificates = new ArrayList<>();
-
+        certificates = new ArrayList<>();
         getAll().forEach(certificate -> {
             if (certificate.getName().contains(part) || certificate.getDescription().contains(part)) {
                 certificates.add(certificate);
@@ -142,19 +157,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public List<GiftCertificate> getByDateOrName(String sortBy, String order) {
-        List<GiftCertificate> certificates = new ArrayList<>();
-        boolean ascendingOrder = order.equals("asc");
-        switch (sortBy) {
-            case "name":
-                certificates = sortCertificatesByName(ascendingOrder);
-                break;
-            case "date":
-                certificates = sortCertificatesByDate(ascendingOrder);
-                break;
-            default:
-                logger.info("Please enter an appropriate sorting type.");
-                break;
+        certificates = new ArrayList<>();
+        if (validateTypeAndOrder(sortBy, order)) {
+            certificates = sortCertificates(order.equalsIgnoreCase("asc"), order);
+        } else {
+            logger.info("Please enter an appropriate sorting and/or order types.");
         }
+
         return certificates;
     }
 
@@ -176,25 +185,23 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         }
     }
 
-    private List<GiftCertificate> sortCertificatesByName(boolean ascending) {
-        return ascending ?
-                getAll()
-                        .stream().sorted(Comparator.comparing(GiftCertificate::getName))
-                        .collect(Collectors.toList()) :
-                getAll()
-                        .stream().sorted(Comparator.comparing(GiftCertificate::getName).reversed())
-                        .collect(Collectors.toList());
+    private List<GiftCertificate> sortCertificates(boolean ascending, String field) {
+        List<GiftCertificate> result = getAll()
+                .stream().sorted((certificate1, certificate2) -> field.equalsIgnoreCase("name") ?
+                        certificate1.getName().compareTo(certificate2.getName()) :
+                        certificate1.getCreateDate().compareTo(certificate2.getCreateDate()))
+                .collect(Collectors.toList());
 
+        if (ascending) {
+            return result;
+        }
+
+        Collections.reverse(result);
+        return result;
     }
 
-    private List<GiftCertificate> sortCertificatesByDate(boolean ascending) {
-        return ascending ?
-                getAll()
-                        .stream().sorted(Comparator.comparing(GiftCertificate::getCreateDate))
-                        .collect(Collectors.toList()) :
-                getAll()
-                        .stream().sorted(Comparator.comparing(GiftCertificate::getCreateDate).reversed())
-                        .collect(Collectors.toList());
-
+    private boolean validateTypeAndOrder(String sortBy, String order) {
+        return (sortBy.equalsIgnoreCase("name") || sortBy.equalsIgnoreCase("date")) &&
+                (order.equalsIgnoreCase("asc") || order.equalsIgnoreCase("desc"));
     }
 }
