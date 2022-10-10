@@ -25,8 +25,7 @@ public class Tag {
     @Column(name = "tag_name")
     private String name;
 
-    @ManyToMany(cascade = CascadeType.ALL,
-            mappedBy = "associatedTags")
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "associatedTags")
     @JsonIgnore
     private Set<GiftCertificate> certificates;
 

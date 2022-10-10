@@ -1,5 +1,7 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
@@ -11,14 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -29,7 +34,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     private final TagRepository tagRepository;
     private final Logger logger = Logger.getLogger(GiftCertificateServiceImpl.class.getName());
 
-    private List<GiftCertificate> certificates;
 
     @Autowired
     public GiftCertificateServiceImpl(GiftCertificateRepository giftRepository, TagRepository tagRepository) {
@@ -57,13 +61,15 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public GiftCertificate update(int id,
-                                  Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
+                                  Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        validateCertificate(id);
         GiftCertificate certificate = partialUpdate(id, patch);
         giftRepository.save(certificate);
 
         return certificate;
     }
 
+    //    Refactor to accept tagsAssociated field in Map object
     private GiftCertificate partialUpdate(int id, Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(id);
         patch.forEach((key, value) -> {
@@ -83,6 +89,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 case "lastUpdateDate":
                     certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
                     break;
+                case "associatedTags":
+                    try {
+                        updateTags(certificate, convertToSet(value));
+                    } catch (IdNotFound | InvalidIdInputInformation e) {
+                        throw new RuntimeException(e);
+                    }
+                    break;
                 default:
                     logger.info("Field " + key + " is a non-updatable.");
                     break;
@@ -92,78 +105,28 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
+    //Refactor using Java 8 interfaces such as Predicates, Function, Consumer
     @Override
-    public GiftCertificate updateTags(int certId, Set<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
-        GiftCertificate certificate = get(certId);
-        certificate.cleanTags();
-        tags.forEach(tag -> {
-            if (tag.getId() != 0) {
-                boolean isRepeated =
-                        certificate.getAssociatedTags().stream()
-                                .anyMatch(c -> c.getName().equalsIgnoreCase(tag.getName()));
-                boolean isTagIDInRepository = tagRepository.findAll().stream()
-                        .anyMatch(x -> x.getId() == tag.getId());
-
-                boolean isTagNameInRepository = tagRepository.findAll().stream()
-                        .anyMatch(x -> x.getName().equalsIgnoreCase(tag.getName()));
-
-                if (!isRepeated) {
-                    if ((isTagIDInRepository && isTagNameInRepository) ||
-                            (!isTagIDInRepository && !isTagNameInRepository)
-                    ) {
-                        certificate.assignTag(tag);
-                    } else {
-                        logger.warning("Please input Tag information correctly, information conflict: "
-                                + tag.getName());
-                    }
-                }
-
-                if (!isTagIDInRepository && !isTagNameInRepository) {
-                    tagRepository.save(tag);
-                    logger.info("Adding non-existing tag into database.");
-                }
-            } else {
-                logger.warning("Please input Tag with it's ID: " + tag.getName());
-            }
-        });
-        giftRepository.save(certificate);
-        return certificate;
-    }
-
-    @Override
-    public List<GiftCertificate> getByTagName(String name) {
-        certificates = new ArrayList<>();
-        getAll().forEach(certificate -> certificate.getAssociatedTags().forEach(tag -> {
-            if (tag.getName().equals(name)) {
-                certificates.add(certificate);
-            }
-        }));
-
-        return certificates;
+    public List<GiftCertificate> getByTagName(String sortBy, String name) {
+        return filterCertificates(sortBy, name);
     }
 
     @Override
     public List<GiftCertificate> getByPart(String part) {
-        certificates = new ArrayList<>();
-        getAll().forEach(certificate -> {
-            if (certificate.getName().contains(part) || certificate.getDescription().contains(part)) {
-                certificates.add(certificate);
-            }
-        });
-
-        return certificates;
+        return filterCertificates(part, "");
     }
 
     @Override
     public List<GiftCertificate> getByDateOrName(String sortBy, String order) {
-        certificates = new ArrayList<>();
-        if (validateTypeAndOrder(sortBy, order)) {
-            certificates = sortCertificates(order.equalsIgnoreCase("asc"), order);
+        List<GiftCertificate> certificateList = new ArrayList<>();
+        if (validateOrder(order)) {
+            certificateList = filterCertificates(sortBy, "");
+            return sortCertificates(certificateList, sortBy, order);
         } else {
             logger.info("Please enter an appropriate sorting and/or order types.");
         }
 
-        return certificates;
+        return certificateList;
     }
 
     @Transactional
@@ -174,23 +137,111 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
-    private List<GiftCertificate> sortCertificates(boolean ascending, String field) {
-        List<GiftCertificate> result = getAll()
-                .stream().sorted((certificate1, certificate2) -> field.equalsIgnoreCase("name") ?
-                        certificate1.getName().compareTo(certificate2.getName()) :
-                        certificate1.getCreateDate().compareTo(certificate2.getCreateDate()))
-                .collect(Collectors.toList());
-
-        if (ascending) {
-            return result;
-        }
-
-        Collections.reverse(result);
-        return result;
+    private boolean validateOrder(String order) {
+        return (order.equalsIgnoreCase("asc") || order.equalsIgnoreCase("desc"));
     }
 
-    private boolean validateTypeAndOrder(String sortBy, String order) {
-        return (sortBy.equalsIgnoreCase("name") || sortBy.equalsIgnoreCase("date")) &&
-                (order.equalsIgnoreCase("asc") || order.equalsIgnoreCase("desc"));
+    private List<GiftCertificate> sortCertificates(List<GiftCertificate> certificatesList, String sortBy, String order) {
+        Comparator<GiftCertificate> comparator = null;
+        switch (sortBy) {
+            case "name":
+                comparator = Comparator.comparing(GiftCertificate::getName);
+                break;
+            case "duration":
+                comparator = Comparator.comparing(GiftCertificate::getDuration);
+                break;
+            case "description":
+                comparator = Comparator.comparing(GiftCertificate::getDescription);
+                break;
+            case "price":
+                comparator = Comparator.comparing(GiftCertificate::getPrice);
+                break;
+            case "createDate":
+                comparator = Comparator.comparing(GiftCertificate::getCreateDate);
+                break;
+            case "lastUpdateDate":
+                comparator = Comparator.comparing(GiftCertificate::getLastUpdateDate);
+                break;
+            default:
+                logger.warning("Please input correct sort type.");
+                break;
+        }
+
+        return order.equalsIgnoreCase("asc") || order.equals("") ?
+                certificatesList.stream().sorted(comparator).collect(Collectors.toList()) :
+                certificatesList.stream().sorted(comparator.reversed()).collect(Collectors.toList());
+    }
+
+    private List<GiftCertificate> filterCertificates(String parameter, String filterField) {
+        Predicate<GiftCertificate> predicate = null;
+        switch (parameter) {
+            case "nameDescriptionPart":
+                predicate = certificate -> certificate.getName().contains(parameter) || certificate.getDescription().contains(parameter);
+                break;
+            case "createDate":
+                predicate = certificate -> certificate.getCreateDate().contains(parameter);
+                break;
+            case "updateDate":
+                predicate = certificate -> certificate.getLastUpdateDate().contains(parameter);
+                break;
+            case "name":
+                predicate = certificate -> certificate.getName().contains(parameter);
+                break;
+            case "tagName":
+                predicate = certificate -> certificate.getAssociatedTags().stream()
+                        .anyMatch(tag -> tag.getName().equalsIgnoreCase(filterField));
+            default:
+                logger.warning("Please input variant correctly.");
+                break;
+        }
+        return getAll().stream().filter(predicate).collect(Collectors.toList());
+    }
+
+    private void validateCertificate(int id) throws IdNotFound, InvalidIdInputInformation {
+        if (id < 0) {
+            throw new InvalidIdInputInformation();
+        }
+
+        if (!tagRepository.existsById(id)) {
+            throw new IdNotFound();
+        }
+    }
+
+    private Set<Tag> convertToSet(Object tags) {
+        List<Object> tagList = (List<Object>) tags;
+        return new Gson().fromJson(tagList.toString(), new TypeToken<HashSet<Tag>>() {
+        }.getType());
+    }
+
+    private boolean validateTagPassed(Tag tag) {
+        boolean isTagIDInRepository = tagRepository.findAll().stream()
+                .anyMatch(x -> x.getId() == tag.getId());
+        boolean isTagNameInRepository = tagRepository.findAll().stream()
+                .anyMatch(x -> x.getName().equalsIgnoreCase(tag.getName()));
+
+        return (isTagIDInRepository && isTagNameInRepository) ||
+                (!isTagIDInRepository && !isTagNameInRepository);
+    }
+
+    private void updateTags(GiftCertificate certificate, Set<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
+        certificate.cleanTags();
+        tags.forEach(tag -> {
+            if (tag.getId() != 0) {
+                boolean isRepeated =
+                        certificate.getAssociatedTags().stream()
+                                .anyMatch(c -> c.getName().equalsIgnoreCase(tag.getName()));
+                if (!isRepeated) {
+                    if (validateTagPassed(tag)
+                    ) {
+                        certificate.assignTag(tag);
+                    } else {
+                        logger.warning("Please input Tag information correctly, information conflict: "
+                                + tag.getName());
+                    }
+                }
+            } else {
+                logger.warning("Please input Tag with it's ID: " + tag.getName());
+            }
+        });
     }
 }

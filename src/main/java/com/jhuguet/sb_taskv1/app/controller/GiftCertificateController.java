@@ -1,10 +1,8 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
-import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
-import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -38,6 +36,9 @@ public class GiftCertificateController {
     public GiftCertificateController(GiftCertificateService giftCertificateService) {
         this.giftCertificateService = giftCertificateService;
     }
+
+//    Refactor get methods using queryParameters to avoid overloading class
+//    Clean Github
 
     /**
      * Returns all GiftCertificates found in Database or specific GiftCertificate if ID is provided
@@ -67,7 +68,7 @@ public class GiftCertificateController {
     @ResponseBody
     @GetMapping("/byTagName/{tagName}")
     public List<GiftCertificate> getByTagName(@PathVariable("tagName") String name) {
-        return giftCertificateService.getByTagName(name);
+        return giftCertificateService.getByTagName("tagName",name);
     }
 
     /**
@@ -111,23 +112,6 @@ public class GiftCertificateController {
     }
 
     /**
-     * Will patch new Set of Tags to be linked to a GiftCertificates
-     *
-     * @param certId Certificate ID to apply the patch for
-     * @param tags   Tag list to be added to specific GiftCertificate
-     * @return GiftCertificate after being patched
-     * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
-     */
-    @PatchMapping(value = "/updateTags/{certId}")
-    public GiftCertificate updateTags(
-            @PathVariable("certId") String certId,
-            @RequestBody Set<Tag> tags) throws BaseException {
-        logger.info("Saving new tag to certificate");
-        return giftCertificateService.updateTags(Integer.parseInt(certId), tags);
-    }
-
-    /**
      * Will patch only specified changes into GiftCertificate excluding Tags
      *
      * @param id    ID of GiftCertificate to which will be applied the patch
@@ -138,7 +122,7 @@ public class GiftCertificateController {
      */
     @PatchMapping("/{certId}")
     public GiftCertificate update(@PathVariable("certId") String id
-            , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
+            , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         logger.info("Updating certificate " + id);
         return giftCertificateService.update(Integer.parseInt(id), patch);
     }

@@ -27,8 +27,7 @@ public class TagServiceImpl implements TagService {
     }
 
     public Tag get(int id) throws IdNotFound, InvalidIdInputInformation {
-        validateTag(id);
-        return tagRepository.findById(id).get();
+        return tagRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     @Transactional
