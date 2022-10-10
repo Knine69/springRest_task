@@ -69,7 +69,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
-    //    Refactor to accept tagsAssociated field in Map object
     private GiftCertificate partialUpdate(int id, Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
         GiftCertificate certificate = get(id);
         patch.forEach((key, value) -> {
@@ -105,21 +104,20 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
-    //Refactor using Java 8 interfaces such as Predicates, Function, Consumer
     @Override
-    public List<GiftCertificate> getByTagName(String sortBy, String name) {
-        return filterCertificates(sortBy, name);
+    public List<GiftCertificate> getByTagName(String name) {
+        return filterCertificates("tagName", name);
     }
 
     @Override
     public List<GiftCertificate> getByPart(String part) {
-        return filterCertificates(part, "");
+        return filterCertificates("nameDescriptionPart", part);
     }
 
     @Override
     public List<GiftCertificate> getByDateOrName(String sortBy, String order) {
         List<GiftCertificate> certificateList = new ArrayList<>();
-        if (validateOrder(order)) {
+        if (validateNameAndDateTypes(sortBy, order)) {
             certificateList = filterCertificates(sortBy, "");
             return sortCertificates(certificateList, sortBy, order);
         } else {
@@ -137,8 +135,21 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
-    private boolean validateOrder(String order) {
-        return (order.equalsIgnoreCase("asc") || order.equalsIgnoreCase("desc"));
+    private boolean validateNameAndDateTypes(String sortBy, String order) {
+        boolean orderValid = (order.equalsIgnoreCase("asc") || order.equalsIgnoreCase("desc"));
+        boolean inputValid = false;
+
+        switch (sortBy) {
+            case "name":
+            case "createDate":
+            case "lastUpdateDate":
+                inputValid = true;
+                break;
+            default:
+                break;
+        }
+
+        return orderValid && inputValid;
     }
 
     private List<GiftCertificate> sortCertificates(List<GiftCertificate> certificatesList, String sortBy, String order) {
@@ -176,16 +187,16 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         Predicate<GiftCertificate> predicate = null;
         switch (parameter) {
             case "nameDescriptionPart":
-                predicate = certificate -> certificate.getName().contains(parameter) || certificate.getDescription().contains(parameter);
+                predicate = certificate -> certificate.getName().contains(filterField) || certificate.getDescription().contains(filterField);
                 break;
             case "createDate":
-                predicate = certificate -> certificate.getCreateDate().contains(parameter);
+                predicate = certificate -> certificate.getCreateDate().contains(filterField);
                 break;
-            case "updateDate":
-                predicate = certificate -> certificate.getLastUpdateDate().contains(parameter);
+            case "lastUpdateDate":
+                predicate = certificate -> certificate.getLastUpdateDate().contains(filterField);
                 break;
             case "name":
-                predicate = certificate -> certificate.getName().contains(parameter);
+                predicate = certificate -> certificate.getName().contains(filterField);
                 break;
             case "tagName":
                 predicate = certificate -> certificate.getAssociatedTags().stream()
@@ -194,7 +205,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 logger.warning("Please input variant correctly.");
                 break;
         }
-        return getAll().stream().filter(predicate).collect(Collectors.toList());
+        return predicate != null ? getAll().stream().filter(predicate).collect(Collectors.toList()) : new ArrayList<>();
     }
 
     private void validateCertificate(int id) throws IdNotFound, InvalidIdInputInformation {

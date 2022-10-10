@@ -15,7 +15,7 @@ public interface GiftCertificateService {
 
     GiftCertificate get(int id) throws IdNotFound, InvalidIdInputInformation;
 
-    List<GiftCertificate> getByTagName(String sortBy, String name);
+    List<GiftCertificate> getByTagName(String name);
 
     List<GiftCertificate> getByPart(String part);
 

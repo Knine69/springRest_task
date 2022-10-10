@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,43 +60,21 @@ public class GiftCertificateController {
         return giftCertificateService.getAll();
     }
 
-    /**
-     * Filter function used to retrieve a List of GiftCertificates based on Tag name
-     *
-     * @param name Tag's name used to filter
-     * @return List of GiftCertificates
-     */
     @ResponseBody
-    @GetMapping("/byTagName/{tagName}")
-    public List<GiftCertificate> getByTagName(@PathVariable("tagName") String name) {
-        return giftCertificateService.getByTagName("tagName",name);
-    }
+    @GetMapping("/getBy")
+    public List<GiftCertificate> getByNameDescription(@RequestParam String filterBy, @RequestParam String tagName,
+                                                      @RequestParam String nameOrDate, @RequestParam String order) {
 
-    /**
-     * Filter function used to retrieve a List of GiftCertificates based on part of name or description
-     *
-     * @param part Part of name or description that will be used to filter
-     * @return List of GiftCertificates
-     */
-    @ResponseBody
-    @GetMapping("/byPart/{part}")
-    public List<GiftCertificate> getByNameDescription(@PathVariable("part") String part) {
-        return giftCertificateService.getByPart(part);
-    }
+        if (!tagName.isEmpty()) {
+            return giftCertificateService.getByTagName(tagName);
+        }
 
-    /**
-     * Filter function used to retrieve a List of GiftCertificates based on name or date, in ascendant
-     * or descendant order
-     *
-     * @param sortBy Parameter given to sort by, either Date or Name
-     * @param order  Order in which is needed to sort list, ascendant or descendant
-     * @return List of GiftCertificates
-     */
-    @ResponseBody
-    @GetMapping("/byDateOrName/{sortBy}/{order}")
-    public List<GiftCertificate> getByDateOrName(
-            @PathVariable("sortBy") String sortBy, @PathVariable("order") String order) {
-        return giftCertificateService.getByDateOrName(sortBy, order);
+        if (!filterBy.isEmpty()) {
+            return giftCertificateService.getByPart(filterBy);
+        }
+
+
+        return nameOrDate.isEmpty() ? new ArrayList<>() : giftCertificateService.getByDateOrName(nameOrDate, order);
     }
 
 
