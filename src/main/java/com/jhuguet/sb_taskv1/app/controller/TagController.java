@@ -43,7 +43,6 @@ public class TagController {
      * @param id ID that if given will return specific Tag that has said ID, otherwise a list of Tags
      * @return will return pertaining List-of or single Tag retrieved from DB
      * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @ResponseBody
     @GetMapping({"/", "/{id}"})
@@ -87,7 +86,6 @@ public class TagController {
      * @param id ID of Tag to search and drop
      * @return Deleted Tag
      * @throws IdNotFound                     Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation      Exception thrown when given ID is incorrectly entered
      * @throws CertificateAssociatedException Exception thrown when Tag is associated to a GiftCertificate and cannot be
      *                                        deleted
      */

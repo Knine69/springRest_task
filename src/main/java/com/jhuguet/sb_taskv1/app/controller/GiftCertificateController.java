@@ -114,7 +114,6 @@ public class GiftCertificateController {
      * @param id Specific ID of GiftCertificate to be deleted
      * @return GiftCertificate which was deleted
      * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @DeleteMapping("/{id}")
     public GiftCertificate delete(@PathVariable String id) throws IdNotFound {
