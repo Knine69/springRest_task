@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -45,23 +46,27 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return giftRepository.findAll();
     }
 
-    public GiftCertificate get(int id) throws IdNotFound, InvalidIdInputInformation {
+    public GiftCertificate get(int id) throws IdNotFound {
         return giftRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     @Transactional
-    public GiftCertificate save(GiftCertificate giftCertificate) {
-        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        giftCertificate.setCreateDate(localDate);
-        giftCertificate.setLastUpdateDate(localDate);
-        giftRepository.save(giftCertificate);
+    public GiftCertificate save(GiftCertificate giftCertificate) throws MissingEntity {
+        if (!Objects.isNull(giftCertificate)) {
+            String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            giftCertificate.setCreateDate(localDate);
+            giftCertificate.setLastUpdateDate(localDate);
+            giftRepository.save(giftCertificate);
+        } else {
+            throw new MissingEntity();
+        }
 
         return giftCertificate;
     }
 
     @Override
     public GiftCertificate update(int id,
-                                  Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+                                  Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
         validateCertificate(id);
         GiftCertificate certificate = partialUpdate(id, patch);
         giftRepository.save(certificate);
@@ -69,7 +74,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
-    private GiftCertificate partialUpdate(int id, Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
+    private GiftCertificate partialUpdate(int id, Map<String, Object> patch) throws IdNotFound {
         GiftCertificate certificate = get(id);
         patch.forEach((key, value) -> {
             switch (key) {
@@ -89,11 +94,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                     certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
                     break;
                 case "associatedTags":
-                    try {
-                        updateTags(certificate, convertToSet(value));
-                    } catch (IdNotFound | InvalidIdInputInformation e) {
-                        throw new RuntimeException(e);
-                    }
+                    System.out.println("Type is: " + value.getClass().getName());
+                    updateTags(certificate, convertToSet(value));
                     break;
                 default:
                     logger.info("Field " + key + " is a non-updatable.");
@@ -128,7 +130,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Transactional
-    public GiftCertificate delete(int id) throws IdNotFound, InvalidIdInputInformation {
+    public GiftCertificate delete(int id) throws IdNotFound {
         GiftCertificate certificate = get(id);
         giftRepository.deleteById(id);
 
@@ -213,14 +215,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
             throw new InvalidIdInputInformation();
         }
 
-        if (!tagRepository.existsById(id)) {
+        if (!giftRepository.existsById(id)) {
             throw new IdNotFound();
         }
     }
 
     private Set<Tag> convertToSet(Object tags) {
-        List<Object> tagList = (List<Object>) tags;
-        return new Gson().fromJson(tagList.toString(), new TypeToken<HashSet<Tag>>() {
+        return new Gson().fromJson(tags.toString(), new TypeToken<HashSet<Tag>>() {
         }.getType());
     }
 
@@ -234,7 +235,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 (!isTagIDInRepository && !isTagNameInRepository);
     }
 
-    private void updateTags(GiftCertificate certificate, Set<Tag> tags) throws IdNotFound, InvalidIdInputInformation {
+    private void updateTags(GiftCertificate certificate, Set<Tag> tags) {
         certificate.cleanTags();
         tags.forEach(tag -> {
             if (tag.getId() != 0) {

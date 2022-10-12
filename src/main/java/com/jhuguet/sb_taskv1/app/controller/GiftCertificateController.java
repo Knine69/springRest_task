@@ -2,6 +2,7 @@ package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,14 +38,9 @@ public class GiftCertificateController {
         this.giftCertificateService = giftCertificateService;
     }
 
-//    Refactor get methods using queryParameters to avoid overloading class
-//    Clean Github
-
     /**
-     * Returns all GiftCertificates found in Database or specific GiftCertificate if ID is provided
-     *
-     * @param id Optional given ID to filter and return specific GiftCertificate
-     * @return List of/Single GiftCertificate/s
+     * @param id Optional given ID to look for in Database
+     * @return Either List of GiftCertificates or GiftCertificate
      * @throws IdNotFound                Exception thrown when given ID is not found
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
@@ -60,10 +55,17 @@ public class GiftCertificateController {
         return giftCertificateService.getAll();
     }
 
+    /**
+     * @param filterBy   Field used to filter by name or description
+     * @param tagName    Tag name to filter in database
+     * @param nameOrDate Defining parameter which accepts name, createDate or lastUpdateCase
+     * @param order      Intended ascendant or descendant order of list
+     * @return Filtered and/or sorted List of GiftCertificates
+     */
     @ResponseBody
     @GetMapping("/getBy")
-    public List<GiftCertificate> getByNameDescription(@RequestParam String filterBy, @RequestParam String tagName,
-                                                      @RequestParam String nameOrDate, @RequestParam String order) {
+    public List<GiftCertificate> getBy(@RequestParam String filterBy, @RequestParam String tagName,
+                                       @RequestParam String nameOrDate, @RequestParam String order) {
 
         if (!tagName.isEmpty()) {
             return giftCertificateService.getByTagName(tagName);
@@ -85,7 +87,7 @@ public class GiftCertificateController {
      * @return GiftCertificate object saved into Database
      */
     @PostMapping
-    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) {
+    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity {
         logger.info("Saving new certificate into db");
         return giftCertificateService.save(giftCertificate);
     }
@@ -101,7 +103,7 @@ public class GiftCertificateController {
      */
     @PatchMapping("/{certId}")
     public GiftCertificate update(@PathVariable("certId") String id
-            , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+            , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
         logger.info("Updating certificate " + id);
         return giftCertificateService.update(Integer.parseInt(id), patch);
     }
@@ -115,7 +117,7 @@ public class GiftCertificateController {
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @DeleteMapping("/{id}")
-    public GiftCertificate delete(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
+    public GiftCertificate delete(@PathVariable String id) throws IdNotFound {
         logger.info("Deleting certificate: " + id);
         return giftCertificateService.delete(Integer.parseInt(id));
     }
