@@ -66,7 +66,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    void getIDNotFound() throws IdNotFound {
+    void getIDNotFound() {
         assertThrows(IdNotFound.class, () -> {
             GiftCertificate certificate = giftCertificateService.get(-1);
         });
@@ -111,10 +111,8 @@ class GiftCertificateServiceImplTest {
         assertEquals(giftCertificateService.update(0, patchTest).getName(), utils.sampleCertificate().getName());
     }
 
-//    [{id=2, name=Cloud}]
-
     @Test
-    void updateIDNotFound() throws IdNotFound, InvalidIdInputInformation {
+    void updateIDNotFound() throws InvalidIdInputInformation {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -130,7 +128,7 @@ class GiftCertificateServiceImplTest {
 
 
     @Test
-    void updateInvalidIdInput() throws IdNotFound, InvalidIdInputInformation {
+    void updateInvalidIdInput() throws InvalidIdInputInformation {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -183,7 +181,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    void delete() throws IdNotFound, InvalidIdInputInformation {
+    void delete() throws IdNotFound {
         assertEquals(giftCertificateService.delete(anyInt()).getName(), utils.sampleCertificate().getName());
     }
 }

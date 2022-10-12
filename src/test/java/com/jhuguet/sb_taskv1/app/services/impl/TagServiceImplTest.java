@@ -46,7 +46,7 @@ class TagServiceImplTest {
     }
 
     @Test
-    void get() throws IdNotFound, InvalidIdInputInformation {
+    void get() throws IdNotFound {
         assertEquals(service.get(anyInt()).getName(), utils.sampleTag().getName());
     }
 
@@ -64,7 +64,7 @@ class TagServiceImplTest {
     }
 
     @Test
-    void delete() throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException {
+    void delete() throws IdNotFound, CertificateAssociatedException {
         assertThrows(CertificateAssociatedException.class, () -> service.delete(anyInt()));
         when(tagRepository.findById(anyInt()))
                 .thenReturn(Optional.of(new Tag("Cloud", new HashSet<>())));
