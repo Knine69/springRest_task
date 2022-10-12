@@ -1,18 +1,21 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
+import com.google.gson.JsonParser;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.services.utils.SetUpUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,58 +27,94 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = GiftCertificateServiceImplTest.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GiftCertificateServiceImplTest {
 
     private static final SetUpUtils utils = new SetUpUtils();
     static final GiftCertificateRepository giftCertificateRepository = Mockito.mock(GiftCertificateRepository.class);
     static final TagRepository tagRepository = Mockito.mock(TagRepository.class);
-    GiftCertificateServiceImpl service = new GiftCertificateServiceImpl(giftCertificateRepository, tagRepository);
+    GiftCertificateServiceImpl giftCertificateService = new GiftCertificateServiceImpl(giftCertificateRepository, tagRepository);
 
     @BeforeAll
-    private static void setMocks() {
+    private void setMocks() {
         //Setting up mocks for giftCertificateRepository
         when(giftCertificateRepository.existsById(anyInt())).thenReturn(true);
-        when(giftCertificateRepository.findById(anyInt()))
+        when(giftCertificateRepository.findById(0))
                 .thenReturn(Optional.ofNullable(utils.sampleCertificate()));
         when(giftCertificateRepository.findAll())
                 .thenReturn(utils.sampleCertificates());
 
         //Setting up mocks for tagRepository
         when(tagRepository.existsById(anyInt())).thenReturn(true);
-        when(tagRepository.findById(anyInt()))
+        when(tagRepository.findById(0))
                 .thenReturn(Optional.ofNullable(utils.sampleTag()));
         when(tagRepository.findAll())
-                .thenReturn(utils.sampleTags());
+                .thenReturn(new ArrayList<>(utils.sampleTags()));
 
     }
 
 
     @Test
-    void getAll() {
-        assertEquals(service.getAll().size(), utils.sampleCertificates().size());
+    void checkAllCertificatesFromRepositoryAreReturnedSuccessfully() {
+        assertEquals(giftCertificateService.getAll().size(), utils.sampleCertificates().size());
     }
 
     @Test
-    void get() throws IdNotFound, InvalidIdInputInformation {
+    void getIDFound() throws IdNotFound {
         GiftCertificate certificate = utils.sampleCertificate();
-        assertThrows(InvalidIdInputInformation.class, () -> service.get(-1));
+        assertEquals(certificate.getName(), giftCertificateService.get(anyInt()).getName());
+    }
+
+    @Test
+    void getIDNotFound() throws IdNotFound {
         assertThrows(IdNotFound.class, () -> {
-            when(giftCertificateRepository.existsById(anyInt())).thenReturn(false);
-            service.get(1);
+            GiftCertificate certificate = giftCertificateService.get(-1);
         });
-        when(giftCertificateRepository.existsById(anyInt())).thenReturn(true);
-        assertEquals(certificate.getName(), service.get(anyInt()).getName());
     }
 
     @Test
-    void save() {
+    void saveNotMissingEntity() throws MissingEntity {
         GiftCertificate certificate = utils.sampleCertificate();
-        assertThrows(NullPointerException.class, () -> service.save(null));
-        assertEquals(service.save(certificate), certificate);
+        assertEquals(giftCertificateService.save(certificate), certificate);
     }
 
     @Test
-    void update() throws IdNotFound, InvalidIdInputInformation {
+    void saveMissingEntity() {
+        assertThrows(MissingEntity.class, () -> giftCertificateService.save(null));
+    }
+
+    @Test
+    void updateEqualsZero() throws IdNotFound, InvalidIdInputInformation {
+        Map<String, Object> patchTest = Map.ofEntries(
+                entry("name", "AWS Certificate"),
+                entry("description", "AWS Master's certificate"),
+                entry("price", 8.99),
+                entry("duration", 10),
+                entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
+                entry("associatedTags", JsonParser.parseString("[{\"name\":\"Cloud\"}]")),
+                entry("", "")
+        );
+        assertEquals(giftCertificateService.update(0, patchTest).getName(), utils.sampleCertificate().getName());
+    }
+
+    @Test
+    void updateIDDiffThanZero() throws IdNotFound, InvalidIdInputInformation {
+        Map<String, Object> patchTest = Map.ofEntries(
+                entry("name", "AWS Certificate"),
+                entry("description", "AWS Master's certificate"),
+                entry("price", 8.99),
+                entry("duration", 10),
+                entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
+                entry("associatedTags", JsonParser.parseString("[{\"id\":\"1\",\"name\":\"Cloud\"}]")),
+                entry("", "")
+        );
+        assertEquals(giftCertificateService.update(0, patchTest).getName(), utils.sampleCertificate().getName());
+    }
+
+//    [{id=2, name=Cloud}]
+
+    @Test
+    void updateIDNotFound() throws IdNotFound, InvalidIdInputInformation {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -84,62 +123,67 @@ class GiftCertificateServiceImplTest {
                 entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
                 entry("", "")
         );
-        assertEquals(service.update(anyInt(), patchTest).getName(), utils.sampleCertificate().getName());
+        when(giftCertificateRepository.existsById(anyInt())).thenReturn(false);
+        assertThrows(IdNotFound.class, () -> giftCertificateService.update(anyInt(), patchTest));
+        when(giftCertificateRepository.existsById(anyInt())).thenReturn(true);
     }
 
+
     @Test
-    void updateTags() throws InvalidIdInputInformation, IdNotFound {
-        assertEquals(service.updateTags(anyInt(), List.of(utils.sampleTag())).getAssociatedTags().size(),
-                utils.sampleCertificate().getAssociatedTags().size());
-        when(tagRepository.existsById(anyInt())).thenReturn(false);
-        when(tagRepository.save(utils.sampleTag())).thenReturn(utils.sampleTag());
-        assertEquals(service.updateTags(anyInt(), List.of(utils.sampleTag())).getAssociatedTags().size(),
-                utils.sampleCertificate().getAssociatedTags().size());
-        when(tagRepository.existsById(anyInt())).thenReturn(true);
+    void updateInvalidIdInput() throws IdNotFound, InvalidIdInputInformation {
+        Map<String, Object> patchTest = Map.ofEntries(
+                entry("name", "AWS Certificate"),
+                entry("description", "AWS Master's certificate"),
+                entry("price", 8.99),
+                entry("duration", 10),
+                entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
+                entry("", "")
+        );
+        assertThrows(InvalidIdInputInformation.class, () -> giftCertificateService.update(-1, patchTest));
     }
 
     @Test
     void getByTagName() {
-        assertEquals(service.getByTagName("Cloud").size(), utils.sampleCertificates().size());
+        assertEquals(giftCertificateService.getByTagName("Cloud").size(), utils.sampleCertificates().size());
     }
 
     @Test
     void getByPart() {
-        assertEquals(service.getByPart("Master").size(), utils.sampleCertificates().size());
+        assertEquals(giftCertificateService.getByPart("Master").size(), utils.sampleCertificates().size());
     }
 
     @Test
     void getByDateOrNameByNameAsc() {
-        assertEquals(service.getByDateOrName("name", "asc").get(0).getName(), utils.sampleCertificates().get(0).getName());
+        assertEquals(giftCertificateService.getByDateOrName("name", "asc").get(0).getName(), utils.sampleCertificates().get(0).getName());
     }
 
     @Test
     void getByDateOrNameByDateAsc() {
-        assertEquals(service.getByDateOrName("date", "asc").get(0).getName(), utils.sampleCertificates().get(0).getName());
+        assertEquals(giftCertificateService.getByDateOrName("lastUpdateDate", "asc").get(0).getName(), utils.sampleCertificates().get(0).getName());
     }
 
     @Test
     void getByDateOrNameDefaultCaseAsc() {
-        assertEquals(service.getByDateOrName("", "asc").size(), 0);
+        assertEquals(giftCertificateService.getByDateOrName("", "asc").size(), 0);
     }
 
     @Test
     void getByDateOrNameByNameDesc() {
-        assertEquals(service.getByDateOrName("name", "desc").get(1).getName(), utils.sampleCertificates().get(0).getName());
+        assertEquals(giftCertificateService.getByDateOrName("name", "desc").get(1).getName(), utils.sampleCertificates().get(0).getName());
     }
 
     @Test
     void getByDateOrNameByDateDesc() {
-        assertEquals(service.getByDateOrName("date", "desc").get(1).getName(), utils.sampleCertificates().get(0).getName());
+        assertEquals(giftCertificateService.getByDateOrName("createDate", "desc").get(1).getName(), utils.sampleCertificates().get(0).getName());
     }
 
     @Test
     void getByDateOrNameDefaultCaseDesc() {
-        assertEquals(service.getByDateOrName("as", "desc").size(), 0);
+        assertEquals(giftCertificateService.getByDateOrName("", "desc").size(), 0);
     }
 
     @Test
     void delete() throws IdNotFound, InvalidIdInputInformation {
-        assertEquals(service.delete(anyInt()).getName(), utils.sampleCertificate().getName());
+        assertEquals(giftCertificateService.delete(anyInt()).getName(), utils.sampleCertificate().getName());
     }
 }

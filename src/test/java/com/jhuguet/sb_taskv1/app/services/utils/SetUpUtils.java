@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Set;
 
 @NoArgsConstructor
 public class SetUpUtils {
@@ -19,8 +18,7 @@ public class SetUpUtils {
                 10,
                 "2022-09-20T14:33:15.1301054",
                 "2022-09-20T14:33:15.1301054",
-                Stream.of(new Tag("Cloud"))
-                        .collect(Collectors.toCollection(HashSet::new))
+                new HashSet<>(List.of(new Tag("Cloud")))
         );
     }
 
@@ -28,8 +26,8 @@ public class SetUpUtils {
         return new Tag("Cloud", new HashSet<>(sampleCertificates()));
     }
 
-    public List<Tag> sampleTags() {
-        return List.of(
+    public Set<Tag> sampleTags() {
+        return Set.of(
                 sampleTag(),
                 sampleTag()
         );

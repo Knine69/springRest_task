@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
@@ -17,7 +16,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
@@ -77,7 +75,6 @@ class GiftCertificateRepositoryTest {
     public void get() {
         assertEquals("AWS", repository.findById(1).get().getName());
         assertNotNull(repository.findById(1).get().getName());
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> repository.findById(null));
     }
 
 }
