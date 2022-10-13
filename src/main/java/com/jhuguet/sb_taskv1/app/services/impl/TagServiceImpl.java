@@ -2,7 +2,7 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
@@ -44,7 +44,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public Tag update(Tag tag) throws IdNotFound, InvalidIdInputInformation {
+    public Tag update(Tag tag) throws IdNotFound, InvalidInputInformation {
         validateTag(tag.getId());
         tagRepository.save(tag);
         return tag;
@@ -60,9 +60,9 @@ public class TagServiceImpl implements TagService {
         return tag;
     }
 
-    private void validateTag(int id) throws IdNotFound, InvalidIdInputInformation {
+    private void validateTag(int id) throws IdNotFound, InvalidInputInformation {
         if (id < 0) {
-            throw new InvalidIdInputInformation();
+            throw new InvalidInputInformation();
         }
 
         if (!tagRepository.existsById(id)) {
