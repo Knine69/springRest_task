@@ -1,6 +1,7 @@
 package com.jhuguet.sb_taskv1.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -18,6 +19,7 @@ import java.util.Set;
 @Table(name = "tag")
 @DynamicUpdate
 @NoArgsConstructor
+@AllArgsConstructor
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +27,7 @@ public class Tag {
     @Column(name = "tag_name")
     private String name;
 
-    @ManyToMany(cascade = CascadeType.ALL,
-            mappedBy = "associatedTags")
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "associatedTags")
     @JsonIgnore
     private Set<GiftCertificate> certificates;
 

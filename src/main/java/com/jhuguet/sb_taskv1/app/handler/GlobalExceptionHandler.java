@@ -4,6 +4,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.ExceptionDetails;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,6 +30,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<?> certificateAssociated(CertificateAssociatedException exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    @ExceptionHandler(MissingEntity.class)
+    public ResponseEntity<?> missingEntity(MissingEntity exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
     }
 
 }

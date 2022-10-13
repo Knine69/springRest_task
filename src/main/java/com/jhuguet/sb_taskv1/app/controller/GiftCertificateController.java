@@ -1,10 +1,9 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
-import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
-import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,13 +13,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -40,10 +39,8 @@ public class GiftCertificateController {
     }
 
     /**
-     * Returns all GiftCertificates found in Database or specific GiftCertificate if ID is provided
-     *
-     * @param id Optional given ID to filter and return specific GiftCertificate
-     * @return List of/Single GiftCertificate/s
+     * @param id Optional given ID to look for in Database
+     * @return Either List of GiftCertificates or GiftCertificate
      * @throws IdNotFound                Exception thrown when given ID is not found
      * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
@@ -59,42 +56,27 @@ public class GiftCertificateController {
     }
 
     /**
-     * Filter function used to retrieve a List of GiftCertificates based on Tag name
-     *
-     * @param name Tag's name used to filter
-     * @return List of GiftCertificates
+     * @param partOfNameOrDescription   Field used to filter by name or description
+     * @param tagName    Tag name to filter in database
+     * @param nameOrDate Defining parameter which accepts name, createDate or lastUpdateCase
+     * @param order      Intended ascendant or descendant order of list
+     * @return Filtered and/or sorted List of GiftCertificates
      */
     @ResponseBody
-    @GetMapping("/byTagName/{tagName}")
-    public List<GiftCertificate> getByTagName(@PathVariable("tagName") String name) {
-        return giftCertificateService.getByTagName(name);
-    }
+    @GetMapping("/getBy")
+    public List<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
+                                       @RequestParam String nameOrDate, @RequestParam String order) {
 
-    /**
-     * Filter function used to retrieve a List of GiftCertificates based on part of name or description
-     *
-     * @param part Part of name or description that will be used to filter
-     * @return List of GiftCertificates
-     */
-    @ResponseBody
-    @GetMapping("/byPart/{part}")
-    public List<GiftCertificate> getByNameDescription(@PathVariable("part") String part) {
-        return giftCertificateService.getByPart(part);
-    }
+        if (!tagName.isEmpty()) {
+            return giftCertificateService.getByTagName(tagName);
+        }
 
-    /**
-     * Filter function used to retrieve a List of GiftCertificates based on name or date, in ascendant
-     * or descendant order
-     *
-     * @param sortBy Parameter given to sort by, either Date or Name
-     * @param order  Order in which is needed to sort list, ascendant or descendant
-     * @return List of GiftCertificates
-     */
-    @ResponseBody
-    @GetMapping("/byDateOrName/{sortBy}/{order}")
-    public List<GiftCertificate> getByDateOrName(
-            @PathVariable("sortBy") String sortBy, @PathVariable("order") String order) {
-        return giftCertificateService.getByDateOrName(sortBy, order);
+        if (!partOfNameOrDescription.isEmpty()) {
+            return giftCertificateService.getByPart(partOfNameOrDescription);
+        }
+
+
+        return nameOrDate.isEmpty() ? new ArrayList<>() : giftCertificateService.getByDateOrName(nameOrDate, order);
     }
 
 
@@ -105,26 +87,9 @@ public class GiftCertificateController {
      * @return GiftCertificate object saved into Database
      */
     @PostMapping
-    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) {
+    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity {
         logger.info("Saving new certificate into db");
         return giftCertificateService.save(giftCertificate);
-    }
-
-    /**
-     * Will patch new Set of Tags to be linked to a GiftCertificates
-     *
-     * @param certId Certificate ID to apply the patch for
-     * @param tags   Tag list to be added to specific GiftCertificate
-     * @return GiftCertificate after being patched
-     * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
-     */
-    @PatchMapping(value = "/updateTags/{certId}")
-    public GiftCertificate updateTags(
-            @PathVariable("certId") String certId,
-            @RequestBody Set<Tag> tags) throws BaseException {
-        logger.info("Saving new tag to certificate");
-        return giftCertificateService.updateTags(Integer.parseInt(certId), tags);
     }
 
     /**
@@ -149,10 +114,9 @@ public class GiftCertificateController {
      * @param id Specific ID of GiftCertificate to be deleted
      * @return GiftCertificate which was deleted
      * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @DeleteMapping("/{id}")
-    public GiftCertificate delete(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation {
+    public GiftCertificate delete(@PathVariable String id) throws IdNotFound {
         logger.info("Deleting certificate: " + id);
         return giftCertificateService.delete(Integer.parseInt(id));
     }

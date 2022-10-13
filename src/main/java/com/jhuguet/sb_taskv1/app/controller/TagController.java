@@ -3,6 +3,7 @@ package com.jhuguet.sb_taskv1.app.controller;
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +43,10 @@ public class TagController {
      * @param id ID that if given will return specific Tag that has said ID, otherwise a list of Tags
      * @return will return pertaining List-of or single Tag retrieved from DB
      * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
      */
     @ResponseBody
     @GetMapping({"/", "/{id}"})
-    public List<Tag> get(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
+    public List<Tag> get(@PathVariable(required = false) String id) throws IdNotFound {
         if (id != null) {
             List<Tag> tag = new ArrayList<>();
             tag.add(tagService.get(Integer.parseInt(id)));
@@ -61,7 +61,7 @@ public class TagController {
      * @param tag Given Tag to save into DB
      */
     @PostMapping
-    public Tag save(@RequestBody Tag tag) {
+    public Tag save(@RequestBody Tag tag) throws MissingEntity {
         logger.info("Saving new tag: " + tag.getName());
         return tagService.save(tag);
     }
@@ -86,12 +86,11 @@ public class TagController {
      * @param id ID of Tag to search and drop
      * @return Deleted Tag
      * @throws IdNotFound                     Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation      Exception thrown when given ID is incorrectly entered
      * @throws CertificateAssociatedException Exception thrown when Tag is associated to a GiftCertificate and cannot be
      *                                        deleted
      */
     @DeleteMapping("/{id}")
-    public Tag delete(@PathVariable String id) throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException {
+    public Tag delete(@PathVariable String id) throws IdNotFound, CertificateAssociatedException {
         logger.info("Dropping tag: " + id);
         return tagService.delete(Integer.parseInt(id));
     }
