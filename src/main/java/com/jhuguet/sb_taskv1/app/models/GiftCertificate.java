@@ -29,15 +29,15 @@ public class GiftCertificate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "certificate_name")
-    public String name;
+    private String name;
     @Column(name = "certificate_description")
-    protected String description;
-    protected BigDecimal price;
-    protected int duration;
+    private String description;
+    private BigDecimal price;
+    private int duration;
     @Column(name = "create_date")
-    protected String createDate;
+    private String createDate;
     @Column(name = "last_update_date")
-    protected String lastUpdateDate;
+    private String lastUpdateDate;
 
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(name = "certificate_tags",
@@ -47,7 +47,7 @@ public class GiftCertificate {
             inverseJoinColumns = {
                     @JoinColumn(name = "tag_id", referencedColumnName = "id")
             })
-    protected Set<Tag> associatedTags;
+    private Set<Tag> associatedTags;
 
     public GiftCertificate(String name, String description, BigDecimal price, int duration,
                            String createDate, String lastUpdateDate, Set<Tag> associatedTags) {
