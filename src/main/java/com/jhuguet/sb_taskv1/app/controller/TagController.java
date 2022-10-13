@@ -2,7 +2,7 @@ package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.TagService;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -42,16 +41,17 @@ public class TagController {
      *
      * @param id ID that if given will return specific Tag that has said ID, otherwise a list of Tags
      * @return will return pertaining List-of or single Tag retrieved from DB
-     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws IdNotFound Exception thrown when given ID is not found
      */
     @ResponseBody
-    @GetMapping({"/", "/{id}"})
-    public List<Tag> get(@PathVariable(required = false) String id) throws IdNotFound {
-        if (id != null) {
-            List<Tag> tag = new ArrayList<>();
-            tag.add(tagService.get(Integer.parseInt(id)));
-            return tag;
-        }
+    @GetMapping("/{id}")
+    public Tag get(@PathVariable(required = false) String id) throws IdNotFound {
+        return tagService.get(Integer.parseInt(id));
+    }
+
+    @ResponseBody
+    @GetMapping("/")
+    public List<Tag> getAll() throws IdNotFound {
         return tagService.getAll();
     }
 
@@ -72,10 +72,10 @@ public class TagController {
      * @param tag Tag to update
      * @return Updated Tag
      * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+     * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PutMapping
-    public Tag update(@RequestBody Tag tag) throws IdNotFound, InvalidIdInputInformation {
+    public Tag update(@RequestBody Tag tag) throws IdNotFound, InvalidInputInformation {
         logger.info("Updating tag: " + tag.getId());
         return tagService.update(tag);
     }
