@@ -56,7 +56,7 @@ public class GiftCertificateController {
     }
 
     /**
-     * @param filterBy   Field used to filter by name or description
+     * @param partOfNameOrDescription   Field used to filter by name or description
      * @param tagName    Tag name to filter in database
      * @param nameOrDate Defining parameter which accepts name, createDate or lastUpdateCase
      * @param order      Intended ascendant or descendant order of list
@@ -64,15 +64,15 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping("/getBy")
-    public List<GiftCertificate> getBy(@RequestParam String filterBy, @RequestParam String tagName,
+    public List<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
                                        @RequestParam String nameOrDate, @RequestParam String order) {
 
         if (!tagName.isEmpty()) {
             return giftCertificateService.getByTagName(tagName);
         }
 
-        if (!filterBy.isEmpty()) {
-            return giftCertificateService.getByPart(filterBy);
+        if (!partOfNameOrDescription.isEmpty()) {
+            return giftCertificateService.getByPart(partOfNameOrDescription);
         }
 
 
