@@ -2,7 +2,7 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
@@ -56,7 +56,7 @@ class TagServiceImplTest {
     }
 
     @Test
-    void update() throws IdNotFound, InvalidIdInputInformation {
+    void update() throws IdNotFound, InvalidInputInformation {
         Tag tag = utils.sampleTag();
         tag.setName("TestCertificate");
         assertEquals(service.update(tag).getName(), "TestCertificate");

@@ -1,7 +1,7 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
@@ -43,12 +43,12 @@ class GiftCertificateControllerTest {
     }
 
     @Test
-    void getReturnOne() throws IdNotFound, InvalidIdInputInformation {
+    void getReturnOne() throws IdNotFound, InvalidInputInformation {
         assertEquals(utils.sampleCertificate().getName(), controller.get("0").get(0).getName());
     }
 
     @Test
-    void getReturnAll() throws IdNotFound, InvalidIdInputInformation {
+    void getReturnAll() throws IdNotFound, InvalidInputInformation {
         assertEquals(utils.sampleCertificates().size(), controller.get(null).size());
     }
 
@@ -93,7 +93,7 @@ class GiftCertificateControllerTest {
     }
 
     @Test
-    void updateCorrectly() throws IdNotFound, InvalidIdInputInformation {
+    void updateCorrectly() throws IdNotFound, InvalidInputInformation {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -129,11 +129,11 @@ class GiftCertificateControllerTest {
                 entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
                 entry("", "")
         );
-        assertThrows(InvalidIdInputInformation.class, () -> controller.update("-1", patchTest).getName());
+        assertThrows(InvalidInputInformation.class, () -> controller.update("-1", patchTest).getName());
     }
 
     @Test
-    void deleteCorrectly() throws IdNotFound, InvalidIdInputInformation {
+    void deleteCorrectly() throws IdNotFound, InvalidInputInformation {
         assertEquals("AWS Certificate", controller.delete("0").getName());
     }
 

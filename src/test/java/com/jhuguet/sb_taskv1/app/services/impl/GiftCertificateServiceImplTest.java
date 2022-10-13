@@ -2,7 +2,7 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.google.gson.JsonParser;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
@@ -84,7 +84,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    void updateEqualsZero() throws IdNotFound, InvalidIdInputInformation {
+    void updateEqualsZero() throws IdNotFound, InvalidInputInformation {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -98,7 +98,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    void updateIDDiffThanZero() throws IdNotFound, InvalidIdInputInformation {
+    void updateIDDiffThanZero() throws IdNotFound, InvalidInputInformation {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -112,7 +112,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    void updateIDNotFound() throws InvalidIdInputInformation {
+    void updateIDNotFound() throws InvalidInputInformation {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -128,7 +128,7 @@ class GiftCertificateServiceImplTest {
 
 
     @Test
-    void updateInvalidIdInput() throws InvalidIdInputInformation {
+    void updateInvalidIdInput() throws InvalidInputInformation {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -137,7 +137,7 @@ class GiftCertificateServiceImplTest {
                 entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
                 entry("", "")
         );
-        assertThrows(InvalidIdInputInformation.class, () -> giftCertificateService.update(-1, patchTest));
+        assertThrows(InvalidInputInformation.class, () -> giftCertificateService.update(-1, patchTest));
     }
 
     @Test

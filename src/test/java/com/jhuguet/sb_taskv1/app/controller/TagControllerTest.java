@@ -2,7 +2,7 @@ package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
@@ -42,7 +42,7 @@ class TagControllerTest {
 
 
     @Test
-    void get() throws IdNotFound, InvalidIdInputInformation {
+    void get() throws IdNotFound, InvalidInputInformation {
         assertEquals(utils.sampleTag().getName(), controller.get("0").get(0).getName());
     }
 
@@ -62,7 +62,7 @@ class TagControllerTest {
     }
 
     @Test
-    void update() throws IdNotFound, InvalidIdInputInformation {
+    void update() throws IdNotFound, InvalidInputInformation {
         assertEquals("newTag", controller.update(new Tag("newTag")).getName());
     }
 
@@ -76,12 +76,12 @@ class TagControllerTest {
     @Test
     void updateInvalidInputInformation() {
         Tag tag = new Tag(-1, "newTag", new HashSet<>(utils.sampleCertificates()));
-        assertThrows(InvalidIdInputInformation.class, () ->
+        assertThrows(InvalidInputInformation.class, () ->
                 controller.update(tag).getName());
     }
 
     @Test
-    void deleteCorrectly() throws IdNotFound, InvalidIdInputInformation, CertificateAssociatedException {
+    void deleteCorrectly() throws IdNotFound, InvalidInputInformation, CertificateAssociatedException {
         when(repository.findById(0))
                 .thenReturn(Optional.ofNullable(new Tag(0, "Cloud", new HashSet<>())));
         assertEquals(utils.sampleTag().getName(), controller.delete("0").getName());
