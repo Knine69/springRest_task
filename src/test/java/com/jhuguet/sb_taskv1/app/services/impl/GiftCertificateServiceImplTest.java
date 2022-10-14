@@ -73,6 +73,36 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
+    void filterCertificatesByTagName() {
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("Cloud", "", "", "").size());
+    }
+
+    @Test
+    void filterCertificatesByPartOfNameOrDescription() {
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("", "Master", "", "").size());
+    }
+
+    @Test
+    void filterCertificatesByCreateDate() {
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("", "", "createDate", "asc").size());
+    }
+
+    @Test
+    void filterCertificatesByLastUpdateDate() {
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("", "", "lastUpdateDate", "asc").size());
+    }
+
+    @Test
+    void filterCertificatesByName() {
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("", "", "name", "asc").size());
+    }
+
+    @Test
     void saveNotMissingEntity() throws MissingEntity {
         GiftCertificate certificate = utils.sampleCertificate();
         assertEquals(giftCertificateService.save(certificate), certificate);
@@ -112,7 +142,7 @@ class GiftCertificateServiceImplTest {
     }
 
     @Test
-    void updateIDNotFound() throws InvalidInputInformation {
+    void updateIDNotFound() {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -128,7 +158,7 @@ class GiftCertificateServiceImplTest {
 
 
     @Test
-    void updateInvalidIdInput() throws InvalidInputInformation {
+    void updateInvalidIdInput() {
         Map<String, Object> patchTest = Map.ofEntries(
                 entry("name", "AWS Certificate"),
                 entry("description", "AWS Master's certificate"),
@@ -138,46 +168,6 @@ class GiftCertificateServiceImplTest {
                 entry("", "")
         );
         assertThrows(InvalidInputInformation.class, () -> giftCertificateService.update(-1, patchTest));
-    }
-
-    @Test
-    void getByTagName() {
-        assertEquals(giftCertificateService.getByTagName("Cloud").size(), utils.sampleCertificates().size());
-    }
-
-    @Test
-    void getByPart() {
-        assertEquals(giftCertificateService.getByPart("Master").size(), utils.sampleCertificates().size());
-    }
-
-    @Test
-    void getByDateOrNameByNameAsc() {
-        assertEquals(giftCertificateService.getByDateOrName("name", "asc").get(0).getName(), utils.sampleCertificates().get(0).getName());
-    }
-
-    @Test
-    void getByDateOrNameByDateAsc() {
-        assertEquals(giftCertificateService.getByDateOrName("lastUpdateDate", "asc").get(0).getName(), utils.sampleCertificates().get(0).getName());
-    }
-
-    @Test
-    void getByDateOrNameDefaultCaseAsc() {
-        assertEquals(giftCertificateService.getByDateOrName("", "asc").size(), 0);
-    }
-
-    @Test
-    void getByDateOrNameByNameDesc() {
-        assertEquals(giftCertificateService.getByDateOrName("name", "desc").get(1).getName(), utils.sampleCertificates().get(0).getName());
-    }
-
-    @Test
-    void getByDateOrNameByDateDesc() {
-        assertEquals(giftCertificateService.getByDateOrName("createDate", "desc").get(1).getName(), utils.sampleCertificates().get(0).getName());
-    }
-
-    @Test
-    void getByDateOrNameDefaultCaseDesc() {
-        assertEquals(giftCertificateService.getByDateOrName("", "desc").size(), 0);
     }
 
     @Test

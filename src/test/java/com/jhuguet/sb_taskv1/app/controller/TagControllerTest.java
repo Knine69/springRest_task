@@ -43,17 +43,17 @@ class TagControllerTest {
 
     @Test
     void get() throws IdNotFound, InvalidInputInformation {
-        assertEquals(utils.sampleTag().getName(), controller.get("0").get(0).getName());
+        assertEquals(utils.sampleTag().getName(), controller.get("0").getName());
     }
 
     @Test
     void getAll() throws IdNotFound {
-        assertEquals(utils.sampleTags().size(), controller.get(null).size());
+        assertEquals(utils.sampleTags().size(), controller.getAll().size());
     }
 
     @Test
     void getIDNotFound() {
-        assertThrows(IdNotFound.class, () -> controller.get("1").get(0).getName());
+        assertThrows(IdNotFound.class, () -> controller.get("1").getName());
     }
 
     @Test

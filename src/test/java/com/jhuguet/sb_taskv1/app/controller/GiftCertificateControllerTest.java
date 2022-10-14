@@ -44,12 +44,12 @@ class GiftCertificateControllerTest {
 
     @Test
     void getReturnOne() throws IdNotFound, InvalidInputInformation {
-        assertEquals(utils.sampleCertificate().getName(), controller.get("0").get(0).getName());
+        assertEquals(utils.sampleCertificate().getName(), controller.get("0").getName());
     }
 
     @Test
     void getReturnAll() throws IdNotFound, InvalidInputInformation {
-        assertEquals(utils.sampleCertificates().size(), controller.get(null).size());
+        assertEquals(utils.sampleCertificates().size(), controller.getAll().size());
     }
 
     @Test
@@ -59,21 +59,33 @@ class GiftCertificateControllerTest {
     }
 
     @Test
-    void getByFilterBy() {
+    void getByPartOfNameOrDescription() {
         assertEquals(utils.sampleCertificates().size(),
                 controller.getBy("Master", "", "", "").size());
     }
 
     @Test
     void getByEmpty() {
-        assertEquals(0,
+        assertEquals(utils.sampleCertificates().size(),
                 controller.getBy("", "", "", "").size());
     }
 
     @Test
-    void getByNameOrDate() {
+    void getByCreatedDate() {
         assertEquals(utils.sampleCertificates().size(),
                 controller.getBy("", "", "createDate", "asc").size());
+    }
+
+    @Test
+    void getByLastUpdatedDateReverseOrder() {
+        assertEquals(utils.sampleCertificates().size(),
+                controller.getBy("", "", "lastUpdateDate", "desc").size());
+    }
+
+    @Test
+    void getByName() {
+        assertEquals(utils.sampleCertificates().size(),
+                controller.getBy("", "", "name", "asc").size());
     }
 
     @Test
@@ -99,6 +111,19 @@ class GiftCertificateControllerTest {
                 entry("description", "AWS Master's certificate"),
                 entry("price", 8.99),
                 entry("duration", 10),
+                entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
+                entry("", "")
+        );
+        assertEquals("AWS Certificate", controller.update("0", patchTest).getName());
+    }
+
+    @Test
+    void updatePriceDurationIncorrectValues() throws IdNotFound, InvalidInputInformation {
+        Map<String, Object> patchTest = Map.ofEntries(
+                entry("name", "AWS Certificate"),
+                entry("description", "AWS Master's certificate"),
+                entry("price", -8.99),
+                entry("duration", -10),
                 entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
                 entry("", "")
         );
@@ -133,7 +158,7 @@ class GiftCertificateControllerTest {
     }
 
     @Test
-    void deleteCorrectly() throws IdNotFound, InvalidInputInformation {
+    void deleteCorrectly() throws IdNotFound {
         assertEquals("AWS Certificate", controller.delete("0").getName());
     }
 
