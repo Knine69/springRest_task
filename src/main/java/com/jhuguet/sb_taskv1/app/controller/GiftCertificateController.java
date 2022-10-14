@@ -38,8 +38,10 @@ public class GiftCertificateController {
     }
 
     /**
-     * @param id Optional given ID to look for in Database
-     * @return Either List of GiftCertificates or GiftCertificate
+     * Will return a specific GifCertificate in database
+     *
+     * @param id Given ID to look for in Database
+     * @return GiftCertificate
      * @throws IdNotFound              Exception thrown when given ID is not found
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
@@ -49,6 +51,13 @@ public class GiftCertificateController {
         return giftCertificateService.get(Integer.parseInt(id));
     }
 
+    /**
+     * Will return all existing GiftCertificates in database
+     *
+     * @return List of GiftCertificates
+     * @throws IdNotFound              Exception thrown when given ID is not found
+     * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
+     */
     @ResponseBody
     @GetMapping("/")
     public List<GiftCertificate> getAll() throws IdNotFound, InvalidInputInformation {
