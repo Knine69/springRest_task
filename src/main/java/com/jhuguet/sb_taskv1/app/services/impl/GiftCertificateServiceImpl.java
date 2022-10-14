@@ -3,7 +3,7 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Tag;
@@ -66,10 +66,55 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public GiftCertificate update(int id,
-                                  Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
+                                  Map<String, Object> patch) throws IdNotFound, InvalidInputInformation {
         validateCertificate(id);
         GiftCertificate certificate = partialUpdate(id, patch);
         giftRepository.save(certificate);
+
+        return certificate;
+    }
+
+    @Override
+    public List<GiftCertificate> filterCertificates(String tagName, String nameOrDescriptionPart, String nameOrDate, String order) {
+        List<GiftCertificate> resultList = getAll();
+        if (!tagName.isEmpty()) {
+            resultList = getByTagName(resultList, tagName);
+        }
+        if (!nameOrDescriptionPart.isEmpty()) {
+            resultList = getByPart(resultList, nameOrDescriptionPart);
+        }
+        if (!nameOrDate.isEmpty()) {
+            resultList = getByDateOrName(resultList, nameOrDate, order);
+        }
+
+        return resultList;
+    }
+
+    private List<GiftCertificate> getByTagName(List<GiftCertificate> currentList, String name) {
+        return filterCertificates(currentList, "tagName", name);
+    }
+
+    private List<GiftCertificate> getByPart(List<GiftCertificate> currentList, String part) {
+        return filterCertificates(currentList, "nameDescriptionPart", part);
+    }
+
+    private List<GiftCertificate> getByDateOrName(List<GiftCertificate> currentList, String sortBy, String order) {
+        List<GiftCertificate> certificateList = new ArrayList<>();
+        if (validateNameAndDateTypes(sortBy, order)) {
+            certificateList = filterCertificates(currentList, sortBy, "");
+            return sortCertificates(certificateList, sortBy, order);
+        } else {
+            logger.info("Please enter an appropriate sorting and/or order types.");
+        }
+
+        return certificateList;
+    }
+
+    @Transactional
+    public GiftCertificate delete(int id) throws IdNotFound {
+        GiftCertificate certificate = get(id);
+        giftRepository.deleteById(id);
+        logger.info("Deleted GifCertificate from database: " + new Gson().toJson(certificate));
 
         return certificate;
     }
@@ -85,56 +130,42 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                     certificate.setDescription((String) value);
                     break;
                 case "price":
-                    certificate.setPrice(BigDecimal.valueOf((Double) value));
+                    if (validateNegativeDouble((double) value)) {
+                        certificate.setPrice(BigDecimal.valueOf((Double) value));
+                    }
                     break;
                 case "duration":
-                    certificate.setDuration((int) value);
-                    break;
-                case "lastUpdateDate":
-                    certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                    if (validateNegativeInteger((int) value)) {
+                        certificate.setDuration((int) value);
+                    }
                     break;
                 case "associatedTags":
-                    System.out.println("Type is: " + value.getClass().getName());
                     updateTags(certificate, convertToSet(value));
                     break;
                 default:
                     logger.info("Field " + key + " is a non-updatable.");
                     break;
             }
+            certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         });
 
         return certificate;
     }
 
-    @Override
-    public List<GiftCertificate> getByTagName(String name) {
-        return filterCertificates("tagName", name);
-    }
-
-    @Override
-    public List<GiftCertificate> getByPart(String part) {
-        return filterCertificates("nameDescriptionPart", part);
-    }
-
-    @Override
-    public List<GiftCertificate> getByDateOrName(String sortBy, String order) {
-        List<GiftCertificate> certificateList = new ArrayList<>();
-        if (validateNameAndDateTypes(sortBy, order)) {
-            certificateList = filterCertificates(sortBy, "");
-            return sortCertificates(certificateList, sortBy, order);
-        } else {
-            logger.info("Please enter an appropriate sorting and/or order types.");
+    private boolean validateNegativeInteger(int value) {
+        if (value < 0) {
+            logger.warning("Duration incorrect information to update. Won't be updated.");
+            return false;
         }
-
-        return certificateList;
+        return true;
     }
 
-    @Transactional
-    public GiftCertificate delete(int id) throws IdNotFound {
-        GiftCertificate certificate = get(id);
-        giftRepository.deleteById(id);
-
-        return certificate;
+    private boolean validateNegativeDouble(double value) {
+        if (value < 0) {
+            logger.warning("Price incorrect information to update. Won't be updated.");
+            return false;
+        }
+        return true;
     }
 
     private boolean validateNameAndDateTypes(String sortBy, String order) {
@@ -185,7 +216,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 certificatesList.stream().sorted(comparator.reversed()).collect(Collectors.toList());
     }
 
-    private List<GiftCertificate> filterCertificates(String parameter, String filterField) {
+    private List<GiftCertificate> filterCertificates(List<GiftCertificate> currentList, String parameter, String filterField) {
         Predicate<GiftCertificate> predicate = null;
         switch (parameter) {
             case "nameDescriptionPart":
@@ -207,12 +238,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 logger.warning("Please input variant correctly.");
                 break;
         }
-        return predicate != null ? getAll().stream().filter(predicate).collect(Collectors.toList()) : new ArrayList<>();
+        return predicate != null ? currentList.stream().filter(predicate).collect(Collectors.toList()) : new ArrayList<>();
     }
 
-    private void validateCertificate(int id) throws IdNotFound, InvalidIdInputInformation {
+    private void validateCertificate(int id) throws IdNotFound, InvalidInputInformation {
         if (id < 0) {
-            throw new InvalidIdInputInformation();
+            throw new InvalidInputInformation();
         }
 
         if (!giftRepository.existsById(id)) {

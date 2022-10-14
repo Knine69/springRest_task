@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -41,7 +40,7 @@ public class GiftCertificateController {
     /**
      * @param id Optional given ID to look for in Database
      * @return Either List of GiftCertificates or GiftCertificate
-     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws IdNotFound              Exception thrown when given ID is not found
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @ResponseBody
@@ -67,17 +66,7 @@ public class GiftCertificateController {
     @GetMapping("/getBy")
     public List<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
                                        @RequestParam String nameOrDate, @RequestParam String order) {
-
-        if (!tagName.isEmpty()) {
-            return giftCertificateService.getByTagName(tagName);
-        }
-
-        if (!partOfNameOrDescription.isEmpty()) {
-            return giftCertificateService.getByPart(partOfNameOrDescription);
-        }
-
-
-        return nameOrDate.isEmpty() ? new ArrayList<>() : giftCertificateService.getByDateOrName(nameOrDate, order);
+        return giftCertificateService.filterCertificates(tagName, partOfNameOrDescription, nameOrDate, order);
     }
 
 
@@ -98,7 +87,7 @@ public class GiftCertificateController {
      * @param id    ID of GiftCertificate to which will be applied the patch
      * @param patch Desired changes to apply
      * @return GiftCertificate after patched without Tags being patched to it
-     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws IdNotFound              Exception thrown when given ID is not found
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PatchMapping("/{certId}")

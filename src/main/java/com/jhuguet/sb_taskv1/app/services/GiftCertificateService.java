@@ -13,11 +13,7 @@ public interface GiftCertificateService {
 
     GiftCertificate get(int id) throws IdNotFound;
 
-    List<GiftCertificate> getByTagName(String name);
-
-    List<GiftCertificate> getByPart(String part);
-
-    List<GiftCertificate> getByDateOrName(String sortBy, String order);
+    List<GiftCertificate> filterCertificates(String tagName, String nameOrDescriptionPart, String nameOrDate, String order);
 
     GiftCertificate save(GiftCertificate certificate) throws MissingEntity;
 
