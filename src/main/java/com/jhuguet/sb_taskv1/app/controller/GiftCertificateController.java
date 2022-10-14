@@ -56,9 +56,11 @@ public class GiftCertificateController {
     }
 
     /**
+     * Function used to filter and sort by specified fields
+     *
      * @param partOfNameOrDescription Field used to filter by name or description
      * @param tagName                 Tag name to filter in database
-     * @param nameOrDate              Defining parameter which accepts name, createDate or lastUpdateCase
+     * @param nameOrDate              Defining parameter which accepts name, createDate or lastUpdateCase to sort through
      * @param order                   Intended ascendant or descendant order of list
      * @return Filtered and/or sorted List of GiftCertificates
      */
