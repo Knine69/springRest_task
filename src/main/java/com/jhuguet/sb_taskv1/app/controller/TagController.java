@@ -2,7 +2,6 @@ package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.services.TagService;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -64,20 +62,6 @@ public class TagController {
     public Tag save(@RequestBody Tag tag) throws MissingEntity {
         logger.info("Saving new tag: " + tag.getName());
         return tagService.save(tag);
-    }
-
-    /**
-     * Updating function
-     *
-     * @param tag Tag to update
-     * @return Updated Tag
-     * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
-     */
-    @PutMapping
-    public Tag update(@RequestBody Tag tag) throws IdNotFound, InvalidInputInformation {
-        logger.info("Updating tag: " + tag.getId());
-        return tagService.update(tag);
     }
 
     /**

@@ -33,20 +33,12 @@ public class TagServiceImpl implements TagService {
     }
 
     @Transactional
-    public Tag save(Tag tag) throws MissingEntity{
+    public Tag save(Tag tag) throws MissingEntity {
         if (!Objects.isNull(tag)) {
             tagRepository.save(tag);
         } else {
             throw new MissingEntity();
         }
-        return tag;
-    }
-
-    @Override
-    @Transactional
-    public Tag update(Tag tag) throws IdNotFound, InvalidInputInformation {
-        validateTag(tag.getId());
-        tagRepository.save(tag);
         return tag;
     }
 

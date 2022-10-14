@@ -2,7 +2,6 @@ package com.jhuguet.sb_taskv1.app.services;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 
@@ -14,8 +13,6 @@ public interface TagService {
     Tag get(int id) throws IdNotFound;
 
     Tag save(Tag tag) throws MissingEntity;
-
-    Tag update(Tag tag) throws IdNotFound, InvalidInputInformation;
 
     Tag delete(int id) throws IdNotFound, CertificateAssociatedException;
 

@@ -2,7 +2,6 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
@@ -17,7 +16,6 @@ import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
@@ -55,13 +53,6 @@ class TagServiceImplTest {
         assertEquals(service.save(utils.sampleTag()).getName(), utils.sampleTag().getName());
     }
 
-    @Test
-    void update() throws IdNotFound, InvalidInputInformation {
-        Tag tag = utils.sampleTag();
-        tag.setName("TestCertificate");
-        assertEquals(service.update(tag).getName(), "TestCertificate");
-        assertNotEquals(service.update(tag).getName(), utils.sampleTag().getName());
-    }
 
     @Test
     void delete() throws IdNotFound, CertificateAssociatedException {
