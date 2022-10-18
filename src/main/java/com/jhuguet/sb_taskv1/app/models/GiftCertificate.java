@@ -8,12 +8,14 @@ import org.hibernate.annotations.DynamicUpdate;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Set;
@@ -48,6 +50,10 @@ public class GiftCertificate {
                     @JoinColumn(name = "tag_id", referencedColumnName = "id")
             })
     private Set<Tag> associatedTags;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order userOrder;
 
     public GiftCertificate(String name, String description, BigDecimal price, int duration,
                            String createDate, String lastUpdateDate, Set<Tag> associatedTags) {
@@ -84,9 +90,6 @@ public class GiftCertificate {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public void setAssociatedTags(Set<Tag> associatedTags) {
-        this.associatedTags = associatedTags;
-    }
 
     public void assignTag(Tag tag) {
         this.associatedTags.add(tag);
@@ -94,6 +97,10 @@ public class GiftCertificate {
 
     public void cleanTags() {
         this.associatedTags.removeAll(getAssociatedTags());
+    }
+
+    public void placeOrder(GiftCertificate certificate) {
+        userOrder.addCertificate(certificate);
     }
 
 
