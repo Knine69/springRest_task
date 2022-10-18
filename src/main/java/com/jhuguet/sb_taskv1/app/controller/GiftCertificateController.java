@@ -47,7 +47,7 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping("/{id}")
-    public GiftCertificate get(@PathVariable(required = false) String id) throws IdNotFound, InvalidInputInformation {
+    public GiftCertificate get(@PathVariable String id) throws IdNotFound, InvalidInputInformation {
         return giftCertificateService.get(Integer.parseInt(id));
     }
 
