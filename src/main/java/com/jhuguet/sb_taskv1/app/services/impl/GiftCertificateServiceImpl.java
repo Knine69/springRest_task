@@ -6,9 +6,13 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
+import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
+import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
+import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
+import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +38,19 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     private final GiftCertificateRepository giftRepository;
     private final TagRepository tagRepository;
+    private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
     private final Logger logger = Logger.getLogger(GiftCertificateServiceImpl.class.getName());
 
-
     @Autowired
-    public GiftCertificateServiceImpl(GiftCertificateRepository giftRepository, TagRepository tagRepository) {
+    public GiftCertificateServiceImpl(GiftCertificateRepository giftRepository, TagRepository tagRepository,
+                                      UserRepository userRepository, OrderRepository orderRepository) {
         this.giftRepository = giftRepository;
         this.tagRepository = tagRepository;
+        this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
     }
+
 
     public List<GiftCertificate> getAll() {
         return giftRepository.findAll();
@@ -67,11 +77,63 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     @Override
     public GiftCertificate update(int id,
                                   Map<String, Object> patch) throws IdNotFound, InvalidInputInformation {
-        validateCertificate(id);
+        validateEntity(id, "certificate");
         GiftCertificate certificate = partialUpdate(id, patch);
         giftRepository.save(certificate);
 
         return certificate;
+    }
+
+    @Override
+    public GiftCertificate placeNewInOrder(int certID, int orderID, int userID) throws IdNotFound {
+        GiftCertificate dbCertificate = get(certID);
+        GiftCertificate copyCertificate = copyCertificate(dbCertificate);
+
+        User user = userRepository.findById(userID).orElseThrow(IdNotFound::new);
+        Order order = orderRepository.findById(orderID).orElseThrow(IdNotFound::new);
+
+        if (user.getOrders().stream().anyMatch(o -> o.getId() == orderID)) {
+            if (!order.getCertificates().stream().anyMatch(c -> c.getId() == certID)) {
+                placeOrderProcess(user, order, copyCertificate);
+            } else {
+                logger.warning("Certificate already in order");
+            }
+        }
+
+        userRepository.save(user);
+
+        return copyCertificate;
+    }
+
+    @Override
+    public GiftCertificate placeNewOrder(int certID, int userID) throws IdNotFound {
+        GiftCertificate certificate = get(certID);
+        User user = userRepository.findById(userID).orElseThrow(IdNotFound::new);
+        Order order = new Order(new Date());
+
+        order.setUser(user);
+        placeOrderProcess(user, order, certificate);
+        userRepository.save(user);
+
+        return certificate;
+    }
+
+    private void placeOrderProcess(User user, Order order, GiftCertificate certificate) {
+        order.addCertificate(certificate);
+        user.placeOrder(order);
+    }
+
+    private GiftCertificate copyCertificate(GiftCertificate certificate) {
+        return new GiftCertificate(
+                certificate.getId(),
+                certificate.getName(),
+                certificate.getDescription(),
+                certificate.getPrice(),
+                certificate.getDuration(),
+                certificate.getLastUpdateDate(),
+                certificate.getCreateDate(),
+                certificate.getAssociatedTags()
+        );
     }
 
     @Override
@@ -241,13 +303,30 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return predicate != null ? currentList.stream().filter(predicate).collect(Collectors.toList()) : new ArrayList<>();
     }
 
-    private void validateCertificate(int id) throws IdNotFound, InvalidInputInformation {
+    private void validateEntity(int id, String option) throws InvalidInputInformation, IdNotFound {
         if (id < 0) {
             throw new InvalidInputInformation();
         }
 
-        if (!giftRepository.existsById(id)) {
-            throw new IdNotFound();
+        switch (option) {
+            case "order":
+                if (!orderRepository.existsById(id)) {
+                    throw new IdNotFound();
+                }
+                break;
+            case "certificate":
+                if (!giftRepository.existsById(id)) {
+                    throw new IdNotFound();
+                }
+                break;
+            case "user":
+                if (!userRepository.existsById(id)) {
+                    throw new IdNotFound();
+                }
+                break;
+            default:
+                logger.warning("Please enter a valid entity to verify");
+                break;
         }
     }
 
