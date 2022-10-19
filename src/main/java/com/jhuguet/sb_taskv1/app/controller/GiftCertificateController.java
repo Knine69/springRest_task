@@ -92,6 +92,20 @@ public class GiftCertificateController {
         return giftCertificateService.save(giftCertificate);
     }
 
+    @PostMapping("/{certID}/user/{userID}/addToOrder/{orderID}")
+    public GiftCertificate placeNewInOrder(@PathVariable(name = "certID") String certID,
+                                      @PathVariable(name = "userID") String userID,
+                                      @PathVariable(name = "orderID") String orderID) throws IdNotFound {
+        return giftCertificateService
+                .placeNewInOrder(Integer.parseInt(certID), Integer.parseInt(orderID), Integer.parseInt(userID));
+    }
+    @PostMapping("/{certID}/user/{userID}/placeNew")
+    public GiftCertificate placeNewOrder(@PathVariable(name = "certID") String certID,
+                                      @PathVariable(name = "userID") String userID) throws IdNotFound {
+        return giftCertificateService
+                .placeNewOrder(Integer.parseInt(certID), Integer.parseInt(userID));
+    }
+
     /**
      * Will patch only specified changes into GiftCertificate excluding Tags
      *
