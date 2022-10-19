@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,9 +24,9 @@ import java.util.Set;
 @Entity
 @Table(name = "gift_certificate")
 @DynamicUpdate
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class GiftCertificate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,10 +54,23 @@ public class GiftCertificate {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
+    @JsonIgnore
     private Order userOrder;
 
     public GiftCertificate(String name, String description, BigDecimal price, int duration,
                            String createDate, String lastUpdateDate, Set<Tag> associatedTags) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.duration = duration;
+        this.createDate = createDate;
+        this.lastUpdateDate = lastUpdateDate;
+        this.associatedTags = associatedTags;
+    }
+
+    public GiftCertificate(int id, String name, String description, BigDecimal price, int duration,
+                           String createDate, String lastUpdateDate, Set<Tag> associatedTags) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;

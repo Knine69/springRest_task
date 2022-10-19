@@ -1,6 +1,7 @@
 package com.jhuguet.sb_taskv1.app.models;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.CascadeType;
@@ -17,6 +18,7 @@ import java.util.Set;
 @Table(name = "users")
 @DynamicUpdate
 @Getter
+@NoArgsConstructor
 public class User {
 
     @Id
@@ -30,6 +32,22 @@ public class User {
     public User(String username, String email, Set<Order> orders) {
         this.username = username;
         this.email = email;
+        this.orders = orders;
+    }
+
+    public void placeOrder(Order order){
+        this.orders.add(order);
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setOrders(Set<Order> orders) {
         this.orders = orders;
     }
 }
