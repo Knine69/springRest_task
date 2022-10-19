@@ -21,4 +21,7 @@ public interface GiftCertificateService {
 
     GiftCertificate delete(int id) throws IdNotFound;
 
+    GiftCertificate placeNewOrder(int certID, int userID) throws IdNotFound;
+    GiftCertificate placeNewInOrder(int certID, int orderID, int userID) throws IdNotFound;
+
 }
