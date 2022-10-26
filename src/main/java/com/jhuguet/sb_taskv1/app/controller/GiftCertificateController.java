@@ -7,6 +7,10 @@ import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -61,8 +65,9 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping
-    public List<GiftCertificate> getAll() throws IdNotFound, InvalidInputInformation {
-        return giftCertificateService.getAll();
+    public Page<GiftCertificate> getAll() throws IdNotFound, InvalidInputInformation {
+        List<GiftCertificate> certificates = giftCertificateService.getAll();
+        return createPageResponse(certificates, 0, 5);
     }
 
     /**
@@ -76,9 +81,9 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping("/getBy")
-    public List<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
+    public Page<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
                                        @RequestParam String nameOrDate, @RequestParam String order) {
-        return giftCertificateService.filterCertificates(tagName, partOfNameOrDescription, nameOrDate, order);
+        return createPageResponse(giftCertificateService.filterCertificates(tagName, partOfNameOrDescription, nameOrDate, order), 0, 5);
     }
 
 
@@ -128,4 +133,8 @@ public class GiftCertificateController {
         return giftCertificateService.delete(id);
     }
 
+    private Page<GiftCertificate> createPageResponse(List<GiftCertificate> certificates, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return new PageImpl<>(certificates, pageable, certificates.size());
+    }
 }
