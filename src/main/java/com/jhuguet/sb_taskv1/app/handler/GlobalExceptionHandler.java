@@ -2,6 +2,7 @@ package com.jhuguet.sb_taskv1.app.handler;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.ExceptionDetails;
+import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
@@ -42,6 +43,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<?> orderNotRelated(OrderNotRelated exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(IdAlreadyInUse.class)
+    public ResponseEntity<?> idAlreadyInUse(IdAlreadyInUse exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
     }
 
 }
