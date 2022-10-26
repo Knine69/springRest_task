@@ -2,6 +2,7 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
@@ -23,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,17 +61,41 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Transactional
-    public GiftCertificate save(GiftCertificate giftCertificate) throws MissingEntity {
+    public GiftCertificate save(GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation {
         if (!Objects.isNull(giftCertificate)) {
+            validateNegative(giftCertificate.getDuration());
+            validateNegative((giftCertificate.getPrice().intValue()));
+            saveClearing(giftCertificate);
+
             String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             giftCertificate.setCreateDate(localDate);
             giftCertificate.setLastUpdateDate(localDate);
+
             giftRepository.save(giftCertificate);
         } else {
             throw new MissingEntity();
         }
 
         return giftCertificate;
+    }
+
+    private void saveClearing(GiftCertificate certificate) {
+        certificate.getAssociatedTags().forEach(t -> {
+            try {
+                validateNegative(t.getId());
+            } catch (InvalidInputInformation e) {
+                throw new RuntimeException(e);
+            }
+            Tag tag = tagRepository.findById(t.getId()).get();
+            if (!t.getName().equalsIgnoreCase(tag.getName())) {
+                try {
+                    throw new IdAlreadyInUse();
+                } catch (IdAlreadyInUse e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        });
     }
 
     @Override
@@ -85,55 +109,31 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public GiftCertificate placeNewInOrder(int certID, int orderID, int userID) throws IdNotFound {
-        GiftCertificate dbCertificate = get(certID);
-        GiftCertificate copyCertificate = copyCertificate(dbCertificate);
-
+    public Order placeNewOrder(List<Integer> certID, int userID) throws IdNotFound {
         User user = userRepository.findById(userID).orElseThrow(IdNotFound::new);
-        Order order = orderRepository.findById(orderID).orElseThrow(IdNotFound::new);
+        Order order = new Order();
 
-        if (user.getOrders().stream().anyMatch(o -> o.getId() == orderID)) {
-            if (!order.getCertificates().stream().anyMatch(c -> c.getId() == certID)) {
-                placeOrderProcess(user, order, copyCertificate);
-            } else {
-                logger.warning("Certificate already in order");
+        certID.forEach(id -> {
+            GiftCertificate certificate = null;
+            try {
+                certificate = get(id);
+            } catch (IdNotFound e) {
+                throw new RuntimeException(e);
             }
-        }
+
+            placeOrderProcess(user, order, certificate);
+
+        });
 
         userRepository.save(user);
 
-        return copyCertificate;
-    }
-
-    @Override
-    public GiftCertificate placeNewOrder(int certID, int userID) throws IdNotFound {
-        GiftCertificate certificate = get(certID);
-        User user = userRepository.findById(userID).orElseThrow(IdNotFound::new);
-        Order order = new Order(new Date());
-
-        order.setUser(user);
-        placeOrderProcess(user, order, certificate);
-        userRepository.save(user);
-
-        return certificate;
+        return order;
     }
 
     private void placeOrderProcess(User user, Order order, GiftCertificate certificate) {
+        order.setUser(user);
         order.addCertificate(certificate);
         user.placeOrder(order);
-    }
-
-    private GiftCertificate copyCertificate(GiftCertificate certificate) {
-        return new GiftCertificate(
-                certificate.getId(),
-                certificate.getName(),
-                certificate.getDescription(),
-                certificate.getPrice(),
-                certificate.getDuration(),
-                certificate.getLastUpdateDate(),
-                certificate.getCreateDate(),
-                certificate.getAssociatedTags()
-        );
     }
 
     @Override
@@ -172,11 +172,11 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificateList;
     }
 
+    //    Research about 500
     @Transactional
     public GiftCertificate delete(int id) throws IdNotFound {
         GiftCertificate certificate = get(id);
         giftRepository.deleteById(id);
-        logger.info("Deleted GifCertificate from database: " + new Gson().toJson(certificate));
 
         return certificate;
     }
@@ -192,14 +192,21 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                     certificate.setDescription((String) value);
                     break;
                 case "price":
-                    if (validateNegativeDouble((double) value)) {
-                        certificate.setPrice(BigDecimal.valueOf((Double) value));
+                    try {
+                        validateNegative((int) ((double) value));
+                    } catch (InvalidInputInformation e) {
+                        throw new RuntimeException(e);
                     }
+                    certificate.setPrice(BigDecimal.valueOf((Double) value));
+
                     break;
                 case "duration":
-                    if (validateNegativeInteger((int) value)) {
-                        certificate.setDuration((int) value);
+                    try {
+                        validateNegative((int) value);
+                    } catch (InvalidInputInformation e) {
+                        throw new RuntimeException(e);
                     }
+                    certificate.setDuration((int) value);
                     break;
                 case "associatedTags":
                     updateTags(certificate, convertToSet(value));
@@ -214,20 +221,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
-    private boolean validateNegativeInteger(int value) {
+    private void validateNegative(int value) throws InvalidInputInformation {
         if (value < 0) {
-            logger.warning("Duration incorrect information to update. Won't be updated.");
-            return false;
+            throw new InvalidInputInformation();
         }
-        return true;
-    }
-
-    private boolean validateNegativeDouble(double value) {
-        if (value < 0) {
-            logger.warning("Price incorrect information to update. Won't be updated.");
-            return false;
-        }
-        return true;
     }
 
     private boolean validateNameAndDateTypes(String sortBy, String order) {
@@ -282,7 +279,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         Predicate<GiftCertificate> predicate = null;
         switch (parameter) {
             case "nameDescriptionPart":
-                predicate = certificate -> certificate.getName().contains(filterField) || certificate.getDescription().contains(filterField);
+                predicate = certificate -> certificate.getName().contains(filterField)
+                        || certificate.getDescription().contains(filterField);
                 break;
             case "createDate":
                 predicate = certificate -> certificate.getCreateDate().contains(filterField);

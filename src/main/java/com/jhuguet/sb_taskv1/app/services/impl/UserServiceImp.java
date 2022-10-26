@@ -10,12 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class UserServiceImp implements UserService {
 
-    private UserRepository repository;
+    private final UserRepository repository;
 
     @Autowired
     public UserServiceImp(UserRepository repository) {
@@ -24,16 +25,12 @@ public class UserServiceImp implements UserService {
 
     @Override
     public User get(int id) throws IdNotFound {
-        User user = repository.findById(id).orElseThrow(IdNotFound::new);
-        updateUserOrderCost(user);
-        return user;
+        return repository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     @Override
     public List<User> getAll() {
-        List<User> users = repository.findAll();
-        updateAllUsersOrderCost(users);
-        return users;
+        return repository.findAll();
     }
 
     @Override
@@ -42,19 +39,31 @@ public class UserServiceImp implements UserService {
         return new ArrayList<>(user.getOrders());
     }
 
+
+    @Override
+    public Order highestCostOrder(int id) throws IdNotFound {
+        Comparator<Order> comparator = Comparator.comparing(Order::getCost);
+
+        getAll().forEach(user -> {
+            User maxCostUser = null;
+            Order maxCostOrder = user.getOrders().stream().max(comparator).get();
+            try {
+                maxCostUser = get(maxCostOrder.getUser().getId());
+            } catch (IdNotFound e) {
+                throw new RuntimeException(e);
+            }
+
+
+        });
+
+        return new Order();
+    }
+
     @Override
     public Order getOrder(int userID, int orderID) throws IdNotFound, OrderNotRelated {
         User user = get(userID);
-        Order order = user.getOrders().stream()
+        return user.getOrders().stream()
                 .filter(x -> x.getId() == orderID).findAny().orElseThrow(OrderNotRelated::new);
-        return order;
     }
 
-    private void updateUserOrderCost(User user) {
-        user.getOrders().forEach(o -> o.calculateCost());
-    }
-
-    private void updateAllUsersOrderCost(List<User> users) {
-        users.forEach(u -> updateUserOrderCost(u));
-    }
 }
