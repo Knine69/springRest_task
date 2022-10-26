@@ -1,3 +1,9 @@
+INSERT INTO users (username, email) VALUES ('Doe1', 'jdoe1@domain.com');
+INSERT INTO users (username, email) VALUES ('Doe2', 'jdoe2@domain.com');
+INSERT INTO users (username, email) VALUES ('Doe3', 'jdoe3@domain.com');
+INSERT INTO users (username, email) VALUES ('Doe4', 'jdoe4@domain.com');
+INSERT INTO users (username, email) VALUES ('Doe5', 'jdoe5@domain.com');
+
 INSERT INTO tag (tag_name) VALUES ('Science');
 INSERT INTO tag (tag_name) VALUES ('Cloud');
 INSERT INTO tag (tag_name) VALUES ('BigData');
