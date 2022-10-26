@@ -2,8 +2,8 @@ package com.jhuguet.sb_taskv1.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,8 +11,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -22,7 +23,6 @@ import java.util.Set;
 @Entity
 @Table(name = "orders")
 @Getter
-@NoArgsConstructor
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,14 @@ public class Order {
 
     @Column(name = "placed_on")
     private Date timestamp;
-    @OneToMany(mappedBy = "userOrder")
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "order_certificate",
+            joinColumns = {
+                    @JoinColumn(name = "order_id", referencedColumnName = "id")
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(name = "certificate_id", referencedColumnName = "id")
+            })
     private Set<GiftCertificate> certificates;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -45,10 +52,9 @@ public class Order {
         calculateCost();
     }
 
-    public Order(Date timestamp) {
-        this.timestamp = timestamp;
+    public Order() {
+        this.timestamp = new Date();
         this.certificates = new HashSet<>();
-        calculateCost();
     }
 
     public void addCertificate(GiftCertificate certificate) {
@@ -56,7 +62,7 @@ public class Order {
         calculateCost();
     }
 
-    public void calculateCost() {
+    private void calculateCost() {
         this.cost = BigDecimal.ZERO;
         this.certificates.forEach(c -> this.cost = this.cost.add(new BigDecimal(c.getPrice().toString())));
     }
