@@ -1,8 +1,11 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
+import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.models.Order;
+import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +60,8 @@ public class UserController {
     }
 
     @ResponseBody
-    @GetMapping("/{userID}/highestCostOrder")
-    public Order highestCostOrder(@PathVariable int userID) throws IdNotFound {
-        return userService.highestCostOrder(userID);
+    @GetMapping("/mostWidelyUsedTag")
+    public Tag highestCostOrder() throws IdNotFound, NoExistingOrders, NoTagInOrder {
+        return userService.mostUsedTag();
     }
 }
