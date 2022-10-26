@@ -6,6 +6,8 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
+import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,15 +41,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(OrderNotRelated.class)
     public ResponseEntity<?> orderNotRelated(OrderNotRelated exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(IdAlreadyInUse.class)
     public ResponseEntity<?> idAlreadyInUse(IdAlreadyInUse exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoExistingOrders.class)
+    public ResponseEntity<?> noExistingOrders(NoExistingOrders exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoTagInOrder.class)
+    public ResponseEntity<?> noTagInOrder(NoTagInOrder exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
     }
 
 }
