@@ -48,7 +48,7 @@ public class TagController {
     }
 
     @ResponseBody
-    @GetMapping("/")
+    @GetMapping
     public List<Tag> getAll() throws IdNotFound {
         return tagService.getAll();
     }

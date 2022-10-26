@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @RestController
-@RequestMapping(path = "/user")
+@RequestMapping(path = "/users")
 public class UserController {
 
     private final Logger logger = Logger.getLogger(GiftCertificateController.class.getName());
@@ -28,7 +28,7 @@ public class UserController {
     }
 
     @ResponseBody
-    @GetMapping("/")
+    @GetMapping
     public List<User> getAll() {
         logger.info("Retrieving all Users");
         return userService.getAll();
@@ -40,10 +40,11 @@ public class UserController {
         logger.info("Retrieving User: " + id);
         return userService.get(Integer.parseInt(id));
     }
+
     @ResponseBody
     @GetMapping("/{userID}/orders/{orderID}")
     public Order getOrder(@PathVariable(name = "userID") String userID,
-                                @PathVariable(name = "orderID") String orderID) throws IdNotFound, OrderNotRelated {
+                          @PathVariable(name = "orderID") String orderID) throws IdNotFound, OrderNotRelated {
         logger.info("Retrieving order " + orderID + " of user: " + userID);
         return userService.getOrder(Integer.parseInt(userID), Integer.parseInt(orderID));
     }
@@ -53,5 +54,11 @@ public class UserController {
     public List<Order> getOrders(@PathVariable String id) throws IdNotFound {
         logger.info("Retrieving orders of user " + id);
         return userService.getOrders(Integer.parseInt(id));
+    }
+
+    @ResponseBody
+    @GetMapping("/{userID}/highestCostOrder")
+    public Order highestCostOrder(@PathVariable int userID) throws IdNotFound {
+        return userService.highestCostOrder(userID);
     }
 }

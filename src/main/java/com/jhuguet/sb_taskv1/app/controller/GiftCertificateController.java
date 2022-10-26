@@ -4,6 +4,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
+import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,7 +60,7 @@ public class GiftCertificateController {
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @ResponseBody
-    @GetMapping("/")
+    @GetMapping
     public List<GiftCertificate> getAll() throws IdNotFound, InvalidInputInformation {
         return giftCertificateService.getAll();
     }
@@ -88,22 +89,16 @@ public class GiftCertificateController {
      * @return GiftCertificate object saved into Database
      */
     @PostMapping
-    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity {
+    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation {
         return giftCertificateService.save(giftCertificate);
     }
 
-    @PostMapping("/{certID}/user/{userID}/addToOrder/{orderID}")
-    public GiftCertificate placeNewInOrder(@PathVariable(name = "certID") String certID,
-                                      @PathVariable(name = "userID") String userID,
-                                      @PathVariable(name = "orderID") String orderID) throws IdNotFound {
+
+    @PostMapping("/user/{userID}")
+    public Order placeNewOrder(@RequestParam List<Integer> certID,
+                               @PathVariable(name = "userID") int userID) throws IdNotFound {
         return giftCertificateService
-                .placeNewInOrder(Integer.parseInt(certID), Integer.parseInt(orderID), Integer.parseInt(userID));
-    }
-    @PostMapping("/{certID}/user/{userID}/placeNew")
-    public GiftCertificate placeNewOrder(@PathVariable(name = "certID") String certID,
-                                      @PathVariable(name = "userID") String userID) throws IdNotFound {
-        return giftCertificateService
-                .placeNewOrder(Integer.parseInt(certID), Integer.parseInt(userID));
+                .placeNewOrder(certID, userID);
     }
 
     /**
@@ -129,7 +124,8 @@ public class GiftCertificateController {
      * @throws IdNotFound Exception thrown when given ID is not found
      */
     @DeleteMapping("/{id}")
-    public GiftCertificate delete(@PathVariable String id) throws IdNotFound {
-        return giftCertificateService.delete(Integer.parseInt(id));
+    public GiftCertificate delete(@PathVariable int id) throws IdNotFound {
+        return giftCertificateService.delete(id);
     }
+
 }
