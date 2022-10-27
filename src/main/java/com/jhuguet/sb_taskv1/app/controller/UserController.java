@@ -41,7 +41,7 @@ public class UserController {
                              @RequestParam(defaultValue = "3") int size,
                              @RequestParam(defaultValue = "true") boolean asc) throws InvalidInputInformation {
         pageResponse.validateInput(page, size);
-        return userService.getAllPageable(pageResponse.giveDynamicPageable(page, size, asc));
+        return userService.getAll(pageResponse.giveDynamicPageable(page, size, asc));
     }
 
     @ResponseBody
