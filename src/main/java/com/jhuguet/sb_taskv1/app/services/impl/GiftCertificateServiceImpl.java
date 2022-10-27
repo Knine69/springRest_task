@@ -16,6 +16,9 @@ import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -52,7 +55,11 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
 
-    public List<GiftCertificate> getAll() {
+    public Page<GiftCertificate> getAllPageable(Pageable pageable) {
+        return giftRepository.findAll(pageable);
+    }
+
+    private List<GiftCertificate> getAll() {
         return giftRepository.findAll();
     }
 
@@ -137,8 +144,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificate> filterCertificates(String tagName, String nameOrDescriptionPart, String nameOrDate, String order) {
-        List<GiftCertificate> resultList = getAll();
+    public Page<GiftCertificate> filterCertificates(String tagName, String nameOrDescriptionPart, String nameOrDate, String order, Pageable pageable) {
+        List<GiftCertificate> resultList = getAllPageable(pageable).getContent();
         if (!tagName.isEmpty()) {
             resultList = getByTagName(resultList, tagName);
         }
@@ -149,7 +156,11 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
             resultList = getByDateOrName(resultList, nameOrDate, order);
         }
 
-        return resultList;
+        if(resultList.isEmpty()){
+            return null;
+        }
+
+        return new PageImpl<>(resultList);
     }
 
     private List<GiftCertificate> getByTagName(List<GiftCertificate> currentList, String name) {

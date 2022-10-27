@@ -5,16 +5,18 @@ import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
 
 public interface GiftCertificateService {
-    List<GiftCertificate> getAll();
+    Page<GiftCertificate> getAllPageable(Pageable pageable);
 
     GiftCertificate get(int id) throws IdNotFound;
 
-    List<GiftCertificate> filterCertificates(String tagName, String nameOrDescriptionPart, String nameOrDate, String order);
+    Page<GiftCertificate> filterCertificates(String tagName, String nameOrDescriptionPart, String nameOrDate, String order, Pageable pageable);
 
     GiftCertificate save(GiftCertificate certificate) throws MissingEntity, InvalidInputInformation;
 
