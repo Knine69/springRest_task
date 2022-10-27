@@ -2,30 +2,34 @@ package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.Tag;
+import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
  * Public API Tag controller
  */
 @RestController
-@RequestMapping("/tag")
+@RequestMapping("/tags")
 public class TagController {
 
     private final Logger logger = Logger.getLogger(TagController.class.getName());
+    private final PageResponse pageResponse = new PageResponse();
 
     private final TagService tagService;
 
@@ -49,8 +53,11 @@ public class TagController {
 
     @ResponseBody
     @GetMapping
-    public List<Tag> getAll() throws IdNotFound {
-        return tagService.getAll();
+    public Page<Tag> getAll(@RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "3") int size,
+                            @RequestParam(defaultValue = "true") boolean asc) throws IdNotFound, InvalidInputInformation {
+        pageResponse.validateInput(page, size);
+        return tagService.getAll(pageResponse.giveDynamicPageable(page, size, asc));
     }
 
     /**

@@ -1,17 +1,21 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
+import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +27,7 @@ import java.util.logging.Logger;
 public class UserController {
 
     private final Logger logger = Logger.getLogger(GiftCertificateController.class.getName());
+    private final PageResponse pageResponse = new PageResponse();
     private final UserService userService;
 
     @Autowired
@@ -32,9 +37,11 @@ public class UserController {
 
     @ResponseBody
     @GetMapping
-    public List<User> getAll() {
-        logger.info("Retrieving all Users");
-        return userService.getAll();
+    public Page<User> getAll(@RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "3") int size,
+                             @RequestParam(defaultValue = "true") boolean asc) throws InvalidInputInformation {
+        pageResponse.validateInput(page, size);
+        return userService.getAllPageable(pageResponse.giveDynamicPageable(page, size, asc));
     }
 
     @ResponseBody

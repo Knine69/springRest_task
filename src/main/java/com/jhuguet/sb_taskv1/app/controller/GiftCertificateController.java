@@ -5,12 +5,11 @@ import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Order;
+import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,16 +23,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Public API GiftCertificate controller
  */
 @RestController
-@RequestMapping(path = "/certificate")
+@RequestMapping(path = "/certificates")
 public class GiftCertificateController {
 
-    private final Logger logger = Logger.getLogger(GiftCertificateController.class.getName());
+    private final PageResponse pageResponse = new PageResponse();
 
     private final GiftCertificateService giftCertificateService;
 
@@ -65,9 +63,11 @@ public class GiftCertificateController {
      */
     @ResponseBody
     @GetMapping
-    public Page<GiftCertificate> getAll() throws IdNotFound, InvalidInputInformation {
-        List<GiftCertificate> certificates = giftCertificateService.getAll();
-        return createPageResponse(certificates, 0, 5);
+    public Page<GiftCertificate> getAll(@RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "3") int size,
+                                        @RequestParam(defaultValue = "true") boolean asc) throws IdNotFound, InvalidInputInformation {
+        pageResponse.validateInput(page, size);
+        return giftCertificateService.getAllPageable(pageResponse.giveDynamicPageable(page, size, asc));
     }
 
     /**
@@ -82,8 +82,12 @@ public class GiftCertificateController {
     @ResponseBody
     @GetMapping("/getBy")
     public Page<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
-                                       @RequestParam String nameOrDate, @RequestParam String order) {
-        return createPageResponse(giftCertificateService.filterCertificates(tagName, partOfNameOrDescription, nameOrDate, order), 0, 5);
+                                       @RequestParam String nameOrDate, @RequestParam String order,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "3") int size) throws InvalidInputInformation {
+        pageResponse.validateInput(size, page);
+        return giftCertificateService.filterCertificates(tagName, partOfNameOrDescription,
+                nameOrDate, order, PageRequest.of(page, size));
     }
 
 
@@ -99,7 +103,7 @@ public class GiftCertificateController {
     }
 
 
-    @PostMapping("/user/{userID}")
+    @PostMapping("/users/{userID}")
     public Order placeNewOrder(@RequestParam List<Integer> certID,
                                @PathVariable(name = "userID") int userID) throws IdNotFound {
         return giftCertificateService
@@ -131,10 +135,5 @@ public class GiftCertificateController {
     @DeleteMapping("/{id}")
     public GiftCertificate delete(@PathVariable int id) throws IdNotFound {
         return giftCertificateService.delete(id);
-    }
-
-    private Page<GiftCertificate> createPageResponse(List<GiftCertificate> certificates, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return new PageImpl<>(certificates, pageable, certificates.size());
     }
 }
