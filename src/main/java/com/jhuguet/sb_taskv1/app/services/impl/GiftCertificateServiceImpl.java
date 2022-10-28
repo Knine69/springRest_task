@@ -6,6 +6,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
@@ -55,8 +56,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
 
-    public Page<GiftCertificate> getAllPageable(Pageable pageable) {
-        return giftRepository.findAll(pageable);
+    public Page<GiftCertificate> getAllPageable(Pageable pageable) throws PageNotFound {
+        Page<GiftCertificate> page = giftRepository.findAll(pageable);
+
+        if (page.getTotalPages() <= pageable.getPageNumber()) {
+            throw new PageNotFound();
+        }
+        return page;
     }
 
     private List<GiftCertificate> getAll() {
@@ -144,7 +150,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public Page<GiftCertificate> filterCertificates(String tagName, String nameOrDescriptionPart, String nameOrDate, String order, Pageable pageable) {
+    public Page<GiftCertificate> filterCertificates(
+            String tagName,
+            String nameOrDescriptionPart,
+            String nameOrDate,
+            String order,
+            Pageable pageable) throws PageNotFound {
+
         List<GiftCertificate> resultList = getAllPageable(pageable).getContent();
         if (!tagName.isEmpty()) {
             resultList = getByTagName(resultList, tagName);
@@ -156,8 +168,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
             resultList = getByDateOrName(resultList, nameOrDate, order);
         }
 
-        if(resultList.isEmpty()){
-            return null;
+        if (resultList.isEmpty()) {
+            throw new PageNotFound();
         }
 
         return new PageImpl<>(resultList);

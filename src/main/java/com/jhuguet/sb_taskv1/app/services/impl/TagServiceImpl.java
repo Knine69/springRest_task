@@ -3,6 +3,7 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.services.TagService;
@@ -24,8 +25,14 @@ public class TagServiceImpl implements TagService {
     }
 
 
-    public Page<Tag> getAll(Pageable pageable) {
-        return tagRepository.findAll(pageable);
+    public Page<Tag> getAll(Pageable pageable) throws PageNotFound {
+        Page<Tag> page = tagRepository.findAll(pageable);
+
+        if (page.getTotalPages() <= pageable.getPageNumber()) {
+            throw new PageNotFound();
+        }
+
+        return page;
     }
 
     public Tag get(int id) throws IdNotFound {

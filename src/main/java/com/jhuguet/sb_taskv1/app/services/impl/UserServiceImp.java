@@ -4,6 +4,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
+import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -41,8 +42,15 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public Page<User> getAll(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    public Page<User> getAll(Pageable pageable) throws PageNotFound {
+
+        Page<User> page = userRepository.findAll(pageable);
+
+        if (page.getTotalPages() <= pageable.getPageNumber()) {
+            throw new PageNotFound();
+        }
+
+        return page;
     }
 
     @Override
