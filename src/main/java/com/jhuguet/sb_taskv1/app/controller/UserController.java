@@ -5,6 +5,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
+import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -39,7 +40,7 @@ public class UserController {
     @GetMapping
     public Page<User> getAll(@RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "3") int size,
-                             @RequestParam(defaultValue = "true") boolean asc) throws InvalidInputInformation {
+                             @RequestParam(defaultValue = "true") boolean asc) throws InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
         return userService.getAll(pageResponse.giveDynamicPageable(page, size, asc));
     }

@@ -4,6 +4,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.TagService;
@@ -55,7 +56,7 @@ public class TagController {
     @GetMapping
     public Page<Tag> getAll(@RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "3") int size,
-                            @RequestParam(defaultValue = "true") boolean asc) throws IdNotFound, InvalidInputInformation {
+                            @RequestParam(defaultValue = "true") boolean asc) throws IdNotFound, InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
         return tagService.getAll(pageResponse.giveDynamicPageable(page, size, asc));
     }
