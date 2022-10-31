@@ -5,7 +5,6 @@ import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
-import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,14 +17,12 @@ public class BootUpInfo {
 
     private final UserRepository userRepository;
     private final GiftCertificateRepository giftCertificateRepository;
-    private final OrderRepository orderRepository;
 
 
     @Autowired
-    public BootUpInfo(UserRepository userRepository, GiftCertificateRepository giftCertificateRepository, OrderRepository orderRepository) {
+    public BootUpInfo(UserRepository userRepository, GiftCertificateRepository giftCertificateRepository) {
         this.userRepository = userRepository;
         this.giftCertificateRepository = giftCertificateRepository;
-        this.orderRepository = orderRepository;
     }
 
     public void prepareInfo() {
@@ -51,7 +48,7 @@ public class BootUpInfo {
         );
         Tag tag = new Tag("Tag" + i);
         User user = new User("user" + i, "user" + i + "@domain.com", new HashSet<>());
-        Order order = new Order();
+        Order order = new Order(i);
 
         certificate.assignTag(tag);
         order.addCertificate(certificate);
