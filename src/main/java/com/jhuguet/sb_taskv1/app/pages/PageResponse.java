@@ -3,7 +3,9 @@ package com.jhuguet.sb_taskv1.app.pages;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PageResponse {
 
     public void validateInput(int page, int size) throws InvalidInputInformation {
