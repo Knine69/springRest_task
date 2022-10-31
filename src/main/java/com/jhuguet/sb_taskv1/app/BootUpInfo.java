@@ -36,16 +36,9 @@ public class BootUpInfo {
     }
 
     private void addAll(int i) {
-        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        GiftCertificate certificate = new GiftCertificate(
-                "Certificate" + i,
-                "Description" + i,
-                BigDecimal.valueOf(10.00),
-                10,
-                localDate,
-                localDate,
-                new HashSet<>()
-        );
+
+        GiftCertificate certificate = buildGiftCertificate(i);
+
         Tag tag = new Tag("Tag" + i);
         User user = new User("user" + i, "user" + i + "@domain.com", new HashSet<>());
         Order order = new Order(i);
@@ -61,16 +54,19 @@ public class BootUpInfo {
     }
 
     private void addCertificate(int i) {
-        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        GiftCertificate certificate = new GiftCertificate(
-                "Certificate" + i,
-                "Description" + i,
-                BigDecimal.valueOf(10.00),
-                10,
-                localDate,
-                localDate,
-                new HashSet<>()
-        );
+        GiftCertificate certificate = buildGiftCertificate(i);
         giftCertificateRepository.save(certificate);
+    }
+
+    GiftCertificate buildGiftCertificate(int i) {
+        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return GiftCertificate.builder()
+                .name("Certificate" + i)
+                .description("Description" + i)
+                .price(BigDecimal.valueOf(10.00))
+                .duration(10)
+                .createDate(localDate)
+                .lastUpdateDate(localDate)
+                .associatedTags(new HashSet<>()).build();
     }
 }
