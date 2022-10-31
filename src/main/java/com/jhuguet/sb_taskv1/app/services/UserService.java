@@ -18,7 +18,7 @@ public interface UserService {
 
     Page<User> getAll(Pageable pageable) throws PageNotFound;
 
-    Order getOrder(int userID, int orderID) throws IdNotFound, OrderNotRelated;
+    Order getOrder(int userId, int orderId) throws IdNotFound, OrderNotRelated;
 
     List<Order> getOrders(int id) throws IdNotFound;
 

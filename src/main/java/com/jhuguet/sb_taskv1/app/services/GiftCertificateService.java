@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.services;
 
+import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
@@ -19,12 +20,12 @@ public interface GiftCertificateService {
 
     Page<GiftCertificate> filterCertificates(String tagName, String nameOrDescriptionPart, String nameOrDate, String order, Pageable pageable) throws PageNotFound;
 
-    GiftCertificate save(GiftCertificate certificate) throws MissingEntity, InvalidInputInformation;
+    GiftCertificate save(GiftCertificate certificate) throws MissingEntity, InvalidInputInformation, IdAlreadyInUse;
 
     GiftCertificate update(int id, Map<String, Object> patch) throws IdNotFound, InvalidInputInformation;
 
     GiftCertificate delete(int id) throws IdNotFound;
 
-    Order placeNewOrder(List<Integer> certID, int userID) throws IdNotFound;
+    Order placeNewOrder(List<Integer> certId, int userId) throws IdNotFound;
 
 }
