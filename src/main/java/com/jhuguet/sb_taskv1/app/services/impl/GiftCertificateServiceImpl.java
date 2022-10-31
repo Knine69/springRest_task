@@ -74,16 +74,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Transactional
-    public GiftCertificate save(GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation {
+    public GiftCertificate save(GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation, IdAlreadyInUse {
         if (!Objects.isNull(giftCertificate)) {
-            validateNegative(giftCertificate.getDuration());
-            validateNegative((giftCertificate.getPrice().intValue()));
-            saveClearing(giftCertificate);
-
-            String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            giftCertificate.setCreateDate(localDate);
-            giftCertificate.setLastUpdateDate(localDate);
-
+            savingClearance(giftCertificate);
             giftRepository.save(giftCertificate);
         } else {
             throw new MissingEntity();
@@ -92,23 +85,23 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return giftCertificate;
     }
 
-    private void saveClearing(GiftCertificate certificate) {
-        certificate.getAssociatedTags().forEach(t -> {
-            try {
-                validateNegative(t.getId());
-            } catch (InvalidInputInformation e) {
-                throw new RuntimeException(e);
-            }
+    private void savingClearance(GiftCertificate certificate) throws InvalidInputInformation, IdAlreadyInUse {
+        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        validateNegative(certificate.getDuration());
+        validateNegative((certificate.getPrice().intValue()));
+
+        certificate.setCreateDate(localDate);
+        certificate.setLastUpdateDate(localDate);
+
+        for (Tag t : certificate.getAssociatedTags()) {
+            validateNegative(t.getId());
             Tag tag = tagRepository.findById(t.getId()).get();
             if (!t.getName().equalsIgnoreCase(tag.getName())) {
-                try {
-                    throw new IdAlreadyInUse();
-                } catch (IdAlreadyInUse e) {
-                    throw new RuntimeException(e);
-                }
+                throw new IdAlreadyInUse();
             }
+        }
 
-        });
     }
 
     @Override
@@ -122,21 +115,14 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public Order placeNewOrder(List<Integer> certID, int userID) throws IdNotFound {
+    public Order placeNewOrder(List<Integer> certificatesIds, int userID) throws IdNotFound {
         User user = userRepository.findById(userID).orElseThrow(IdNotFound::new);
-        Order order = new Order();
+        Order order = new Order(orderRepository.findAll().size() + 1);
 
-        certID.forEach(id -> {
-            GiftCertificate certificate = null;
-            try {
-                certificate = get(id);
-            } catch (IdNotFound e) {
-                throw new RuntimeException(e);
-            }
-
+        for (Integer id : certificatesIds) {
+            GiftCertificate certificate = get(id);
             placeOrderProcess(user, order, certificate);
-
-        });
+        }
 
         userRepository.save(user);
 
@@ -195,7 +181,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificateList;
     }
 
-    //    Research about 500
     @Transactional
     public GiftCertificate delete(int id) throws IdNotFound {
         GiftCertificate certificate = get(id);
@@ -204,47 +189,38 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificate;
     }
 
-    private GiftCertificate partialUpdate(int id, Map<String, Object> patch) throws IdNotFound {
+    private GiftCertificate partialUpdate(int id, Map<String, Object> patch) throws IdNotFound, InvalidInputInformation {
         GiftCertificate certificate = get(id);
-        patch.forEach((key, value) -> {
-            switch (key) {
+
+        for (Map.Entry<String, Object> entry : patch.entrySet()) {
+            switch (entry.getKey()) {
                 case "name":
-                    certificate.setName((String) value);
+                    certificate.setName((String) entry.getValue());
                     break;
                 case "description":
-                    certificate.setDescription((String) value);
+                    certificate.setDescription((String) entry.getValue());
                     break;
                 case "price":
-                    try {
-                        validateNegative((int) ((double) value));
-                    } catch (InvalidInputInformation e) {
-                        throw new RuntimeException(e);
-                    }
-                    certificate.setPrice(BigDecimal.valueOf((Double) value));
-
+                    validateNegative((Double) entry.getValue());
+                    certificate.setPrice(BigDecimal.valueOf((Double) entry.getValue()));
                     break;
                 case "duration":
-                    try {
-                        validateNegative((int) value);
-                    } catch (InvalidInputInformation e) {
-                        throw new RuntimeException(e);
-                    }
-                    certificate.setDuration((int) value);
+                    validateNegative((int) entry.getValue());
+                    certificate.setDuration((int) entry.getValue());
                     break;
                 case "associatedTags":
-                    updateTags(certificate, convertToSet(value));
+                    updateTags(certificate, convertToSet(entry.getValue()));
                     break;
                 default:
-                    logger.info("Field " + key + " is a non-updatable.");
+                    logger.info("Field " + entry.getKey() + " is a non-updatable.");
                     break;
             }
-            certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-        });
-
+        }
+        certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         return certificate;
     }
 
-    private void validateNegative(int value) throws InvalidInputInformation {
+    private void validateNegative(double value) throws InvalidInputInformation {
         if (value < 0) {
             throw new InvalidInputInformation();
         }
