@@ -7,13 +7,15 @@ import org.springframework.data.domain.Sort;
 public class PageResponse {
 
     public void validateInput(int page, int size) throws InvalidInputInformation {
-        if (page < 0 || size < 0) {
+        if (page < 1 || size < 1) {
             throw new InvalidInputInformation();
         }
     }
 
-    public PageRequest giveDynamicPageable(int page, int size, boolean sorted) {
-        return PageRequest.of(page, size, sorted ? Sort.by("id").ascending() :
-                Sort.by("id").descending());
+    public PageRequest giveDynamicPageable(int page, int size, String sorted) {
+        return PageRequest.of(page - 1, size, sorted.equalsIgnoreCase("asc") ?
+                Sort.by("id").ascending() :
+                Sort.by("id").descending()
+        );
     }
 }
