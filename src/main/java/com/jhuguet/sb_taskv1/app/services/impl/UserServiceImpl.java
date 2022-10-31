@@ -68,27 +68,33 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Tag mostUsedTag() throws IdNotFound, NoExistingOrders, NoTagInOrder {
-        Tag tag = null;
+    public Tag mostUsedTag() throws NoExistingOrders, NoTagInOrder, IdNotFound {
+        Tag tag;
         Order order = orderRepository.getHighestCostOrder();
         if (order != null) {
-            Map<Integer, Integer> currentTags = mapCurrentTags();
-
-            order.getCertificates().forEach(c ->
-                    c.getAssociatedTags()
-                            .forEach(t -> currentTags.merge(t.getId(), 1, Integer::sum)));
-
-            int tagID = getMaxTagID(currentTags);
-
-            if (tagID > 0) {
-                tag = tagRepository.findById(tagID).orElseThrow(IdNotFound::new);
-            } else {
-                throw new NoTagInOrder();
-            }
+            tag = countTagIterations(order);
         } else {
             throw new NoExistingOrders();
         }
 
+        return tag;
+    }
+
+    private Tag countTagIterations(Order order) throws IdNotFound, NoTagInOrder {
+        Tag tag;
+        Map<Integer, Integer> currentTags = mapCurrentTags();
+
+        order.getCertificates().forEach(c ->
+                c.getAssociatedTags()
+                        .forEach(t -> currentTags.merge(t.getId(), 1, Integer::sum)));
+
+        int tagID = getMaxTagID(currentTags);
+
+        if (tagID > 0) {
+            tag = tagRepository.findById(tagID).orElseThrow(IdNotFound::new);
+        } else {
+            throw new NoTagInOrder();
+        }
         return tag;
     }
 
