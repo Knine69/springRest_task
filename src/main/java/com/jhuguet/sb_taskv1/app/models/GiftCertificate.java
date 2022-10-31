@@ -2,6 +2,7 @@ package com.jhuguet.sb_taskv1.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
@@ -25,6 +26,7 @@ import java.util.Set;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class GiftCertificate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,28 +56,6 @@ public class GiftCertificate {
     @JsonIgnore
     private Set<Order> userOrder;
 
-    public GiftCertificate(String name, String description, BigDecimal price, int duration,
-                           String createDate, String lastUpdateDate, Set<Tag> associatedTags) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.duration = duration;
-        this.createDate = createDate;
-        this.lastUpdateDate = lastUpdateDate;
-        this.associatedTags = associatedTags;
-    }
-
-    public GiftCertificate(int id, String name, String description, BigDecimal price, int duration,
-                           String createDate, String lastUpdateDate, Set<Tag> associatedTags) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.duration = duration;
-        this.createDate = createDate;
-        this.lastUpdateDate = lastUpdateDate;
-        this.associatedTags = associatedTags;
-    }
 
     public void setName(String name) {
         this.name = name;
