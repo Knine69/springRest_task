@@ -2,6 +2,7 @@ package com.jhuguet.sb_taskv1.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -23,6 +24,7 @@ import java.util.Set;
 @Entity
 @Table(name = "orders")
 @Getter
+@NoArgsConstructor
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,7 +54,8 @@ public class Order {
         calculateCost();
     }
 
-    public Order() {
+    public Order(int id) {
+        this.id = id;
         this.timestamp = new Date();
         this.certificates = new HashSet<>();
     }
