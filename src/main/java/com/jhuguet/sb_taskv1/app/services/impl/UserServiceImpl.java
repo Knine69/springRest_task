@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class UserServiceImp implements UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final OrderRepository orderRepository;
 
     @Autowired
-    public UserServiceImp(UserRepository userRepository, TagRepository tagRepository, OrderRepository orderRepository) {
+    public UserServiceImpl(UserRepository userRepository, TagRepository tagRepository, OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.tagRepository = tagRepository;
         this.orderRepository = orderRepository;

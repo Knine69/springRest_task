@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
+import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -32,12 +32,14 @@ import java.util.Map;
 @RequestMapping(path = "/certificates")
 public class GiftCertificateController {
 
-    private final PageResponse pageResponse = new PageResponse();
+    @Autowired
+    private final PageResponse pageResponse;
 
     private final GiftCertificateService giftCertificateService;
 
     @Autowired
-    public GiftCertificateController(GiftCertificateService giftCertificateService) {
+    public GiftCertificateController(PageResponse pageResponse, GiftCertificateService giftCertificateService) {
+        this.pageResponse = pageResponse;
         this.giftCertificateService = giftCertificateService;
     }
 
@@ -49,7 +51,6 @@ public class GiftCertificateController {
      * @throws IdNotFound              Exception thrown when given ID is not found
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
-    @ResponseBody
     @GetMapping("/{id}")
     public GiftCertificate get(@PathVariable String id) throws IdNotFound, InvalidInputInformation {
         return giftCertificateService.get(Integer.parseInt(id));
@@ -62,13 +63,12 @@ public class GiftCertificateController {
      * @throws IdNotFound              Exception thrown when given ID is not found
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
-    @ResponseBody
     @GetMapping
     public Page<GiftCertificate> getAll(@RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "3") int size,
-                                        @RequestParam(defaultValue = "true") boolean asc) throws IdNotFound, InvalidInputInformation, PageNotFound {
+                                        @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
-        return giftCertificateService.getAllPageable(pageResponse.giveDynamicPageable(page, size, asc));
+        return giftCertificateService.getAllPageable(pageResponse.giveDynamicPageable(page, size, sort));
     }
 
     /**
@@ -80,7 +80,6 @@ public class GiftCertificateController {
      * @param order                   Intended ascendant or descendant order of list
      * @return Filtered and/or sorted List of GiftCertificates
      */
-    @ResponseBody
     @GetMapping("/getBy")
     public Page<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
                                        @RequestParam String nameOrDate, @RequestParam String order,
@@ -99,16 +98,16 @@ public class GiftCertificateController {
      * @return GiftCertificate object saved into Database
      */
     @PostMapping
-    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation {
+    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation, IdAlreadyInUse {
         return giftCertificateService.save(giftCertificate);
     }
 
 
     @PostMapping("/users/{userID}")
-    public Order placeNewOrder(@RequestParam List<Integer> certID,
+    public Order placeNewOrder(@RequestParam List<Integer> certificatesIds,
                                @PathVariable(name = "userID") int userID) throws IdNotFound {
         return giftCertificateService
-                .placeNewOrder(certID, userID);
+                .placeNewOrder(certificatesIds, userID);
     }
 
     /**
@@ -121,9 +120,9 @@ public class GiftCertificateController {
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PatchMapping("/{certId}")
-    public GiftCertificate update(@PathVariable("certId") String id
-            , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidInputInformation {
-        return giftCertificateService.update(Integer.parseInt(id), patch);
+    public GiftCertificate update(@PathVariable("certId") int id,
+                                  @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidInputInformation {
+        return giftCertificateService.update(id, patch);
     }
 
     /**

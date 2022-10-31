@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -36,38 +35,33 @@ public class UserController {
         this.userService = service;
     }
 
-    @ResponseBody
     @GetMapping
     public Page<User> getAll(@RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "3") int size,
-                             @RequestParam(defaultValue = "true") boolean asc) throws InvalidInputInformation, PageNotFound {
+                             @RequestParam(defaultValue = "asc") String sort) throws InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
-        return userService.getAll(pageResponse.giveDynamicPageable(page, size, asc));
+        return userService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
     }
 
-    @ResponseBody
     @GetMapping("/{id}")
-    public User get(@PathVariable String id) throws IdNotFound {
+    public User get(@PathVariable int id) throws IdNotFound {
         logger.info("Retrieving User: " + id);
-        return userService.get(Integer.parseInt(id));
+        return userService.get(id);
     }
 
-    @ResponseBody
-    @GetMapping("/{userID}/orders/{orderID}")
-    public Order getOrder(@PathVariable(name = "userID") String userID,
-                          @PathVariable(name = "orderID") String orderID) throws IdNotFound, OrderNotRelated {
-        logger.info("Retrieving order " + orderID + " of user: " + userID);
-        return userService.getOrder(Integer.parseInt(userID), Integer.parseInt(orderID));
+    @GetMapping("/{userId}/orders/{orderId}")
+    public Order getOrder(@PathVariable int userId,
+                          @PathVariable int orderId) throws IdNotFound, OrderNotRelated {
+        logger.info("Retrieving order " + orderId + " of user: " + userId);
+        return userService.getOrder(userId, orderId);
     }
 
-    @ResponseBody
     @GetMapping("/{id}/orders")
-    public List<Order> getOrders(@PathVariable String id) throws IdNotFound {
+    public List<Order> getOrders(@PathVariable int id) throws IdNotFound {
         logger.info("Retrieving orders of user " + id);
-        return userService.getOrders(Integer.parseInt(id));
+        return userService.getOrders(id);
     }
 
-    @ResponseBody
     @GetMapping("/mostWidelyUsedTag")
     public Tag highestCostOrder() throws IdNotFound, NoExistingOrders, NoTagInOrder {
         return userService.mostUsedTag();

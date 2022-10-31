@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.logging.Logger;
@@ -46,19 +45,17 @@ public class TagController {
      * @return will return pertaining List-of or single Tag retrieved from DB
      * @throws IdNotFound Exception thrown when given ID is not found
      */
-    @ResponseBody
     @GetMapping("/{id}")
-    public Tag get(@PathVariable(required = false) String id) throws IdNotFound {
-        return tagService.get(Integer.parseInt(id));
+    public Tag get(@PathVariable(required = false) int id) throws IdNotFound {
+        return tagService.get(id);
     }
 
-    @ResponseBody
     @GetMapping
     public Page<Tag> getAll(@RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "3") int size,
-                            @RequestParam(defaultValue = "true") boolean asc) throws IdNotFound, InvalidInputInformation, PageNotFound {
+                            @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
-        return tagService.getAll(pageResponse.giveDynamicPageable(page, size, asc));
+        return tagService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
     }
 
     /**
@@ -82,9 +79,9 @@ public class TagController {
      *                                        deleted
      */
     @DeleteMapping("/{id}")
-    public Tag delete(@PathVariable String id) throws IdNotFound, CertificateAssociatedException {
+    public Tag delete(@PathVariable int id) throws IdNotFound, CertificateAssociatedException {
         logger.info("Dropping tag: " + id);
-        return tagService.delete(Integer.parseInt(id));
+        return tagService.delete(id);
     }
 
 }
