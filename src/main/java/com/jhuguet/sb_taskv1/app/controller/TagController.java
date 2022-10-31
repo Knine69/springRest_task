@@ -10,6 +10,7 @@ import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.logging.Logger;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * Public API Tag controller
@@ -51,11 +55,13 @@ public class TagController {
     }
 
     @GetMapping
-    public Page<Tag> getAll(@RequestParam(defaultValue = "0") int page,
-                            @RequestParam(defaultValue = "3") int size,
-                            @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
+    public EntityModel<Page<Tag>> getAll(@RequestParam(defaultValue = "0") int page,
+                                         @RequestParam(defaultValue = "3") int size,
+                                         @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
-        return tagService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
+        Page<Tag> tags = tagService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
+        return EntityModel.of(tags, linkTo(methodOn(TagController.class)
+                .getAll(page, size, sort)).withSelfRel());
     }
 
     /**

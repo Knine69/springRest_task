@@ -12,6 +12,7 @@ import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -25,6 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 /**
  * Public API GiftCertificate controller
  */
@@ -32,7 +36,6 @@ import java.util.Map;
 @RequestMapping(path = "/certificates")
 public class GiftCertificateController {
 
-    @Autowired
     private final PageResponse pageResponse;
 
     private final GiftCertificateService giftCertificateService;
@@ -52,8 +55,8 @@ public class GiftCertificateController {
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @GetMapping("/{id}")
-    public GiftCertificate get(@PathVariable String id) throws IdNotFound, InvalidInputInformation {
-        return giftCertificateService.get(Integer.parseInt(id));
+    public GiftCertificate get(@PathVariable int id) throws IdNotFound, InvalidInputInformation {
+        return giftCertificateService.get(id);
     }
 
     /**
@@ -64,12 +67,18 @@ public class GiftCertificateController {
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @GetMapping
-    public Page<GiftCertificate> getAll(@RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "3") int size,
-                                        @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
+    public EntityModel<Page<GiftCertificate>> getAll(@RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "3") int size,
+                                                     @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
-        return giftCertificateService.getAllPageable(pageResponse.giveDynamicPageable(page, size, sort));
+
+        Page<GiftCertificate> certificates = giftCertificateService
+                .getAllPageable(pageResponse.giveDynamicPageable(page, size, sort));
+
+        return EntityModel.of(certificates, linkTo(methodOn(GiftCertificateController.class)
+                .getAll(page, size, sort)).withSelfRel());
     }
+
 
     /**
      * Function used to filter and sort by specified fields
@@ -81,15 +90,18 @@ public class GiftCertificateController {
      * @return Filtered and/or sorted List of GiftCertificates
      */
     @GetMapping("/getBy")
-    public Page<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
+    public EntityModel<Page<GiftCertificate>> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
                                        @RequestParam String nameOrDate, @RequestParam String order,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "3") int size) throws InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(size, page);
-        return giftCertificateService.filterCertificates(tagName, partOfNameOrDescription,
-                nameOrDate, order, PageRequest.of(page, size));
-    }
 
+        Page<GiftCertificate> certificates = giftCertificateService.filterCertificates(tagName, partOfNameOrDescription,
+                nameOrDate, order, PageRequest.of(page, size));
+
+        return EntityModel.of(certificates, linkTo(methodOn(GiftCertificateController.class)
+                .getBy(partOfNameOrDescription, tagName, nameOrDate, order, page, size)).withSelfRel());
+    }
 
     /**
      * Will save a GiftCertificate into Database

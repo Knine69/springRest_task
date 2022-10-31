@@ -13,6 +13,7 @@ import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.logging.Logger;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -36,11 +40,13 @@ public class UserController {
     }
 
     @GetMapping
-    public Page<User> getAll(@RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "3") int size,
-                             @RequestParam(defaultValue = "asc") String sort) throws InvalidInputInformation, PageNotFound {
+    public EntityModel<Page<User>> getAll(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "3") int size,
+                                          @RequestParam(defaultValue = "asc") String sort) throws InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
-        return userService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
+        Page<User> users = userService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
+        return EntityModel.of(users, linkTo(methodOn(UserController.class)
+                .getAll(page, size, sort)).withSelfRel());
     }
 
     @GetMapping("/{id}")
