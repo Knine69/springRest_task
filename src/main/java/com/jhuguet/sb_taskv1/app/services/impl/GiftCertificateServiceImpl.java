@@ -65,9 +65,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return page;
     }
 
-    private List<GiftCertificate> getAll() {
-        return giftRepository.findAll();
-    }
 
     public GiftCertificate get(int id) throws IdNotFound {
         return giftRepository.findById(id).orElseThrow(IdNotFound::new);
@@ -152,10 +149,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         }
         if (!nameOrDate.isEmpty()) {
             resultList = getByDateOrName(resultList, nameOrDate, order);
-        }
-
-        if (resultList.isEmpty()) {
-            throw new PageNotFound();
         }
 
         return new PageImpl<>(resultList);
