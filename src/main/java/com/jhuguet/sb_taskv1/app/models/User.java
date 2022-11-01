@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
@@ -19,6 +20,7 @@ import java.util.Set;
 @DynamicUpdate
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -35,7 +37,7 @@ public class User {
         this.orders = orders;
     }
 
-    public void placeOrder(Order order){
+    public void placeOrder(Order order) {
         this.orders.add(order);
     }
 
