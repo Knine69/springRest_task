@@ -46,6 +46,7 @@ public class GiftCertificateController {
         this.giftCertificateService = giftCertificateService;
     }
 
+
     /**
      * Will return a specific GifCertificate in database
      *
@@ -59,12 +60,16 @@ public class GiftCertificateController {
         return giftCertificateService.get(id);
     }
 
+
     /**
-     * Will return all existing GiftCertificates in database
+     * Will gives all existing GiftCertificates in database
      *
-     * @return List of GiftCertificates
-     * @throws IdNotFound              Exception thrown when given ID is not found
+     * @param page Page requested to see
+     * @param size Given size of a page
+     * @param sort Sorting value of ascendant or descendant order
+     * @return EntityModel of Page containing GiftCertificates
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
+     * @throws PageNotFound            Exception thrown when page requested doesn't exist
      */
     @GetMapping
     public EntityModel<Page<GiftCertificate>> getAll(@RequestParam(defaultValue = "0") int page,
@@ -91,9 +96,9 @@ public class GiftCertificateController {
      */
     @GetMapping("/getBy")
     public EntityModel<Page<GiftCertificate>> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
-                                       @RequestParam String nameOrDate, @RequestParam String order,
-                                       @RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "3") int size) throws InvalidInputInformation, PageNotFound {
+                                                    @RequestParam String nameOrDate, @RequestParam String order,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "3") int size) throws InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(size, page);
 
         Page<GiftCertificate> certificates = giftCertificateService.filterCertificates(tagName, partOfNameOrDescription,

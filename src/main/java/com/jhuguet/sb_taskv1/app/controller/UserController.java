@@ -26,6 +26,9 @@ import java.util.logging.Logger;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/**
+ * Public API User controller
+ */
 @RestController
 @RequestMapping(path = "/users")
 public class UserController {
@@ -39,22 +42,48 @@ public class UserController {
         this.userService = service;
     }
 
+    /**
+     * Will gives all existing Users in database
+     *
+     * @param page Page requested to see
+     * @param size Given size of a page
+     * @param sort Sorting value of ascendant or descendant order
+     * @return EntityModel of Page containing Users
+     * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
+     * @throws PageNotFound            Exception thrown when page requested doesn't exist
+     */
     @GetMapping
     public EntityModel<Page<User>> getAll(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "3") int size,
-                                          @RequestParam(defaultValue = "asc") String sort) throws InvalidInputInformation, PageNotFound {
+                                          @RequestParam(defaultValue = "asc") String sort) throws PageNotFound, InvalidInputInformation {
         pageResponse.validateInput(page, size);
         Page<User> users = userService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
         return EntityModel.of(users, linkTo(methodOn(UserController.class)
                 .getAll(page, size, sort)).withSelfRel());
     }
 
+    /**
+     * Will retrieve User from Database
+     *
+     * @param id ID to look for in Database
+     * @return will return pertaining User retrieved from DB
+     * @throws IdNotFound Exception thrown when given ID is not found
+     */
     @GetMapping("/{id}")
     public User get(@PathVariable int id) throws IdNotFound {
         logger.info("Retrieving User: " + id);
         return userService.get(id);
     }
 
+    /**
+     * Will look for specific order related to user
+     *
+     * @param userId  User ID to look for in database
+     * @param orderId Order ID to look for in database
+     * @return Order related to user
+     * @throws IdNotFound      Exception thrown when given ID is not found
+     * @throws OrderNotRelated Exception thrown when given order ID is not associated to user
+     */
     @GetMapping("/{userId}/orders/{orderId}")
     public Order getOrder(@PathVariable int userId,
                           @PathVariable int orderId) throws IdNotFound, OrderNotRelated {
@@ -62,12 +91,28 @@ public class UserController {
         return userService.getOrder(userId, orderId);
     }
 
+    /**
+     * Will look for all orders associated to a user
+     *
+     * @param id User ID to look for in database
+     * @return List of orders related to User
+     * @throws IdNotFound Exception thrown when given ID is not found
+     */
     @GetMapping("/{id}/orders")
     public List<Order> getOrders(@PathVariable int id) throws IdNotFound {
         logger.info("Retrieving orders of user " + id);
         return userService.getOrders(id);
     }
 
+
+    /**
+     * Will look for the most used Tag of the user with the highest order cost
+     *
+     * @return Tag most widely used
+     * @throws IdNotFound       Exception thrown when given ID is not found
+     * @throws NoExistingOrders There are no orders associated to this user
+     * @throws NoTagInOrder     There are no Tags associated to the orders' certificates
+     */
     @GetMapping("/mostWidelyUsedTag")
     public Tag highestCostOrder() throws IdNotFound, NoExistingOrders, NoTagInOrder {
         return userService.mostUsedTag();

@@ -43,10 +43,10 @@ public class TagController {
     }
 
     /**
-     * Will retrieve Tag/s from Database
+     * Will retrieve Tag from Database
      *
-     * @param id ID that if given will return specific Tag that has said ID, otherwise a list of Tags
-     * @return will return pertaining List-of or single Tag retrieved from DB
+     * @param id ID to look for in DB
+     * @return will return pertaining Tag retrieved from DB
      * @throws IdNotFound Exception thrown when given ID is not found
      */
     @GetMapping("/{id}")
@@ -54,10 +54,21 @@ public class TagController {
         return tagService.get(id);
     }
 
+    /**
+     * Will give all existing Tags in database
+     *
+     * @param page Page requested to see
+     * @param size Given size of a page
+     * @param sort Sorting value of ascendant or descendant order
+     * @return EntityModel of Page containing Tags
+     * @throws IdNotFound              Exception thrown when given ID is not found
+     * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
+     * @throws PageNotFound            Exception thrown when page requested doesn't exist
+     */
     @GetMapping
     public EntityModel<Page<Tag>> getAll(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "3") int size,
-                                         @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
+                                         @RequestParam(defaultValue = "asc") String sort) throws InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(page, size);
         Page<Tag> tags = tagService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
         return EntityModel.of(tags, linkTo(methodOn(TagController.class)
@@ -70,7 +81,7 @@ public class TagController {
      * @param tag Given Tag to save into DB
      */
     @PostMapping
-    public Tag save(@RequestBody Tag tag) throws MissingEntity {
+    public Tag save(@RequestBody Tag tag) throws MissingEntity, InvalidInputInformation {
         logger.info("Saving new tag: " + tag.getName());
         return tagService.save(tag);
     }
