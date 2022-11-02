@@ -73,7 +73,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     @Transactional
     public GiftCertificate save(GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation, IdAlreadyInUse {
         if (!Objects.isNull(giftCertificate)) {
-            savingClearance(giftCertificate);
+            savingValidations(giftCertificate);
             giftRepository.save(giftCertificate);
         } else {
             throw new MissingEntity();
@@ -82,7 +82,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return giftCertificate;
     }
 
-    private void savingClearance(GiftCertificate certificate) throws InvalidInputInformation, IdAlreadyInUse {
+    private void savingValidations(GiftCertificate certificate) throws InvalidInputInformation, IdAlreadyInUse {
         String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         validateNegative(certificate.getDuration());
