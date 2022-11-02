@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
+import com.google.gson.JsonParser;
 import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
@@ -143,11 +144,26 @@ class GiftCertificateServiceImplTest {
                 entry("price", 8.99),
                 entry("duration", 10),
                 entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
+                entry("associatedTags", JsonParser.parseString("[{\"id\":\"1\",\"name\":\"Cloud\"}]")),
                 entry("", "")
         );
         when(giftCertificateRepository.existsById(anyInt())).thenReturn(false);
         assertThrows(IdNotFound.class, () -> giftCertificateService.update(anyInt(), patchTest));
         when(giftCertificateRepository.existsById(anyInt())).thenReturn(true);
+    }
+
+    @Test
+    void updateGiftCertificateIfCorrectlyGivenPatchObject() throws InvalidInputInformation, IdNotFound {
+        Map<String, Object> patchTest = Map.ofEntries(
+                entry("name", "AWS Certificate"),
+                entry("description", "AWS Master's certificate"),
+                entry("price", 8.99),
+                entry("duration", 10),
+                entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
+                entry("associatedTags", JsonParser.parseString("[{\"id\":\"1\",\"name\":\"Cloud\"}]")),
+                entry("", "")
+        );
+        assertEquals(utils.sampleCertificate().getName(), giftCertificateService.update(anyInt(), patchTest).getName());
     }
 
 
@@ -159,6 +175,7 @@ class GiftCertificateServiceImplTest {
                 entry("price", 8.99),
                 entry("duration", 10),
                 entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
+                entry("associatedTags", JsonParser.parseString("[{\"id\":\"1\",\"name\":\"Cloud\"}]")),
                 entry("", "")
         );
         assertThrows(InvalidInputInformation.class, () -> giftCertificateService.update(-1, patchTest));
