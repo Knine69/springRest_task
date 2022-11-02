@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -99,9 +98,14 @@ public class UserController {
      * @throws IdNotFound Exception thrown when given ID is not found
      */
     @GetMapping("/{id}/orders")
-    public List<Order> getOrders(@PathVariable int id) throws IdNotFound {
+    public EntityModel<Page<Order>> getOrders(@PathVariable int id,
+                                              @RequestParam(defaultValue = "1") int page,
+                                              @RequestParam(defaultValue = "3") int size,
+                                              @RequestParam(defaultValue = "asc") String sort) throws IdNotFound {
+        Page<Order> orders = userService.getOrders(id, pageResponse.giveDynamicPageable(page, size, sort));
         logger.info("Retrieving orders of user " + id);
-        return userService.getOrders(id);
+        return EntityModel.of(orders, linkTo(methodOn(UserController.class)
+                .getOrders(id, page, size, sort)).withSelfRel());
     }
 
 

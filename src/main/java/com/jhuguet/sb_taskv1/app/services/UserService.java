@@ -11,8 +11,6 @@ import com.jhuguet.sb_taskv1.app.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface UserService {
     User get(int id) throws IdNotFound;
 
@@ -20,7 +18,7 @@ public interface UserService {
 
     Order getOrder(int userId, int orderId) throws IdNotFound, OrderNotRelated;
 
-    List<Order> getOrders(int id) throws IdNotFound;
+    Page<Order> getOrders(int id, Pageable pageable) throws IdNotFound;
 
     Tag mostUsedTag() throws IdNotFound, NoExistingOrders, NoTagInOrder;
 

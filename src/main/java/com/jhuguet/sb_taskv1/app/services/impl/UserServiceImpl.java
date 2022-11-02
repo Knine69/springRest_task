@@ -14,12 +14,12 @@ import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -54,9 +54,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Order> getOrders(int id) throws IdNotFound {
+    public Page<Order> getOrders(int id, Pageable pageable) throws IdNotFound {
         User user = get(id);
-        return new ArrayList<>(user.getOrders());
+        return new PageImpl<>(new ArrayList<>(user.getOrders()), pageable, user.getOrders().size());
     }
 
     @Override

@@ -121,13 +121,13 @@ class UserControllerTest {
 
     @Test
     void getAllOrdersRelatedToAUserIfGivenIdExists() throws IdNotFound {
-        assertEquals(utils.sampleOrders().size(), controller.getOrders(1).size());
+        assertEquals(utils.sampleOrders().size(), controller.getOrders(1, 1, 1, "asc").getContent().getTotalElements());
     }
 
     @Test
     void getAllOrdersRelatedToAUserExceptionIfIdNotFound() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.getOrders(1));
+        assertThrows(IdNotFound.class, () -> controller.getOrders(1, 1, 1, "asc"));
     }
 
     @Test
