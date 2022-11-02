@@ -62,7 +62,7 @@ public class GiftCertificateController {
 
 
     /**
-     * Will gives all existing GiftCertificates in database
+     * Will give all existing GiftCertificates in database
      *
      * @param page Page requested to see
      * @param size Given size of a page
