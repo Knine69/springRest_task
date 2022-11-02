@@ -1,7 +1,9 @@
 package com.jhuguet.sb_taskv1.app.services.utils;
 
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
+import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
+import com.jhuguet.sb_taskv1.app.models.User;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -12,18 +14,38 @@ import java.util.Set;
 @NoArgsConstructor
 public class SetUpUtils {
     public GiftCertificate sampleCertificate() {
-        return new GiftCertificate("AWS Certificate",
-                "AWS Master's certificate",
-                BigDecimal.valueOf(8.99),
-                10,
-                "2022-09-20T14:33:15.1301054",
-                "2022-09-20T14:33:15.1301054",
-                new HashSet<>(List.of(new Tag("Cloud")))
-        );
+        return GiftCertificate.builder()
+                .name("AWS Certificate")
+                .description("AWS Master's certificate")
+                .price(BigDecimal.valueOf(8.99))
+                .duration(10)
+                .lastUpdateDate("2022-09-20T14:33:15.1301054")
+                .createDate("2022-09-20T14:33:15.1301054")
+                .associatedTags(new HashSet<>(List.of(new Tag("Cloud"))))
+                .build();
     }
 
     public Tag sampleTag() {
         return new Tag("Cloud", new HashSet<>(sampleCertificates()));
+    }
+
+
+    public User sampleUser() {
+        return new User(1, "user", "user@domain.com", new HashSet<>(sampleOrders()));
+    }
+
+    public List<User> sampleUsers() {
+        return List.of(sampleUser(), sampleUser());
+    }
+
+    public Order sampleOrder() {
+        Order order = new Order(1);
+        order.addCertificate(sampleCertificate());
+        return order;
+    }
+
+    public Set<Order> sampleOrders() {
+        return Set.of(sampleOrder(), sampleOrder());
     }
 
     public Set<Tag> sampleTags() {

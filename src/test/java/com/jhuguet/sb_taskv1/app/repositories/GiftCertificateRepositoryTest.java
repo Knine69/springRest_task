@@ -30,12 +30,12 @@ class GiftCertificateRepositoryTest {
 
 
     @Test
-    public void contextLoads() {
+    public void contextLoadsIfConfigurationIsCorrect() {
         assertNotNull(em);
     }
 
     @Test
-    public void save() {
+    public void saveGiftCertificateInRepositoryIfCertificateIsValid() {
         GiftCertificate certificate = utils.sampleCertificate();
         assertFalse(repository.existsById(certificate.getId()));
         repository.save(certificate);
@@ -43,7 +43,7 @@ class GiftCertificateRepositoryTest {
     }
 
     @Test
-    public void delete() {
+    public void deleteGiftCertificateInRepositoryIfCertificateIsValid() {
         GiftCertificate certificate = utils.sampleCertificate();
         repository.save(certificate);
         assertTrue(repository.existsById(certificate.getId()));
@@ -52,7 +52,7 @@ class GiftCertificateRepositoryTest {
     }
 
     @Test
-    public void update() {
+    public void updateGiftCertificateInRepositoryIfChangesToPatchAreCorrect() {
         GiftCertificate certificate = utils.sampleCertificate();
         repository.save(certificate);
         assertTrue(repository.existsById(certificate.getId()));
@@ -65,15 +65,15 @@ class GiftCertificateRepositoryTest {
     }
 
     @Test
-    public void getAll() {
+    public void getAllGiftCertificatesInRepository() {
         List<GiftCertificate> certificates = repository.findAll();
-        assertEquals(4, certificates.size());
+        assertEquals(10000, certificates.size());
         assertNotNull(certificates);
     }
 
     @Test
-    public void get() {
-        assertEquals("AWS", repository.findById(1).get().getName());
+    public void getGiftCertificateInRepositoryIfGivenIdIsValidAndExists() {
+        assertEquals("Certificate0", repository.findById(1).get().getName());
         assertNotNull(repository.findById(1).get().getName());
     }
 
