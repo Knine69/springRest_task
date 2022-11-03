@@ -33,13 +33,7 @@ public class Order {
     @Column(name = "placed_on")
     private Date timestamp;
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "order_certificate",
-            joinColumns = {
-                    @JoinColumn(name = "order_id", referencedColumnName = "id")
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(name = "certificate_id", referencedColumnName = "id")
-            })
+    @JoinTable(name = "order_certificate", joinColumns = {@JoinColumn(name = "order_id", referencedColumnName = "id")}, inverseJoinColumns = {@JoinColumn(name = "certificate_id", referencedColumnName = "id")})
     private Set<GiftCertificate> certificates;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,6 +48,15 @@ public class Order {
         calculateCost();
     }
 
+    private void calculateCost() {
+        this.cost = BigDecimal.ZERO;
+        this.certificates.forEach(
+                c -> this.cost = this.cost.add(
+                        new BigDecimal(c.getPrice().toString())
+                )
+        );
+    }
+
     public Order(int id) {
         this.id = id;
         this.timestamp = new Date();
@@ -65,15 +68,6 @@ public class Order {
         calculateCost();
     }
 
-    private void calculateCost() {
-        this.cost = BigDecimal.ZERO;
-        this.certificates.forEach(c -> this.cost = this.cost.add(new BigDecimal(c.getPrice().toString())));
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public void setCertificates(Set<GiftCertificate> certificates) {
         this.certificates = certificates;
     }
@@ -82,7 +76,4 @@ public class Order {
         this.user = user;
     }
 
-    public void setCost(BigDecimal cost) {
-        this.cost = cost;
-    }
 }
