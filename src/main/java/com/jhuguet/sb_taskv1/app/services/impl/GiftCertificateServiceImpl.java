@@ -83,6 +83,11 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     private void savingValidations(GiftCertificate certificate) throws InvalidInputInformation, IdAlreadyInUse {
+        certificateValidations(certificate);
+        tagValidations(certificate.getAssociatedTags());
+    }
+
+    private void certificateValidations(GiftCertificate certificate) throws InvalidInputInformation {
         String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         validateNegative(certificate.getDuration());
@@ -90,15 +95,16 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
         certificate.setCreateDate(localDate);
         certificate.setLastUpdateDate(localDate);
+    }
 
-        for (Tag t : certificate.getAssociatedTags()) {
+    private void tagValidations(Set<Tag> tags) throws InvalidInputInformation, IdAlreadyInUse {
+        for (Tag t : tags) {
             validateNegative(t.getId());
             Tag tag = tagRepository.findById(t.getId()).get();
             if (!t.getName().equalsIgnoreCase(tag.getName())) {
                 throw new IdAlreadyInUse();
             }
         }
-
     }
 
     @Override
