@@ -57,7 +57,7 @@ class TagControllerTest {
     }
 
     @Test
-    void getTagIncorrectlyIDNotFound() {
+    void getTagIncorrectlyIdNotFound() {
         assertThrows(IdNotFound.class, () -> controller.get(1).getName());
     }
 
