@@ -42,4 +42,8 @@ public class Tag {
         this.certificates = certificates;
     }
 
+    public Tag(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }
