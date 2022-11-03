@@ -112,8 +112,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public Order placeNewOrder(List<Integer> certificatesIds, int userID) throws IdNotFound {
-        User user = userRepository.findById(userID).orElseThrow(IdNotFound::new);
+    public Order placeNewOrder(List<Integer> certificatesIds, int userId) throws IdNotFound {
+        User user = userRepository.findById(userId).orElseThrow(IdNotFound::new);
         Order order = new Order(orderRepository.findAll().size() + 1);
 
         for (Integer id : certificatesIds) {
