@@ -18,7 +18,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -54,9 +53,7 @@ class GiftCertificateServiceImplTest {
         when(giftCertificateRepository.findAll())
                 .thenReturn(utils.sampleCertificates());
         when(giftCertificateRepository.findAll(any(Pageable.class)))
-                .thenReturn(new PageImpl<>(
-                        new ArrayList<>(utils.sampleCertificates()), PageRequest.of(1, 1), utils.sampleTags().size()
-                ));
+                .thenReturn(utils.samplePageCertificates());
 
         when(tagRepository.existsById(anyInt())).thenReturn(true);
         when(tagRepository.findById(0))
@@ -65,9 +62,7 @@ class GiftCertificateServiceImplTest {
                 .thenReturn(new ArrayList<>(utils.sampleTags()));
 
         when(tagRepository.findAll(any(Pageable.class)))
-                .thenReturn(new PageImpl<>(
-                        new ArrayList<>(utils.sampleTags()), PageRequest.of(1, 1), utils.sampleTags().size()
-                ));
+                .thenReturn(utils.samplePageTags());
 
     }
 

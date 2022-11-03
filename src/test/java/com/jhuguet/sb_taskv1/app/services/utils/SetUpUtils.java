@@ -5,8 +5,12 @@ import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,5 +64,15 @@ public class SetUpUtils {
                 sampleCertificate(),
                 sampleCertificate()
         );
+    }
+
+    public Page<GiftCertificate> samplePageCertificates() {
+        return new PageImpl<>(
+                new ArrayList<>(sampleCertificates()), PageRequest.of(1, 1), sampleCertificates().size());
+    }
+
+    public Page<Tag> samplePageTags() {
+        return new PageImpl<>(
+                new ArrayList<>(sampleTags()), PageRequest.of(1, 1), sampleCertificates().size());
     }
 }
