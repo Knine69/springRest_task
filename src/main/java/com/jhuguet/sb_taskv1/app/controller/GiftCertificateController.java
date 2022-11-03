@@ -120,11 +120,11 @@ public class GiftCertificateController {
     }
 
 
-    @PostMapping("/users/{userID}")
+    @PostMapping("/users/{userId}")
     public Order placeNewOrder(@RequestParam List<Integer> certificatesIds,
-                               @PathVariable(name = "userID") int userID) throws IdNotFound {
+                               @PathVariable(name = "userId") int userId) throws IdNotFound {
         return giftCertificateService
-                .placeNewOrder(certificatesIds, userID);
+                .placeNewOrder(certificatesIds, userId);
     }
 
     /**
