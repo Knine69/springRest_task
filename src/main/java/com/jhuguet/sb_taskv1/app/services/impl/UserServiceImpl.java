@@ -60,10 +60,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Order getOrder(int userID, int orderID) throws IdNotFound, OrderNotRelated {
-        User user = get(userID);
+    public Order getOrder(int userId, int orderId) throws IdNotFound, OrderNotRelated {
+        User user = get(userId);
         return user.getOrders().stream()
-                .filter(x -> x.getId() == orderID).findAny().orElseThrow(OrderNotRelated::new);
+                .filter(x -> x.getId() == orderId).findAny().orElseThrow(OrderNotRelated::new);
     }
 
 
