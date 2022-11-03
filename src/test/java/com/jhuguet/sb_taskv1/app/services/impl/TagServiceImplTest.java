@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -42,9 +41,7 @@ class TagServiceImplTest {
                 .thenReturn(new ArrayList<>(utils.sampleTags()));
 
         when(tagRepository.findAll(any(Pageable.class)))
-                .thenReturn(new PageImpl<>(
-                        new ArrayList<>(utils.sampleTags()), PageRequest.of(1, 1), utils.sampleTags().size()
-                ));
+                .thenReturn(utils.samplePageTags());
 
     }
 
@@ -54,13 +51,28 @@ class TagServiceImplTest {
     }
 
     @Test
-    void getTagIfGivenIdIsExistent() throws IdNotFound {
+    void getAllTagsInRepositoryIfIncorrectlyGivenPagingParams() {
+        assertThrows(PageNotFound.class, () -> service.getAll(PageRequest.of(10, 1)).getTotalElements());
+    }
+
+    @Test
+    void getTagIfGivenIdIfExists() throws IdNotFound {
         assertEquals(service.get(anyInt()).getName(), utils.sampleTag().getName());
     }
 
     @Test
     void saveTagIfGivenTagObjectIsValid() throws MissingEntity, InvalidInputInformation {
         assertEquals(service.save(utils.sampleTag()).getName(), utils.sampleTag().getName());
+    }
+
+    @Test
+    void saveTagExceptionIfGivenTagObjectIsNotValid() {
+        assertThrows(InvalidInputInformation.class, () -> service.save(new Tag(-1, "Science")));
+    }
+
+    @Test
+    void saveTagExceptionIfGivenTagObjectIsNull() {
+        assertThrows(MissingEntity.class, () -> service.save(null));
     }
 
     @Test
