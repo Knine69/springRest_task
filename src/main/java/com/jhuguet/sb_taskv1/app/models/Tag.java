@@ -2,6 +2,7 @@ package com.jhuguet.sb_taskv1.app.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -18,6 +19,7 @@ import java.util.Set;
 @Entity
 @Table(name = "tag")
 @DynamicUpdate
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tag {
@@ -40,20 +42,8 @@ public class Tag {
         this.certificates = certificates;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
+    public Tag(int id, String name) {
+        this.id = id;
         this.name = name;
     }
-
-    public Set<GiftCertificate> getCertificates() {
-        return certificates;
-    }
-
 }

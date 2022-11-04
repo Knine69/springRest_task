@@ -1,6 +1,8 @@
 package com.jhuguet.sb_taskv1.app.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
@@ -21,25 +23,26 @@ import java.util.Set;
 @Entity
 @Table(name = "gift_certificate")
 @DynamicUpdate
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class GiftCertificate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "certificate_name")
-    public String name;
+    private String name;
     @Column(name = "certificate_description")
-    protected String description;
-    protected BigDecimal price;
-    protected int duration;
+    private String description;
+    private BigDecimal price;
+    private int duration;
     @Column(name = "create_date")
-    protected String createDate;
+    private String createDate;
     @Column(name = "last_update_date")
-    protected String lastUpdateDate;
+    private String lastUpdateDate;
 
-    @ManyToMany(cascade = CascadeType.MERGE)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "certificate_tags",
             joinColumns = {
                     @JoinColumn(name = "certificate_id", referencedColumnName = "id")
@@ -47,18 +50,12 @@ public class GiftCertificate {
             inverseJoinColumns = {
                     @JoinColumn(name = "tag_id", referencedColumnName = "id")
             })
-    protected Set<Tag> associatedTags;
+    private Set<Tag> associatedTags;
 
-    public GiftCertificate(String name, String description, BigDecimal price, int duration,
-                           String createDate, String lastUpdateDate, Set<Tag> associatedTags) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.duration = duration;
-        this.createDate = createDate;
-        this.lastUpdateDate = lastUpdateDate;
-        this.associatedTags = associatedTags;
-    }
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "certificates")
+    @JsonIgnore
+    private Set<Order> userOrder;
+
 
     public void setName(String name) {
         this.name = name;
@@ -95,6 +92,5 @@ public class GiftCertificate {
     public void cleanTags() {
         this.associatedTags.removeAll(getAssociatedTags());
     }
-
 
 }

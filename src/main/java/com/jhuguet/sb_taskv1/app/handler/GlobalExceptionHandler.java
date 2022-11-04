@@ -2,9 +2,14 @@ package com.jhuguet.sb_taskv1.app.handler;
 
 import com.jhuguet.sb_taskv1.app.exceptions.CertificateAssociatedException;
 import com.jhuguet.sb_taskv1.app.exceptions.ExceptionDetails;
+import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
+import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
+import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
+import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,10 +19,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(InvalidIdInputInformation.class)
-    public ResponseEntity<?> invalidIdInputInformation(InvalidIdInputInformation exception) {
+    @ExceptionHandler(InvalidInputInformation.class)
+    public ResponseEntity<?> invalidInputInformation(InvalidInputInformation exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
-        return new ResponseEntity<>(details, HttpStatus.NOT_ACCEPTABLE);
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IdNotFound.class)
@@ -29,11 +34,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(CertificateAssociatedException.class)
     public ResponseEntity<?> certificateAssociated(CertificateAssociatedException exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
-        return new ResponseEntity<>(details, HttpStatus.METHOD_NOT_ALLOWED);
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MissingEntity.class)
     public ResponseEntity<?> missingEntity(MissingEntity exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(OrderNotRelated.class)
+    public ResponseEntity<?> orderNotRelated(OrderNotRelated exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IdAlreadyInUse.class)
+    public ResponseEntity<?> idAlreadyInUse(IdAlreadyInUse exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoExistingOrders.class)
+    public ResponseEntity<?> noExistingOrders(NoExistingOrders exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoTagInOrder.class)
+    public ResponseEntity<?> noTagInOrder(NoTagInOrder exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(PageNotFound.class)
+    public ResponseEntity<?> pageNotFound(PageNotFound exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
     }

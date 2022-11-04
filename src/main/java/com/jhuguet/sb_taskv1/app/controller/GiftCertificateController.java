@@ -1,11 +1,18 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
+import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
-import com.jhuguet.sb_taskv1.app.exceptions.InvalidIdInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
+import com.jhuguet.sb_taskv1.app.models.Order;
+import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,71 +21,92 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * Public API GiftCertificate controller
  */
 @RestController
-@RequestMapping(path = "/certificate")
+@RequestMapping(path = "/certificates")
 public class GiftCertificateController {
 
-    private final Logger logger = Logger.getLogger(GiftCertificateController.class.getName());
+    private final PageResponse pageResponse;
 
     private final GiftCertificateService giftCertificateService;
 
     @Autowired
-    public GiftCertificateController(GiftCertificateService giftCertificateService) {
+    public GiftCertificateController(PageResponse pageResponse, GiftCertificateService giftCertificateService) {
+        this.pageResponse = pageResponse;
         this.giftCertificateService = giftCertificateService;
     }
 
-    /**
-     * @param id Optional given ID to look for in Database
-     * @return Either List of GiftCertificates or GiftCertificate
-     * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
-     */
-    @ResponseBody
-    @GetMapping({"/", "/{id}"})
-    public List<GiftCertificate> get(@PathVariable(required = false) String id) throws IdNotFound, InvalidIdInputInformation {
-        if (id != null) {
-            List<GiftCertificate> returnCertificate = new ArrayList<>();
-            returnCertificate.add(giftCertificateService.get(Integer.parseInt(id)));
-            return returnCertificate;
-        }
-        return giftCertificateService.getAll();
-    }
 
     /**
-     * @param partOfNameOrDescription   Field used to filter by name or description
-     * @param tagName    Tag name to filter in database
-     * @param nameOrDate Defining parameter which accepts name, createDate or lastUpdateCase
-     * @param order      Intended ascendant or descendant order of list
+     * Will return a specific GifCertificate in database
+     *
+     * @param id Given ID to look for in Database
+     * @return GiftCertificate
+     * @throws IdNotFound              Exception thrown when given ID is not found
+     * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
+     */
+    @GetMapping("/{id}")
+    public GiftCertificate get(@PathVariable int id) throws IdNotFound, InvalidInputInformation {
+        return giftCertificateService.get(id);
+    }
+
+
+    /**
+     * Will give all existing GiftCertificates in database
+     *
+     * @param page Page requested to see
+     * @param size Given size of a page
+     * @param sort Sorting value of ascendant or descendant order
+     * @return EntityModel of Page containing GiftCertificates
+     * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
+     * @throws PageNotFound            Exception thrown when page requested doesn't exist
+     */
+    @GetMapping
+    public EntityModel<Page<GiftCertificate>> getAll(@RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "3") int size,
+                                                     @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
+        pageResponse.validateInput(page, size);
+
+        Page<GiftCertificate> certificates = giftCertificateService
+                .getAllPageable(pageResponse.giveDynamicPageable(page, size, sort));
+
+        return EntityModel.of(certificates, linkTo(methodOn(GiftCertificateController.class)
+                .getAll(page, size, sort)).withSelfRel());
+    }
+
+
+    /**
+     * Function used to filter and sort by specified fields
+     *
+     * @param partOfNameOrDescription Field used to filter by name or description
+     * @param tagName                 Tag name to filter in database
+     * @param nameOrDate              Defining parameter which accepts name, createDate or lastUpdateCase to sort through
+     * @param order                   Intended ascendant or descendant order of list
      * @return Filtered and/or sorted List of GiftCertificates
      */
-    @ResponseBody
     @GetMapping("/getBy")
-    public List<GiftCertificate> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
-                                       @RequestParam String nameOrDate, @RequestParam String order) {
+    public EntityModel<Page<GiftCertificate>> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
+                                                    @RequestParam String nameOrDate, @RequestParam String order,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "3") int size) throws InvalidInputInformation, PageNotFound {
+        pageResponse.validateInput(size, page);
 
-        if (!tagName.isEmpty()) {
-            return giftCertificateService.getByTagName(tagName);
-        }
+        Page<GiftCertificate> certificates = giftCertificateService.filterCertificates(tagName, partOfNameOrDescription,
+                nameOrDate, order, PageRequest.of(page, size));
 
-        if (!partOfNameOrDescription.isEmpty()) {
-            return giftCertificateService.getByPart(partOfNameOrDescription);
-        }
-
-
-        return nameOrDate.isEmpty() ? new ArrayList<>() : giftCertificateService.getByDateOrName(nameOrDate, order);
+        return EntityModel.of(certificates, linkTo(methodOn(GiftCertificateController.class)
+                .getBy(partOfNameOrDescription, tagName, nameOrDate, order, page, size)).withSelfRel());
     }
-
 
     /**
      * Will save a GiftCertificate into Database
@@ -87,9 +115,16 @@ public class GiftCertificateController {
      * @return GiftCertificate object saved into Database
      */
     @PostMapping
-    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity {
-        logger.info("Saving new certificate into db");
+    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation, IdAlreadyInUse {
         return giftCertificateService.save(giftCertificate);
+    }
+
+
+    @PostMapping("/users/{userId}")
+    public Order placeNewOrder(@RequestParam List<Integer> certificatesIds,
+                               @PathVariable(name = "userId") int userId) throws IdNotFound {
+        return giftCertificateService
+                .placeNewOrder(certificatesIds, userId);
     }
 
     /**
@@ -98,14 +133,13 @@ public class GiftCertificateController {
      * @param id    ID of GiftCertificate to which will be applied the patch
      * @param patch Desired changes to apply
      * @return GiftCertificate after patched without Tags being patched to it
-     * @throws IdNotFound                Exception thrown when given ID is not found
-     * @throws InvalidIdInputInformation Exception thrown when given ID is incorrectly entered
+     * @throws IdNotFound              Exception thrown when given ID is not found
+     * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PatchMapping("/{certId}")
-    public GiftCertificate update(@PathVariable("certId") String id
-            , @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidIdInputInformation {
-        logger.info("Updating certificate " + id);
-        return giftCertificateService.update(Integer.parseInt(id), patch);
+    public GiftCertificate update(@PathVariable("certId") int id,
+                                  @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidInputInformation {
+        return giftCertificateService.update(id, patch);
     }
 
     /**
@@ -113,11 +147,10 @@ public class GiftCertificateController {
      *
      * @param id Specific ID of GiftCertificate to be deleted
      * @return GiftCertificate which was deleted
-     * @throws IdNotFound                Exception thrown when given ID is not found
+     * @throws IdNotFound Exception thrown when given ID is not found
      */
     @DeleteMapping("/{id}")
-    public GiftCertificate delete(@PathVariable String id) throws IdNotFound {
-        logger.info("Deleting certificate: " + id);
-        return giftCertificateService.delete(Integer.parseInt(id));
+    public GiftCertificate delete(@PathVariable int id) throws IdNotFound {
+        return giftCertificateService.delete(id);
     }
 }

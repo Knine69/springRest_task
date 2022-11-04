@@ -1,8 +1,0 @@
-Error cases tested in tests classes -> AssertThrows:
-                                        Are they always/sometimes necessary considering spring boot has required fields?
-Utilities in test classes -> Mock uses: Are they being used in a correct manner? Is it too "happy path"?
-
-Relevant classes/tests to use in different environment profiles -> Not common
-Patching methods -> More versatile/easy to use methods compared to implemented solution
-Javadoc's placement -> Should be used in Controllers(Endpoints)/business logic?
-Relevant directories/files to push to repository -> What shouldn't be pushed to repository
