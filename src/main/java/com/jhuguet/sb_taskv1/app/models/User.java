@@ -28,12 +28,31 @@ public class User {
     private int id;
     private String username;
     private String email;
+    private String password;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private Set<Order> orders;
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 
     public User(String username, String email, Set<Order> orders) {
         this.username = username;
         this.email = email;
+        this.orders = orders;
+    }
+
+    public User(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
+
+    public User(String username, String email, String password, Set<Order> orders) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
         this.orders = orders;
     }
 
@@ -49,7 +68,12 @@ public class User {
         this.email = email;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public void setOrders(Set<Order> orders) {
         this.orders = orders;
     }
+
 }
