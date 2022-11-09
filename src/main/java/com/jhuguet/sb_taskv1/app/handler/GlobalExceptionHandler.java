@@ -6,6 +6,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingUserFields;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
@@ -71,6 +72,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<?> pageNotFound(PageNotFound exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MissingUserFields.class)
+    public ResponseEntity<?> missingUserFields(MissingUserFields exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
     }
 
 }
