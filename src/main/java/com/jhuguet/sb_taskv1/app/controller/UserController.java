@@ -14,6 +14,8 @@ import com.jhuguet.sb_taskv1.app.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,13 +54,16 @@ public class UserController {
      * @throws PageNotFound            Exception thrown when page requested doesn't exist
      */
     @GetMapping
+    @Secured("ROLE_ADMIN")
     public EntityModel<Page<User>> getAll(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "3") int size,
-                                          @RequestParam(defaultValue = "asc") String sort) throws PageNotFound, InvalidInputInformation {
+                                          @RequestParam(defaultValue = "asc") String sort, Model model) throws
+            PageNotFound, InvalidInputInformation {
         pageResponse.validateInput(page, size);
         Page<User> users = userService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
-        return EntityModel.of(users, linkTo(methodOn(UserController.class)
-                .getAll(page, size, sort)).withSelfRel());
+
+        return EntityModel.of(users,
+                linkTo(methodOn(UserController.class).getAll(page, size, sort, model)).withSelfRel());
     }
 
     /**
@@ -69,6 +74,7 @@ public class UserController {
      * @throws IdNotFound Exception thrown when given ID is not found
      */
     @GetMapping("/{id}")
+    @Secured("ROLE_USER")
     public User get(@PathVariable int id) throws IdNotFound {
         logger.info("Retrieving User: " + id);
         return userService.get(id);
@@ -84,8 +90,7 @@ public class UserController {
      * @throws OrderNotRelated Exception thrown when given order ID is not associated to user
      */
     @GetMapping("/{userId}/orders/{orderId}")
-    public Order getOrder(@PathVariable int userId,
-                          @PathVariable int orderId) throws IdNotFound, OrderNotRelated {
+    public Order getOrder(@PathVariable int userId, @PathVariable int orderId) throws IdNotFound, OrderNotRelated {
         logger.info("Retrieving order " + orderId + " of user: " + userId);
         return userService.getOrder(userId, orderId);
     }
@@ -98,14 +103,13 @@ public class UserController {
      * @throws IdNotFound Exception thrown when given ID is not found
      */
     @GetMapping("/{id}/orders")
-    public EntityModel<Page<Order>> getOrders(@PathVariable int id,
-                                              @RequestParam(defaultValue = "1") int page,
+    public EntityModel<Page<Order>> getOrders(@PathVariable int id, @RequestParam(defaultValue = "1") int page,
                                               @RequestParam(defaultValue = "3") int size,
                                               @RequestParam(defaultValue = "asc") String sort) throws IdNotFound {
         Page<Order> orders = userService.getOrders(id, pageResponse.giveDynamicPageable(page, size, sort));
         logger.info("Retrieving orders of user " + id);
-        return EntityModel.of(orders, linkTo(methodOn(UserController.class)
-                .getOrders(id, page, size, sort)).withSelfRel());
+        return EntityModel.of(orders,
+                linkTo(methodOn(UserController.class).getOrders(id, page, size, sort)).withSelfRel());
     }
 
 
