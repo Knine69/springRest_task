@@ -6,6 +6,7 @@ import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
+import com.jhuguet.sb_taskv1.app.web.manager.DetailsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -18,12 +19,18 @@ public class BootUpInfo {
     private final UserRepository userRepository;
     private final GiftCertificateRepository giftCertificateRepository;
 
+    private final DetailsManager detailsManager;
 
-    @Autowired
-    public BootUpInfo(UserRepository userRepository, GiftCertificateRepository giftCertificateRepository) {
+
+    public BootUpInfo(UserRepository userRepository, GiftCertificateRepository giftCertificateRepository,
+                      DetailsManager detailsManager) {
         this.userRepository = userRepository;
         this.giftCertificateRepository = giftCertificateRepository;
+        this.detailsManager = detailsManager;
     }
+
+    @Autowired
+
 
     public void prepareInfo() {
         for (int i = 0; i < 10000; i++) {
@@ -40,17 +47,15 @@ public class BootUpInfo {
         GiftCertificate certificate = buildGiftCertificate(i);
 
         Tag tag = new Tag("Tag" + i);
-        User user = new User("user" + i, "user" + i + "@domain.com", new HashSet<>());
+        User user = new User("user" + i, "user" + i + "@domain.com", "password", new HashSet<>());
         Order order = new Order(i);
 
         certificate.assignTag(tag);
         order.addCertificate(certificate);
         order.setUser(user);
 
-        giftCertificateRepository.save(certificate);
-        userRepository.save(user);
-        user.placeOrder(order);
-        userRepository.save(user);
+        detailsManager.saveUserDetails(user, false);
+        saveProcess(certificate, user, order);
     }
 
     private void addCertificate(int i) {
@@ -59,14 +64,26 @@ public class BootUpInfo {
     }
 
     GiftCertificate buildGiftCertificate(int i) {
-        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        return GiftCertificate.builder()
+        String localDate = LocalDateTime
+                .now()
+                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return GiftCertificate
+                .builder()
                 .name("Certificate" + i)
                 .description("Description" + i)
                 .price(BigDecimal.valueOf(10.00))
                 .duration(10)
                 .createDate(localDate)
                 .lastUpdateDate(localDate)
-                .associatedTags(new HashSet<>()).build();
+                .associatedTags(new HashSet<>())
+                .build();
+    }
+
+
+    private void saveProcess(GiftCertificate certificate, User user, Order order) {
+        giftCertificateRepository.save(certificate);
+        userRepository.save(user);
+        user.placeOrder(order);
+        userRepository.save(user);
     }
 }
