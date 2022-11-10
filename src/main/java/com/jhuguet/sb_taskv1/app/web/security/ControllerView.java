@@ -17,6 +17,15 @@ public class ControllerView implements WebMvcConfigurer {
         registry
                 .addViewController("/login")
                 .setViewName("login");
+        registry
+                .addViewController("/signup")
+                .setViewName("signup");
+        registry
+                .addViewController("/orders")
+                .setViewName("orders");
+        registry
+                .addViewController("/neworder")
+                .setViewName("neworder");
     }
 
 }
