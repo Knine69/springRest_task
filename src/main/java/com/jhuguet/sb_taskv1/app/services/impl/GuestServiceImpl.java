@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
+import com.jhuguet.sb_taskv1.app.controller.UserController;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingUserFields;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 @Service
@@ -19,12 +21,15 @@ public class GuestServiceImpl implements GuestService {
 
     private final UserRepository userRepository;
     private final DetailsManager detailsManager;
+    private final UserController userController;
 
 
     @Autowired
-    public GuestServiceImpl(UserRepository userRepository, DetailsManager detailsManager) {
+    public GuestServiceImpl(UserRepository userRepository, DetailsManager detailsManager,
+                            UserController userController) {
         this.userRepository = userRepository;
         this.detailsManager = detailsManager;
+        this.userController = userController;
     }
 
     @Override
@@ -60,14 +65,12 @@ public class GuestServiceImpl implements GuestService {
     }
 
     @Override
-    public String authenticate(User user, Model model) {
+    public void authenticate(User user, Model model) {
         if (detailsManager.validateUserExists(user)) {
             model.addAttribute("error", false);
-            model.addAttribute("username", user.getUsername());
-            return "Home";
+            model.addAttribute("user", userRepository.findByUsername(user.getUsername()));
         }
         model.addAttribute("error", true);
-        return "Login";
     }
 
 }
