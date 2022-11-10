@@ -10,6 +10,7 @@ import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.ui.Model;
 
 public interface UserService {
     User get(int id) throws IdNotFound;
@@ -22,4 +23,5 @@ public interface UserService {
 
     Tag mostUsedTag() throws IdNotFound, NoExistingOrders, NoTagInOrder;
 
+    void assignAttributes(Page<Order> orders, int size, int page, Model model);
 }
