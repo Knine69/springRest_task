@@ -22,15 +22,13 @@ public class BootUpInfo {
     private final DetailsManager detailsManager;
 
 
+    @Autowired
     public BootUpInfo(UserRepository userRepository, GiftCertificateRepository giftCertificateRepository,
                       DetailsManager detailsManager) {
         this.userRepository = userRepository;
         this.giftCertificateRepository = giftCertificateRepository;
         this.detailsManager = detailsManager;
     }
-
-    @Autowired
-
 
     public void prepareInfo() {
         for (int i = 0; i < 10000; i++) {
