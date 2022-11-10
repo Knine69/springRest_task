@@ -10,5 +10,6 @@ public interface GuestService {
 
     User signUp(User user) throws MissingEntity, MissingUserFields;
 
-    String authenticate(User user, Model model);
+    void authenticate(User user, Model model);
+
 }
