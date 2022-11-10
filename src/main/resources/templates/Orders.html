@@ -1,10 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+	<meta charset="UTF-8">
+	<title>Order List</title>
+	<link rel="stylesheet"
+	      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+	      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+	      crossorigin="anonymous">
 </head>
 <body>
-$END$
+<table class="table table-striped table-responsive-md">
+	<thead class="headerTable">
+	<tr>
+		<td>ID</td>
+		<td>Was placed at</td>
+		<td>Certificates Associated</td>
+		<td>Cost</td>
+	</tr>
+	</thead>
+	<tbody>
+	<tr th:each="order : ${orderList}">
+		<td th:text="${order.id}"></td>
+		<td th:text="${order.timestamp}"></td>
+		<td>
+			<p th:each="certificate : ${order.certificates}">
+				<span th:text="${certificate.name}"></span>
+			</p>
+		</td>
+		<td th:text="${order.cost}"></td>
+	</tr>
+	</tbody>
+</table>
+<div th:if="${totalPages > 1}">
+	<div class="row col-sm-10">
+		<div class="col-sm-2">
+			Total Rows: [[${totalElements}]]
+		</div>
+		<div class="col-sm-2">
+            <span th:each="i: ${#numbers.sequence(1, totalPages)}">
+                <a th:if="${pageNumber != i}"
+                   th:ref="@{'/users/' + ${user.id} + '/orders?page=' + i + '&size=' + ${pageSize} + '&sort='}">
+                    [[${i}]]</a>
+                <span th:unless="${pageNumber != i}">[[${i}]]</span> &nbsp; &nbsp;
+            </span>
+		</div>
+		<div class="col-sm-1">
+			<a th:if="${currentPage < totalPages}"
+			   th:href="@{'/users/'+ ${user.id} +'/orders?page=' + ${pageNumber + 1} + '&size=' + ${pageSize} + '&sort='}"
+			>Next</a>
+			<span th:unless="${pageNumber < totalPages}">Next</span> &nbsp; &nbsp;
+		</div>
+		<div class="col-sm-1">
+			<a th:if="${pageNumber < totalPages}"
+			   th:href="@{'/users/'+ ${user.id} +'/orders?page=' + ${totalPages} + '&size=' + ${pageSize} + '&sort='}"
+			>Last</a>
+			<span th:unless="${pageNumber < totalPages}">Last</span> &nbsp; &nbsp;
+		</div>
+	</div>
+</div>
+
+<button class="btn btn-outline-secondary" type="submit"/>
+<a th:href="@{/neworder}">Place new Order</a>
+</button>
 </body>
 </html>

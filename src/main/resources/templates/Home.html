@@ -8,30 +8,12 @@
 	      crossorigin="anonymous">
 </head>
 <body>
-<h3 th:inline="text">Hello [[${username}]]!</h3>
+<h3 th:inline="text">Hello [[${user.username}]]!</h3>
 
-<form th:action="@{'/users/' + ${userId} + '/orders'}" method="GET" class="pt-3">
+<form th:action="@{'/users/' + ${user.id} + '/orders'}" method="GET" class="pt-3">
 	<button class="btn btn-primary" type="submit"/>
 	Look at your orders</button>
 </form>
-<table th:if="${lookAtTable == true}" class="table table-striped table-responsive-md">
-	<thead>
-	<tr>
-		<td>ID</td>
-		<td>Was placed at</td>
-		<td>Certificates Associated</td>
-		<td>Cost</td>
-	</tr>
-	</thead>
-	<tbody>
-	<tr th:each="order : ${orderList}}">
-		<td th:text="${order.id}"></td>
-		<td th:text="${order.timestamp}"></td>
-		<td th:text="${order.certificates}"></td>
-		<td th:text="${order.cost}"></td>
-	</tr>
-	</tbody>
-</table>
 
 <form th:action="@{/logout}" method="post" class="pt-2">
 	<button class="btn btn-danger" type="submit"/>
