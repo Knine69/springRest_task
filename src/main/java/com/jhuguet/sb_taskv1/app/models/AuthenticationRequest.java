@@ -1,2 +1,13 @@
-package com.jhuguet.sb_taskv1.app.models;public class AuthenticationRequest {
+package com.jhuguet.sb_taskv1.app.models;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthenticationRequest {
+    String username;
+    String password;
 }
