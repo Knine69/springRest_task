@@ -6,7 +6,6 @@ import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
-import com.jhuguet.sb_taskv1.app.web.manager.DetailsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -19,15 +18,11 @@ public class BootUpInfo {
     private final UserRepository userRepository;
     private final GiftCertificateRepository giftCertificateRepository;
 
-    private final DetailsManager detailsManager;
-
 
     @Autowired
-    public BootUpInfo(UserRepository userRepository, GiftCertificateRepository giftCertificateRepository,
-                      DetailsManager detailsManager) {
+    public BootUpInfo(UserRepository userRepository, GiftCertificateRepository giftCertificateRepository) {
         this.userRepository = userRepository;
         this.giftCertificateRepository = giftCertificateRepository;
-        this.detailsManager = detailsManager;
     }
 
     public void prepareInfo() {
@@ -52,7 +47,6 @@ public class BootUpInfo {
         order.addCertificate(certificate);
         order.setUser(user);
 
-        detailsManager.saveUserDetails(user, false);
         saveProcess(certificate, user, order);
     }
 
