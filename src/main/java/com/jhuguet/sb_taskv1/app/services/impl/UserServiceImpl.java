@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,21 +126,6 @@ public class UserServiceImpl implements UserService {
                 .max(Map.Entry.comparingByValue())
                 .get()
                 .getValue();
-    }
-
-    @Override
-    public void assignAttributes(Page<Order> orders, int size, int page, Model model) {
-        model.addAttribute("lookAtTable", true);
-        model.addAttribute("orderList", orders.getContent());
-        model.addAttribute("totalElements", orders.getTotalElements());
-        model.addAttribute("totalPages", orders.getTotalPages());
-        model.addAttribute("pageNumber", page);
-        model.addAttribute("pageSize", size);
-        model.addAttribute("user", orders
-                .getContent()
-                .get(0)
-                .getUser());
-
     }
 
 }
