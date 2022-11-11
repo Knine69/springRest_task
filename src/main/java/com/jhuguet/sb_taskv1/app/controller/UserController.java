@@ -11,18 +11,14 @@ import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.UserService;
-import com.jhuguet.sb_taskv1.app.web.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.logging.Logger;
 
@@ -32,15 +28,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 /**
  * Public API User controller
  */
-@Controller
-@ControllerAdvice(basePackages = "com.jhuguet.sb_taskv1.app.controller")
+@RestController
 @RequestMapping(path = "/users")
 public class UserController {
 
     private final Logger logger = Logger.getLogger(GiftCertificateController.class.getName());
     private final PageResponse pageResponse = new PageResponse();
     private final UserService userService;
-    private Utils utils = new Utils();
 
     @Autowired
     public UserController(UserService service) {
@@ -58,16 +52,14 @@ public class UserController {
      * @throws PageNotFound            Exception thrown when page requested doesn't exist
      */
     @GetMapping
-    @Secured("ROLE_ADMIN")
     public EntityModel<Page<User>> getAll(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "3") int size,
-                                          @RequestParam(defaultValue = "asc") String sort, Model model) throws
-            PageNotFound, InvalidInputInformation {
+                                          @RequestParam(defaultValue = "asc") String sort) throws PageNotFound,
+            InvalidInputInformation {
         pageResponse.validateInput(page, size);
         Page<User> users = userService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
 
-        return EntityModel.of(users,
-                linkTo(methodOn(UserController.class).getAll(page, size, sort, model)).withSelfRel());
+        return EntityModel.of(users, linkTo(methodOn(UserController.class).getAll(page, size, sort)).withSelfRel());
     }
 
     /**
@@ -78,7 +70,6 @@ public class UserController {
      * @throws IdNotFound Exception thrown when given ID is not found
      */
     @GetMapping("/{id}")
-    @Secured("ROLE_USER")
     public User get(@PathVariable int id) throws IdNotFound {
         logger.info("Retrieving User: " + id);
         return userService.get(id);
@@ -107,17 +98,15 @@ public class UserController {
      * @throws IdNotFound Exception thrown when given ID is not found
      */
     @GetMapping("/{id}/orders")
-    public String getOrders(@PathVariable int id, @RequestParam(defaultValue = "1") int page,
-                            @RequestParam(defaultValue = "3") int size, @RequestParam(defaultValue = "asc") String sort,
-                            Model model) throws IdNotFound {
+    public EntityModel<Page<Order>> getOrders(@PathVariable int id, @RequestParam(defaultValue = "1") int page,
+                                              @RequestParam(defaultValue = "3") int size,
+                                              @RequestParam(defaultValue = "asc") String sort) throws IdNotFound {
         Page<Order> orders = userService.getOrders(id, pageResponse.giveDynamicPageable(page, size, sort));
-        userService.assignAttributes(orders, size, page, model);
 
-        return "Orders";
+        return EntityModel.of(orders,
+                linkTo(methodOn(UserController.class).getOrders(id, page, size, sort)).withSelfRel());
     }
 
-    //        EntityModel.of(orders,
-    //                linkTo(methodOn(UserController.class).getOrders(id, page, size, sort, model)).withSelfRel());
 
     /**
      * Will look for the most used Tag of the user with the highest order cost
