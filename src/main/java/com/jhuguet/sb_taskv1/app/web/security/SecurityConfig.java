@@ -9,18 +9,22 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private CustomUserDetailsServiceImpl userDetailsService;
+    private JwtFilterChain jwtFilterChain;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsServiceImpl userDetailsService) {
+    public SecurityConfig(CustomUserDetailsServiceImpl userDetailsService, JwtFilterChain jwtFilterChain) {
         this.userDetailsService = userDetailsService;
+        this.jwtFilterChain = jwtFilterChain;
     }
 
     @Override
@@ -33,11 +37,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf()
                 .disable()
-                .authorizeRequests(request -> request
-                        .antMatchers("/authenticate")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated());
+                .authorizeRequests()
+                .antMatchers("/login", "/users", "/signin")
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .exceptionHandling()
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.addFilterBefore(jwtFilterChain, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
