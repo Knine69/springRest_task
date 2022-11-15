@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.Set;
 
 public class BootUpInfo {
 
@@ -26,6 +27,8 @@ public class BootUpInfo {
     }
 
     public void prepareInfo() {
+        userRepository.save(
+                new User("admin", "admin@domain.com", "password", new HashSet<>(), new HashSet<>(Set.of("ADMIN"))));
         for (int i = 0; i < 10000; i++) {
             if (i < 1001) {
                 addAll(i);
@@ -40,7 +43,8 @@ public class BootUpInfo {
         GiftCertificate certificate = buildGiftCertificate(i);
 
         Tag tag = new Tag("Tag" + i);
-        User user = new User("user" + i, "user" + i + "@domain.com", "password", new HashSet<>());
+        User user = new User("user" + i, "user" + i + "@domain.com", "password", new HashSet<>(),
+                new HashSet<>(Set.of("USER")));
         Order order = new Order(i);
 
         certificate.assignTag(tag);
