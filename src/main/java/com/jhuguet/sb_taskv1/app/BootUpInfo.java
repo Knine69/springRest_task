@@ -47,7 +47,7 @@ public class BootUpInfo {
         order.addCertificate(certificate);
         order.setUser(user);
 
-        saveProcess(certificate, user, order);
+        saveUserAndRepository(certificate, user, order);
     }
 
     private void addCertificate(int i) {
@@ -72,7 +72,7 @@ public class BootUpInfo {
     }
 
 
-    private void saveProcess(GiftCertificate certificate, User user, Order order) {
+    private void saveUserAndRepository(GiftCertificate certificate, User user, Order order) {
         giftCertificateRepository.save(certificate);
         userRepository.save(user);
         user.placeOrder(order);
