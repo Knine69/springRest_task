@@ -26,7 +26,8 @@ public class SetUpUtils {
     }
 
     public User sampleUser() {
-        return new User(0, "user", "user@domain.com", "password", new HashSet<>(sampleOrders()));
+        return new User(0, "user", "user@domain.com", "password", new HashSet<>(sampleOrders()),
+                new HashSet<>(Set.of("USER")));
     }
 
     public Set<Order> sampleOrders() {
