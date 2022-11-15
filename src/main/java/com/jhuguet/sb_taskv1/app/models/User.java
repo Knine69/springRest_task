@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -32,9 +33,13 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private Set<Order> orders;
 
+    private Set<String> roles;
+
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+        this.orders = new HashSet<>();
+        this.roles = new HashSet<>();
     }
 
     public User(String username, String email, Set<Order> orders) {
@@ -49,11 +54,12 @@ public class User {
         this.password = password;
     }
 
-    public User(String username, String email, String password, Set<Order> orders) {
+    public User(String username, String email, String password, Set<Order> orders, Set<String> roles) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.orders = orders;
+        this.roles = roles;
     }
 
     public void placeOrder(Order order) {
@@ -76,4 +82,7 @@ public class User {
         this.orders = orders;
     }
 
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
+    }
 }
