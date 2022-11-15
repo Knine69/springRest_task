@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -111,12 +110,6 @@ public class GiftCertificateController {
         return EntityModel.of(certificates,
                 linkTo(methodOn(GiftCertificateController.class).getBy(partOfNameOrDescription, tagName, nameOrDate,
                         order, page, size)).withSelfRel());
-    }
-
-    @GetMapping("/neworder")
-    public String signUp(Model model) {
-        model.addAttribute("order", new Order());
-        return "NewOrder";
     }
 
     /**
