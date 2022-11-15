@@ -1,6 +1,8 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -30,7 +33,8 @@ public class UserServiceImpl implements UserService {
     private final OrderRepository orderRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, TagRepository tagRepository,
+    public UserServiceImpl(UserRepository userRepository,
+                           TagRepository tagRepository,
                            OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.tagRepository = tagRepository;
@@ -126,6 +130,27 @@ public class UserServiceImpl implements UserService {
                 .max(Map.Entry.comparingByValue())
                 .get()
                 .getValue();
+    }
+
+    @Override
+    public User signIn(User user) throws MissingEntity, MissingRequiredFields {
+        if (!Objects.isNull(user)) {
+            userEntityValidations(user);
+            userRepository.save(user);
+        } else {
+            throw new MissingEntity();
+        }
+        return null;
+    }
+
+    private void userEntityValidations(User user) throws MissingRequiredFields {
+        if (user
+                .getPassword()
+                .equals("") || user
+                .getUsername()
+                .equals("")) {
+            throw new MissingRequiredFields();
+        }
     }
 
 }

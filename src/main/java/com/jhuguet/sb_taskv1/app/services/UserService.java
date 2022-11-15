@@ -1,6 +1,8 @@
 package com.jhuguet.sb_taskv1.app.services;
 
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
@@ -21,5 +23,7 @@ public interface UserService {
     Page<Order> getOrders(int id, Pageable pageable) throws IdNotFound;
 
     Tag mostUsedTag() throws IdNotFound, NoExistingOrders, NoTagInOrder;
+
+    User signIn(User user) throws MissingEntity, MissingRequiredFields;
 
 }
