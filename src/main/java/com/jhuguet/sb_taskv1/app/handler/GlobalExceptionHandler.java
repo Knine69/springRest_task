@@ -5,10 +5,13 @@ import com.jhuguet.sb_taskv1.app.exceptions.ExceptionDetails;
 import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.JwtExpired;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingUserFields;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
+import com.jhuguet.sb_taskv1.app.exceptions.NotAuthorized;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import org.springframework.http.HttpStatus;
@@ -76,6 +79,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(MissingUserFields.class)
     public ResponseEntity<?> missingUserFields(MissingUserFields exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JwtExpired.class)
+    public ResponseEntity<?> jwtExpired(JwtExpired exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(NotAuthorized.class)
+    public ResponseEntity<?> notAuthorized(NotAuthorized exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(MissingRequiredFields.class)
+    public ResponseEntity<?> missingRequiredFields(MissingRequiredFields exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
     }
