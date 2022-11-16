@@ -36,10 +36,6 @@ public class TagServiceImpl implements TagService {
         return page;
     }
 
-    public Tag get(int id) throws IdNotFound {
-        return tagRepository.findById(id).orElseThrow(IdNotFound::new);
-    }
-
     @Transactional
     public Tag save(Tag tag) throws MissingEntity, InvalidInputInformation {
         if (!Objects.isNull(tag)) {
@@ -56,10 +52,18 @@ public class TagServiceImpl implements TagService {
     @Transactional
     public Tag delete(int id) throws IdNotFound, CertificateAssociatedException {
         Tag tag = get(id);
-        if (!tag.getCertificates().isEmpty()) {
+        if (!tag
+                .getCertificates()
+                .isEmpty()) {
             throw new CertificateAssociatedException();
         }
         tagRepository.deleteById(id);
         return tag;
+    }
+
+    public Tag get(int id) throws IdNotFound {
+        return tagRepository
+                .findById(id)
+                .orElseThrow(IdNotFound::new);
     }
 }
