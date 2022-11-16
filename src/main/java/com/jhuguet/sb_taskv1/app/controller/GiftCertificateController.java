@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
+import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
@@ -74,8 +75,8 @@ public class GiftCertificateController {
     @GetMapping
     public EntityModel<Page<GiftCertificate>> getAll(@RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "3") int size,
-                                                     @RequestParam(defaultValue = "asc") String sort) throws IdNotFound,
-            InvalidInputInformation, PageNotFound {
+                                                     @RequestParam(defaultValue = "asc") String sort) throws
+            BaseException {
         pageResponse.validateInput(page, size);
 
         Page<GiftCertificate> certificates = giftCertificateService.getAllPageable(
@@ -97,7 +98,8 @@ public class GiftCertificateController {
      */
     @GetMapping("/getBy")
     public EntityModel<Page<GiftCertificate>> getBy(@RequestParam String partOfNameOrDescription,
-                                                    @RequestParam String tagName, @RequestParam String nameOrDate,
+                                                    @RequestParam String tagName,
+                                                    @RequestParam String nameOrDate,
                                                     @RequestParam String order,
                                                     @RequestParam(defaultValue = "0") int page,
                                                     @RequestParam(defaultValue = "3") int size) throws

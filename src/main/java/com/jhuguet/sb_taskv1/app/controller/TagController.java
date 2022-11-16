@@ -5,6 +5,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.TagService;
@@ -68,11 +69,11 @@ public class TagController {
     @GetMapping
     public EntityModel<Page<Tag>> getAll(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "3") int size,
-                                         @RequestParam(defaultValue = "asc") String sort) throws InvalidInputInformation, PageNotFound {
+                                         @RequestParam(defaultValue = "asc") String sort) throws
+            InvalidInputInformation, PageNotFound, WrongSortOrder {
         pageResponse.validateInput(page, size);
         Page<Tag> tags = tagService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
-        return EntityModel.of(tags, linkTo(methodOn(TagController.class)
-                .getAll(page, size, sort)).withSelfRel());
+        return EntityModel.of(tags, linkTo(methodOn(TagController.class).getAll(page, size, sort)).withSelfRel());
     }
 
     /**
