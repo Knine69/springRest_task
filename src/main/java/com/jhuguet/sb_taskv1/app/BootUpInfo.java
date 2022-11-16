@@ -7,12 +7,12 @@ import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
-import java.util.Set;
 
 public class BootUpInfo {
 
@@ -41,8 +41,8 @@ public class BootUpInfo {
         GiftCertificate certificate = buildGiftCertificate(i);
 
         Tag tag = new Tag("Tag" + i);
-        User user = new User("user" + i, "user" + i + "@domain.com", "password", new HashSet<>(),
-                new HashSet<>(Set.of("USER")));
+        User user = new User("user" + i, "user" + i + "@domain.com", "password",
+                new HashSet<>());
         Order order = new Order(i);
 
         certificate.assignTag(tag);
@@ -69,6 +69,7 @@ public class BootUpInfo {
                 .duration(10)
                 .createDate(localDate)
                 .lastUpdateDate(localDate)
+                .associatedTags(new HashSet<>())
                 .build();
     }
 
