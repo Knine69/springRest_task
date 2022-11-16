@@ -4,6 +4,7 @@ import com.jhuguet.sb_taskv1.app.services.impl.CustomUserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,12 +20,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private CustomUserDetailsServiceImpl userDetailsService;
-    private JwtFilterChain jwtFilterChain;
+    private JwtFilter jwtFilter;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsServiceImpl userDetailsService, JwtFilterChain jwtFilterChain) {
+    public SecurityConfig(CustomUserDetailsServiceImpl userDetailsService, JwtFilter jwtFilter) {
         this.userDetailsService = userDetailsService;
-        this.jwtFilterChain = jwtFilterChain;
+        this.jwtFilter = jwtFilter;
     }
 
     @Override
@@ -38,21 +39,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf()
                 .disable()
                 .authorizeRequests()
-                .antMatchers("/login", "/users", "/signin")
+                .antMatchers(HttpMethod.GET, "/login", "/users", "/signin")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
-                .antMatchers("/**")
-                .hasRole("ADMIN")
-                .antMatchers("/certificates/*", "/tags/*")
-                .hasRole("USER")
                 .and()
                 .exceptionHandling()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.addFilterBefore(jwtFilterChain, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
+    //    Implement password encoding
 
     @Bean
     public PasswordEncoder passwordEncoder() {
