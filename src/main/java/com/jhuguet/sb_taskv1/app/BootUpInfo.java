@@ -27,8 +27,6 @@ public class BootUpInfo {
     }
 
     public void prepareInfo() {
-        userRepository.save(
-                new User("admin", "admin@domain.com", "password", new HashSet<>(), new HashSet<>(Set.of("ADMIN"))));
         for (int i = 0; i < 10000; i++) {
             if (i < 1001) {
                 addAll(i);
@@ -71,7 +69,6 @@ public class BootUpInfo {
                 .duration(10)
                 .createDate(localDate)
                 .lastUpdateDate(localDate)
-                .associatedTags(new HashSet<>())
                 .build();
     }
 
