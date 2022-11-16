@@ -22,12 +22,12 @@ import java.security.Key;
 import java.util.Date;
 
 @Component
-public class JwtFilterChain extends OncePerRequestFilter {
+public class JwtFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsServiceImpl detailsService;
 
     @Autowired
-    public JwtFilterChain(CustomUserDetailsServiceImpl detailsService) {
+    public JwtFilter(CustomUserDetailsServiceImpl detailsService) {
         this.detailsService = detailsService;
     }
 
