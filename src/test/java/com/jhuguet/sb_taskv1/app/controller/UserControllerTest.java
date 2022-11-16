@@ -6,6 +6,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
@@ -48,12 +49,12 @@ class UserControllerTest {
     private final UserController controller = new UserController(userService);
 
     @AfterEach
-    public void resetMocks() throws NoExistingOrders {
+    public void resetMocks() throws NoExistingOrders, WrongSortOrder {
         setMocks();
     }
 
     @BeforeAll
-    private static void setMocks() throws NoExistingOrders {
+    private static void setMocks() throws NoExistingOrders, WrongSortOrder {
         when(userRepository.existsById(anyInt())).thenReturn(true);
         when(userRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleUser()));
         when(userRepository.findAll(any(Pageable.class))).thenReturn(
@@ -72,7 +73,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getAllUsersIfPagingParamsAreCorrectlyPassed() throws InvalidInputInformation, PageNotFound {
+    void getAllUsersIfPagingParamsAreCorrectlyPassed() throws InvalidInputInformation, PageNotFound, WrongSortOrder {
         assertEquals(utils
                 .sampleOrders()
                 .size(), controller
