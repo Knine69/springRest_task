@@ -42,20 +42,24 @@ class UserControllerTest {
     private static final TagRepository tagRepository = Mockito.mock(TagRepository.class);
 
     @Autowired
-    private static final UserServiceImpl userService =
-            new UserServiceImpl(userRepository, tagRepository, orderRepository);
+    private static final UserServiceImpl userService = new UserServiceImpl(userRepository, tagRepository,
+            orderRepository);
 
     private final UserController controller = new UserController(userService);
 
+    @AfterEach
+    public void resetMocks() throws NoExistingOrders {
+        setMocks();
+    }
 
     @BeforeAll
     private static void setMocks() throws NoExistingOrders {
         when(userRepository.existsById(anyInt())).thenReturn(true);
         when(userRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleUser()));
-        when(userRepository.findAll(any(Pageable.class)))
-                .thenReturn(new PageImpl<>(
-                        new ArrayList<>(utils.sampleUsers()), PageRequest.of(1, 1), utils.sampleTags().size()
-                ));
+        when(userRepository.findAll(any(Pageable.class))).thenReturn(
+                new PageImpl<>(new ArrayList<>(utils.sampleUsers()), PageRequest.of(1, 1), utils
+                        .sampleTags()
+                        .size()));
 
         when(orderRepository.existsById(anyInt())).thenReturn(true);
         when(orderRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleOrder()));
@@ -67,34 +71,43 @@ class UserControllerTest {
         when(pageResponse.giveDynamicPageable(anyInt(), anyInt(), anyString())).thenReturn(PageRequest.of(1, 1));
     }
 
-    @AfterEach
-    public void resetMocks() throws NoExistingOrders {
-        setMocks();
-    }
-
     @Test
     void getAllUsersIfPagingParamsAreCorrectlyPassed() throws InvalidInputInformation, PageNotFound {
-        assertEquals(utils.sampleOrders().size(),
-                controller.getAll(1, 1, "asc").getContent().getTotalElements());
+        assertEquals(utils
+                .sampleOrders()
+                .size(), controller
+                .getAll(1, 1, "asc")
+                .getContent()
+                .getTotalElements());
     }
 
     @Test
     void getAllUsersInvalidInputInformationIfPagingParamsAreNotComplying() {
         assertThrows(InvalidInputInformation.class, () -> {
-            controller.getAll(0, 0, "asc").getContent().getTotalElements();
+            controller
+                    .getAll(0, 0, "asc")
+                    .getContent()
+                    .getTotalElements();
         });
     }
 
     @Test
     void getAllUsersErrorIfPageNotFound() {
         assertThrows(PageNotFound.class, () -> {
-            controller.getAll(10, 1, "asc").getContent().getTotalElements();
+            controller
+                    .getAll(10, 1, "asc")
+                    .getContent()
+                    .getTotalElements();
         });
     }
 
     @Test
     void getUserWhenGivingExistingId() throws IdNotFound {
-        assertEquals(utils.sampleOrder().getId(), controller.get(1).getId());
+        assertEquals(utils
+                .sampleOrder()
+                .getId(), controller
+                .get(1)
+                .getId());
     }
 
     @Test
@@ -103,9 +116,17 @@ class UserControllerTest {
         assertThrows(IdNotFound.class, () -> controller.get(2));
     }
 
+    private void toggleMockIdFound() {
+        when(userRepository.findById(anyInt())).thenReturn(Optional.ofNullable(null));
+    }
+
     @Test
     void getOrderRelatedToUserIfGivenCorrectlySetOfIds() throws OrderNotRelated, IdNotFound {
-        assertEquals(utils.sampleOrder().getId(), controller.getOrder(1, 1).getId());
+        assertEquals(utils
+                .sampleOrder()
+                .getId(), controller
+                .getOrder(1, 1)
+                .getId());
     }
 
     @Test
@@ -120,11 +141,6 @@ class UserControllerTest {
     }
 
     @Test
-    void getAllOrdersRelatedToAUserIfGivenIdExists() throws IdNotFound {
-        assertEquals(utils.sampleOrders().size(), controller.getOrders(1, 1, 1, "asc").getContent().getTotalElements());
-    }
-
-    @Test
     void getAllOrdersRelatedToAUserExceptionIfIdNotFound() {
         toggleMockIdFound();
         assertThrows(IdNotFound.class, () -> controller.getOrders(1, 1, 1, "asc"));
@@ -132,7 +148,11 @@ class UserControllerTest {
 
     @Test
     void highestCostOrderReturningMostUsedTagInHighestCostOrder() throws NoExistingOrders, NoTagInOrder, IdNotFound {
-        assertEquals(utils.sampleTag().getId(), controller.highestCostOrder().getId());
+        assertEquals(utils
+                .sampleTag()
+                .getId(), controller
+                .highestCostOrder()
+                .getId());
     }
 
     @Test
@@ -145,9 +165,5 @@ class UserControllerTest {
     void highestCostOrderReturningMostUsedTagInHighestCostOrderIdNotFound() throws NoExistingOrders {
         when(tagRepository.findById(anyInt())).thenReturn(Optional.ofNullable(null));
         assertThrows(IdNotFound.class, () -> controller.highestCostOrder());
-    }
-
-    private void toggleMockIdFound() {
-        when(userRepository.findById(anyInt())).thenReturn(Optional.ofNullable(null));
     }
 }
