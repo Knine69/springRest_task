@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -42,9 +43,11 @@ class UserControllerTest {
     private static final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private static final TagRepository tagRepository = Mockito.mock(TagRepository.class);
 
+    private static final PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
+
     @Autowired
     private static final UserServiceImpl userService = new UserServiceImpl(userRepository, tagRepository,
-            orderRepository);
+            orderRepository, passwordEncoder);
 
     private final UserController controller = new UserController(userService);
 
