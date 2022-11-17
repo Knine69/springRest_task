@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -21,16 +21,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private CustomUserDetailsServiceImpl userDetailsService;
     private JwtFilter jwtFilter;
+    private CustomAuthenticationProvider authenticationProvider;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsServiceImpl userDetailsService, JwtFilter jwtFilter) {
+    public SecurityConfig(CustomUserDetailsServiceImpl userDetailsService,
+                          JwtFilter jwtFilter,
+                          CustomAuthenticationProvider authenticationProvider) {
         this.userDetailsService = userDetailsService;
         this.jwtFilter = jwtFilter;
+        this.authenticationProvider = authenticationProvider;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder authentication) throws Exception {
-        authentication.userDetailsService(userDetailsService);
+        authentication.authenticationProvider(authenticationProvider);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Override
@@ -51,15 +60,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
-    //    Implement password encoding
-
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
-    }
-
     @Override
-    @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
