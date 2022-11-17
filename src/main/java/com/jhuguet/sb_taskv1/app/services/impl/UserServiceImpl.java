@@ -7,6 +7,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,13 +34,17 @@ public class UserServiceImpl implements UserService {
     private final TagRepository tagRepository;
     private final OrderRepository orderRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            TagRepository tagRepository,
-                           OrderRepository orderRepository) {
+                           OrderRepository orderRepository,
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.tagRepository = tagRepository;
         this.orderRepository = orderRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -133,14 +139,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User signIn(User user) throws MissingEntity, MissingRequiredFields {
+    public void signIn(User user) throws MissingEntity, MissingRequiredFields {
         if (!Objects.isNull(user)) {
             userEntityValidations(user);
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
         } else {
             throw new MissingEntity();
         }
-        return null;
     }
 
     private void userEntityValidations(User user) throws MissingRequiredFields {
@@ -150,6 +156,13 @@ public class UserServiceImpl implements UserService {
                 .getUsername()
                 .equals("")) {
             throw new MissingRequiredFields();
+        }
+    }
+
+    public void matchPasswords(String username, String password) throws WrongCredentials {
+        User user = userRepository.findByUsername(username);
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new WrongCredentials();
         }
     }
 

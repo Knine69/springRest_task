@@ -7,6 +7,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -24,6 +25,8 @@ public interface UserService {
 
     Tag mostUsedTag() throws IdNotFound, NoExistingOrders, NoTagInOrder;
 
-    User signIn(User user) throws MissingEntity, MissingRequiredFields;
+    void signIn(User user) throws MissingEntity, MissingRequiredFields;
+
+    void matchPasswords(String username, String password) throws WrongCredentials;
 
 }
