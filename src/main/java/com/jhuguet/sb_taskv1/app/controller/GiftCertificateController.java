@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -129,7 +131,9 @@ public class GiftCertificateController {
 
     @PostMapping("/users/{userId}")
     public Order placeNewOrder(@RequestParam List<Integer> certificatesIds,
-                               @PathVariable(name = "userId") int userId) throws IdNotFound {
+                               @PathVariable(name = "userId") int userId,
+                               @RequestHeader Map<String, String> headers) throws IOException, BaseException {
+        giftCertificateService.checkIdentity(headers.get("authorization"), userId, false);
         return giftCertificateService.placeNewOrder(certificatesIds, userId);
     }
 
