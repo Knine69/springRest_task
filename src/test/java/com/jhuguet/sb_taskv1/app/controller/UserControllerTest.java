@@ -1,9 +1,9 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
+import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
-import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
@@ -11,6 +11,7 @@ import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
+import com.jhuguet.sb_taskv1.app.services.impl.CustomUserDetailsServiceImpl;
 import com.jhuguet.sb_taskv1.app.services.impl.UserServiceImpl;
 import com.jhuguet.sb_taskv1.app.services.utils.SetUpUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -23,7 +24,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,12 +45,13 @@ class UserControllerTest {
     private static final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
     private static final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private static final TagRepository tagRepository = Mockito.mock(TagRepository.class);
+    private static final CustomUserDetailsServiceImpl detailsService = Mockito.mock(CustomUserDetailsServiceImpl.class);
 
     private static final PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
 
     @Autowired
     private static final UserServiceImpl userService = new UserServiceImpl(userRepository, tagRepository,
-            orderRepository, passwordEncoder);
+            orderRepository, detailsService, passwordEncoder);
 
     private final UserController controller = new UserController(userService);
 
@@ -106,18 +110,18 @@ class UserControllerTest {
     }
 
     @Test
-    void getUserWhenGivingExistingId() throws IdNotFound {
+    void getUserWhenGivingExistingId() throws BaseException, IOException {
         assertEquals(utils
                 .sampleOrder()
                 .getId(), controller
-                .get(1)
+                .get(1, new HashMap<>())
                 .getId());
     }
 
     @Test
     void getUserWhenGivingNonExistingIdNotFound() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.get(2));
+        assertThrows(IdNotFound.class, () -> controller.get(2, new HashMap<>()));
     }
 
     private void toggleMockIdFound() {
@@ -125,49 +129,49 @@ class UserControllerTest {
     }
 
     @Test
-    void getOrderRelatedToUserIfGivenCorrectlySetOfIds() throws OrderNotRelated, IdNotFound {
+    void getOrderRelatedToUserIfGivenCorrectlySetOfIds() throws BaseException, IOException {
         assertEquals(utils
                 .sampleOrder()
                 .getId(), controller
-                .getOrder(1, 1)
+                .getOrder(1, 1, new HashMap<>())
                 .getId());
     }
 
     @Test
     void getOrderExceptionIfNotRelatedToUser() {
-        assertThrows(OrderNotRelated.class, () -> controller.getOrder(1, 10));
+        assertThrows(OrderNotRelated.class, () -> controller.getOrder(1, 10, new HashMap<>()));
     }
 
     @Test
     void getOrderRelatedToUserExceptionIfIdIsNonExistent() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.getOrder(1, 1));
+        assertThrows(IdNotFound.class, () -> controller.getOrder(1, 1, new HashMap<>()));
     }
 
     @Test
     void getAllOrdersRelatedToAUserExceptionIfIdNotFound() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.getOrders(1, 1, 1, "asc"));
+        assertThrows(IdNotFound.class, () -> controller.getOrders(1, 1, 1, "asc", new HashMap<>()));
     }
 
     @Test
-    void highestCostOrderReturningMostUsedTagInHighestCostOrder() throws NoExistingOrders, NoTagInOrder, IdNotFound {
+    void highestCostOrderReturningMostUsedTagInHighestCostOrder() throws BaseException, IOException {
         assertEquals(utils
                 .sampleTag()
                 .getId(), controller
-                .highestCostOrder()
+                .highestCostOrder(new HashMap<>())
                 .getId());
     }
 
     @Test
     void highestCostOrderReturningMostUsedTagInHighestCostOrderNoExistingOrder() throws NoExistingOrders {
         when(orderRepository.getHighestCostOrder()).thenReturn(null);
-        assertThrows(NoExistingOrders.class, () -> controller.highestCostOrder());
+        assertThrows(NoExistingOrders.class, () -> controller.highestCostOrder(new HashMap<>()));
     }
 
     @Test
-    void highestCostOrderReturningMostUsedTagInHighestCostOrderIdNotFound() throws NoExistingOrders {
+    void highestCostOrderReturningMostUsedTagInHighestCostOrderIdNotFound() {
         when(tagRepository.findById(anyInt())).thenReturn(Optional.ofNullable(null));
-        assertThrows(IdNotFound.class, () -> controller.highestCostOrder());
+        assertThrows(IdNotFound.class, () -> controller.highestCostOrder(new HashMap<>()));
     }
 }
