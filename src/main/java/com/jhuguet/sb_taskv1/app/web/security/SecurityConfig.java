@@ -52,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .antMatchers(HttpMethod.POST, "/certificates/users/*")
                 .authenticated()
-                .antMatchers(HttpMethod.GET, "/users/*")
+                .antMatchers(HttpMethod.GET, "/users/**", "/certificates/**")
                 .authenticated()
                 .antMatchers("/users/**", "/certificates/**", "/tags/**")
                 .hasRole("ADMIN")
