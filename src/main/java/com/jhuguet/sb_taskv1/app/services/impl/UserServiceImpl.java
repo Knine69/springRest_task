@@ -17,19 +17,15 @@ import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.UserService;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import com.jhuguet.sb_taskv1.app.services.authorize.RequestAuthorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -178,44 +174,15 @@ public class UserServiceImpl implements UserService {
 
     public void checkIdentity(String jwt, int givenId, boolean requiresAdmin) throws NotAuthorized, IOException,
             UnqualifiedAuthority {
+        RequestAuthorization authorization = giveRequestAuthorization();
         if (requiresAdmin) {
-            confirmRoles(jwt);
+            authorization.confirmRoles(jwt);
         }
-        confirmUser(givenId, jwt);
+        authorization.confirmUser(givenId, jwt);
     }
 
-    private void confirmRoles(String jwt) throws IOException, UnqualifiedAuthority {
-        String username = String.valueOf(Jwts
-                .parserBuilder()
-                .setSigningKey(giveSignKey())
-                .build()
-                .parseClaimsJws(jwt.split(" ")[1])
-                .getBody()
-                .get("sub"));
-        UserDetails user = detailsService.loadUserByUsername(username);
-        if (!user
-                .getAuthorities()
-                .contains("ROLE_ADMIN")) {
-            throw new UnqualifiedAuthority();
-        }
+    private RequestAuthorization giveRequestAuthorization() {
+        return new RequestAuthorization(detailsService);
     }
-
-    private void confirmUser(int givenId, String jwt) throws IOException, NotAuthorized {
-        String id = String.valueOf(Jwts
-                .parserBuilder()
-                .setSigningKey(giveSignKey())
-                .build()
-                .parseClaimsJws(jwt.split(" ")[1])
-                .getBody()
-                .get("id"));
-        if (Integer.parseInt(id) != givenId) {
-            throw new NotAuthorized();
-        }
-    }
-
-    private Key giveSignKey() throws IOException {
-        return Keys.hmacShaKeyFor(new FileInputStream("secret-key.pub").readAllBytes());
-    }
-
 
 }
