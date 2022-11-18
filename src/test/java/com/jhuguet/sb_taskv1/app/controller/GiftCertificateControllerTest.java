@@ -24,6 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -46,99 +47,170 @@ class GiftCertificateControllerTest {
     @BeforeAll
     void mocksSetuUp() throws BaseException {
         MockitoAnnotations.openMocks(this);
-        Mockito.when(pageResponse.giveDynamicPageable(1, 1, "asc")).thenReturn(PageRequest.of(1, 1));
-        Mockito.when(giftCertificateService.delete(0)).thenReturn(utils.sampleCertificate());
-        Mockito.when(giftCertificateService.delete(10)).thenThrow(IdNotFound.class);
-        Mockito.when(giftCertificateService.placeNewOrder(new ArrayList<>(), 1)).thenReturn(utils.sampleOrder());
-        Mockito.when(giftCertificateService.placeNewOrder(new ArrayList<>(), 10)).thenThrow(IdNotFound.class);
-        Mockito.when(giftCertificateService.get(0)).thenReturn(utils.sampleCertificate());
-        Mockito.when(giftCertificateService.save(Mockito.any(GiftCertificate.class))).thenReturn(utils.sampleCertificate());
-        Mockito.when(giftCertificateService.save(null)).thenThrow(MissingEntity.class);
-        Mockito.when(giftCertificateService.update(0, new HashMap<>())).thenReturn(utils.sampleCertificate());
-        Mockito.when(giftCertificateService.update(1, new HashMap<>())).thenThrow(IdNotFound.class);
-        Mockito.when(giftCertificateService.update(-1, new HashMap<>())).thenThrow(InvalidInputInformation.class);
-        Mockito.when(giftCertificateService.getAllPageable(Mockito.any(Pageable.class)))
+        Mockito
+                .when(pageResponse.giveDynamicPageable(1, 1, "asc"))
+                .thenReturn(PageRequest.of(1, 1));
+        Mockito
+                .when(giftCertificateService.delete(0))
+                .thenReturn(utils.sampleCertificate());
+        Mockito
+                .when(giftCertificateService.delete(10))
+                .thenThrow(IdNotFound.class);
+        Mockito
+                .when(giftCertificateService.placeNewOrder(new ArrayList<>(), 1))
+                .thenReturn(utils.sampleOrder());
+        Mockito
+                .when(giftCertificateService.placeNewOrder(new ArrayList<>(), 10))
+                .thenThrow(IdNotFound.class);
+        Mockito
+                .when(giftCertificateService.get(0))
+                .thenReturn(utils.sampleCertificate());
+        Mockito
+                .when(giftCertificateService.save(Mockito.any(GiftCertificate.class)))
+                .thenReturn(utils.sampleCertificate());
+        Mockito
+                .when(giftCertificateService.save(null))
+                .thenThrow(MissingEntity.class);
+        Mockito
+                .when(giftCertificateService.update(0, new HashMap<>()))
+                .thenReturn(utils.sampleCertificate());
+        Mockito
+                .when(giftCertificateService.update(1, new HashMap<>()))
+                .thenThrow(IdNotFound.class);
+        Mockito
+                .when(giftCertificateService.update(-1, new HashMap<>()))
+                .thenThrow(InvalidInputInformation.class);
+        Mockito
+                .when(giftCertificateService.getAllPageable(Mockito.any(Pageable.class)))
                 .thenReturn(utils.samplePageCertificates());
-        Mockito.when(giftCertificateService.filterCertificates("", "", "", "",
-                PageRequest.of(1, 1))).thenReturn(utils.samplePageCertificates());
-        Mockito.when(giftCertificateService.filterCertificates("", "", "createDate", "",
-                PageRequest.of(1, 1))).thenReturn(utils.samplePageCertificates());
-        Mockito.when(giftCertificateService.filterCertificates("", "", "createDate", "asc",
-                PageRequest.of(1, 1))).thenReturn(utils.samplePageCertificates());
-        Mockito.when(giftCertificateService.filterCertificates("", "", "lastUpdateDate", "desc",
-                PageRequest.of(1, 1))).thenReturn(utils.samplePageCertificates());
-        Mockito.when(giftCertificateService.filterCertificates("", "", "name", "asc",
-                PageRequest.of(1, 1))).thenReturn(utils.samplePageCertificates());
-        Mockito.when(giftCertificateService.filterCertificates("Cloud", "", "", "",
-                PageRequest.of(1, 1))).thenReturn(utils.samplePageCertificates());
-        Mockito.when(giftCertificateService.filterCertificates("", "Master", "", "",
-                PageRequest.of(1, 1))).thenReturn(utils.samplePageCertificates());
+        Mockito
+                .when(giftCertificateService.filterCertificates("", "", "", "", PageRequest.of(1, 1)))
+                .thenReturn(utils.samplePageCertificates());
+        Mockito
+                .when(giftCertificateService.filterCertificates("", "", "createDate", "", PageRequest.of(1, 1)))
+                .thenReturn(utils.samplePageCertificates());
+        Mockito
+                .when(giftCertificateService.filterCertificates("", "", "createDate", "asc", PageRequest.of(1, 1)))
+                .thenReturn(utils.samplePageCertificates());
+        Mockito
+                .when(giftCertificateService.filterCertificates("", "", "lastUpdateDate", "desc", PageRequest.of(1, 1)))
+                .thenReturn(utils.samplePageCertificates());
+        Mockito
+                .when(giftCertificateService.filterCertificates("", "", "name", "asc", PageRequest.of(1, 1)))
+                .thenReturn(utils.samplePageCertificates());
+        Mockito
+                .when(giftCertificateService.filterCertificates("Cloud", "", "", "", PageRequest.of(1, 1)))
+                .thenReturn(utils.samplePageCertificates());
+        Mockito
+                .when(giftCertificateService.filterCertificates("", "Master", "", "", PageRequest.of(1, 1)))
+                .thenReturn(utils.samplePageCertificates());
 
     }
 
     @Test
-    void getAllGiftCertificatesIfCorrectlyGivenPagingParams() throws InvalidInputInformation, IdNotFound, PageNotFound {
-        Assertions.assertEquals(utils.sampleCertificates().size(),
-                Objects.requireNonNull(controller.getAll(1, 1, "asc").getContent()).getTotalElements());
+    void getAllGiftCertificatesIfCorrectlyGivenPagingParams() throws BaseException {
+        Assertions.assertEquals(utils
+                .sampleCertificates()
+                .size(), Objects
+                .requireNonNull(controller
+                        .getAll(1, 1, "asc")
+                        .getContent())
+                .getTotalElements());
     }
 
     @Test
     void getOneSpecificGiftCertificateIfCorrectlyGivenId() throws IdNotFound, InvalidInputInformation {
-        Assertions.assertEquals(utils.sampleCertificate().getName(), controller.get(0).getName());
+        Assertions.assertEquals(utils
+                .sampleCertificate()
+                .getName(), controller
+                .get(0)
+                .getName());
     }
 
     @Test
     void getGiftCertificateByTagName() throws InvalidInputInformation, PageNotFound {
-        Assertions.assertEquals(utils.sampleCertificates().size(),
-                Objects.requireNonNull(controller.getBy("", "Cloud", "", "", 1, 1)
-                        .getContent()).getTotalElements());
+        Assertions.assertEquals(utils
+                .sampleCertificates()
+                .size(), Objects
+                .requireNonNull(controller
+                        .getBy("", "Cloud", "", "", 1, 1)
+                        .getContent())
+                .getTotalElements());
     }
 
     @Test
     void getGiftCertificateByPartOfNameOrDescription() throws InvalidInputInformation, PageNotFound {
-        Assertions.assertEquals(utils.sampleCertificates().size(),
-                Objects.requireNonNull(controller.getBy("Master", "", "", "", 1, 1)
-                        .getContent()).getTotalElements());
+        Assertions.assertEquals(utils
+                .sampleCertificates()
+                .size(), Objects
+                .requireNonNull(controller
+                        .getBy("Master", "", "", "", 1, 1)
+                        .getContent())
+                .getTotalElements());
     }
 
     @Test
     void getByReturnsNoGiftCertificate() throws InvalidInputInformation, PageNotFound {
-        Assertions.assertEquals(utils.sampleCertificates().size(),
-                Objects.requireNonNull(controller.getBy("", "", "", "", 1, 1)
-                        .getContent()).getTotalElements());
+        Assertions.assertEquals(utils
+                .sampleCertificates()
+                .size(), Objects
+                .requireNonNull(controller
+                        .getBy("", "", "", "", 1, 1)
+                        .getContent())
+                .getTotalElements());
     }
 
     @Test
     void getGiftCertificateByCreatedDate() throws InvalidInputInformation, PageNotFound {
-        Assertions.assertEquals(utils.sampleCertificates().size(),
-                Objects.requireNonNull(controller.getBy("", "", "createDate", "asc", 1, 1)
-                        .getContent()).getTotalElements());
+        Assertions.assertEquals(utils
+                .sampleCertificates()
+                .size(), Objects
+                .requireNonNull(controller
+                        .getBy("", "", "createDate", "asc", 1, 1)
+                        .getContent())
+                .getTotalElements());
     }
 
     @Test
     void getGiftCertificateByLastUpdatedDateReverseOrder() throws InvalidInputInformation, PageNotFound {
-        Assertions.assertEquals(utils.sampleCertificates().size(),
-                Objects.requireNonNull(controller.getBy("", "", "lastUpdateDate", "desc", 1, 1)
-                        .getContent()).getTotalElements());
+        Assertions.assertEquals(utils
+                .sampleCertificates()
+                .size(), Objects
+                .requireNonNull(controller
+                        .getBy("", "", "lastUpdateDate", "desc", 1, 1)
+                        .getContent())
+                .getTotalElements());
     }
 
     @Test
     void getGiftCertificateByName() throws InvalidInputInformation, PageNotFound {
-        Assertions.assertEquals(utils.sampleCertificates().size(),
-                Objects.requireNonNull(controller.getBy("", "", "name", "asc", 1, 1)
-                        .getContent()).getTotalElements());
+        Assertions.assertEquals(utils
+                .sampleCertificates()
+                .size(), Objects
+                .requireNonNull(controller
+                        .getBy("", "", "name", "asc", 1, 1)
+                        .getContent())
+                .getTotalElements());
     }
 
     @Test
     void getGiftCertificateByNameOrDateIncorrectOrder() throws InvalidInputInformation, PageNotFound {
-        Assertions.assertEquals(utils.sampleCertificates().size(),
-                Objects.requireNonNull(controller.getBy("", "", "createDate", "", 1, 1)
-                        .getContent()).getTotalElements());
+        Assertions.assertEquals(utils
+                .sampleCertificates()
+                .size(), Objects
+                .requireNonNull(controller
+                        .getBy("", "", "createDate", "", 1, 1)
+                        .getContent())
+                .getTotalElements());
     }
 
     @Test
     void saveGiftCertificateCorrectly() throws MissingEntity, InvalidInputInformation, IdAlreadyInUse {
-        Assertions.assertEquals(utils.sampleCertificate().getName(), giftCertificateService.save(utils.sampleCertificate()).getName());
+        Assertions.assertEquals(utils
+                .sampleCertificate()
+                .getName(), giftCertificateService
+                .save(utils.sampleCertificate())
+                .getName());
     }
 
     @Test
@@ -148,39 +220,55 @@ class GiftCertificateControllerTest {
 
     @Test
     void updateGiftCertificateCorrectly() throws IdNotFound, InvalidInputInformation {
-        Assertions.assertEquals("AWS Certificate", controller.update(0, new HashMap<>()).getName());
+        Assertions.assertEquals("AWS Certificate", controller
+                .update(0, new HashMap<>())
+                .getName());
     }
 
 
     @Test
     void updateGiftCertificateIdNotFound() {
-        Assertions.assertThrows(IdNotFound.class, () -> controller.update(1, new HashMap<>()).getName());
+        Assertions.assertThrows(IdNotFound.class, () -> controller
+                .update(1, new HashMap<>())
+                .getName());
     }
 
 
     @Test
     void updateGiftCertificateInvalidInputNegativeId() {
-        Assertions.assertThrows(InvalidInputInformation.class, () -> controller.update(-1, new HashMap<>()).getName());
+        Assertions.assertThrows(InvalidInputInformation.class, () -> controller
+                .update(-1, new HashMap<>())
+                .getName());
     }
 
     @Test
     void deleteGiftCertificateCorrectly() throws IdNotFound {
-        Assertions.assertEquals("AWS Certificate", controller.delete(0).getName());
+        Assertions.assertEquals("AWS Certificate", controller
+                .delete(0)
+                .getName());
     }
 
     @Test
     void deleteGiftCertificateIdNotFound() {
-        Assertions.assertThrows(IdNotFound.class, () -> controller.delete(10).getName());
+        Assertions.assertThrows(IdNotFound.class, () -> controller
+                .delete(10)
+                .getName());
     }
 
     @Test
-    void placeNewOrderCorrectlyIfIdExists() throws IdNotFound {
-        Assertions.assertEquals(utils.sampleOrder().getId(), controller.placeNewOrder(new ArrayList<>(), 1).getId());
+    void placeNewOrderCorrectlyIfIdExists() throws BaseException, IOException {
+        Assertions.assertEquals(utils
+                .sampleOrder()
+                .getId(), controller
+                .placeNewOrder(new ArrayList<>(), 1, new HashMap<>())
+                .getId());
     }
 
     @Test
     void placeNewOrderExceptionIfIdNotFound() {
-        Assertions.assertThrows(IdNotFound.class, () -> controller.placeNewOrder(new ArrayList<>(), 10).getTimestamp());
+        Assertions.assertThrows(IdNotFound.class, () -> controller
+                .placeNewOrder(new ArrayList<>(), 10, new HashMap<>())
+                .getTimestamp());
     }
 
 }
