@@ -5,8 +5,10 @@ import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
+import com.jhuguet.sb_taskv1.app.exceptions.NotAuthorized;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.UnqualifiedAuthority;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
@@ -15,13 +17,19 @@ import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.UserService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,17 +41,19 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final OrderRepository orderRepository;
-
+    private final CustomUserDetailsServiceImpl detailsService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            TagRepository tagRepository,
                            OrderRepository orderRepository,
+                           CustomUserDetailsServiceImpl detailsService,
                            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.tagRepository = tagRepository;
         this.orderRepository = orderRepository;
+        this.detailsService = detailsService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -165,5 +175,47 @@ public class UserServiceImpl implements UserService {
             throw new WrongCredentials();
         }
     }
+
+    public void checkIdentity(String jwt, int givenId, boolean requiresAdmin) throws NotAuthorized, IOException,
+            UnqualifiedAuthority {
+        if (requiresAdmin) {
+            confirmRoles(jwt);
+        }
+        confirmUser(givenId, jwt);
+    }
+
+    private void confirmRoles(String jwt) throws IOException, UnqualifiedAuthority {
+        String username = String.valueOf(Jwts
+                .parserBuilder()
+                .setSigningKey(giveSignKey())
+                .build()
+                .parseClaimsJws(jwt.split(" ")[1])
+                .getBody()
+                .get("sub"));
+        UserDetails user = detailsService.loadUserByUsername(username);
+        if (!user
+                .getAuthorities()
+                .contains("ROLE_ADMIN")) {
+            throw new UnqualifiedAuthority();
+        }
+    }
+
+    private void confirmUser(int givenId, String jwt) throws IOException, NotAuthorized {
+        String id = String.valueOf(Jwts
+                .parserBuilder()
+                .setSigningKey(giveSignKey())
+                .build()
+                .parseClaimsJws(jwt.split(" ")[1])
+                .getBody()
+                .get("id"));
+        if (Integer.parseInt(id) != givenId) {
+            throw new NotAuthorized();
+        }
+    }
+
+    private Key giveSignKey() throws IOException {
+        return Keys.hmacShaKeyFor(new FileInputStream("secret-key.pub").readAllBytes());
+    }
+
 
 }

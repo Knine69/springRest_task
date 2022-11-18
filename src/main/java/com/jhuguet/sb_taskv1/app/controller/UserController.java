@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
+import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
@@ -17,10 +18,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -71,8 +75,10 @@ public class UserController {
      * @throws IdNotFound Exception thrown when given ID is not found
      */
     @GetMapping("/{id}")
-    public User get(@PathVariable int id) throws IdNotFound {
+    public User get(@PathVariable int id, @RequestHeader Map<String, String> headers) throws IOException,
+            BaseException {
         logger.info("Retrieving User: " + id);
+        userService.checkIdentity(headers.get("authorization"), id, false);
         return userService.get(id);
     }
 
@@ -86,8 +92,11 @@ public class UserController {
      * @throws OrderNotRelated Exception thrown when given order ID is not associated to user
      */
     @GetMapping("/{userId}/orders/{orderId}")
-    public Order getOrder(@PathVariable int userId, @PathVariable int orderId) throws IdNotFound, OrderNotRelated {
+    public Order getOrder(@PathVariable int userId,
+                          @PathVariable int orderId,
+                          @RequestHeader Map<String, String> headers) throws BaseException, IOException {
         logger.info("Retrieving order " + orderId + " of user: " + userId);
+        userService.checkIdentity(headers.get("authorization"), userId, false);
         return userService.getOrder(userId, orderId);
     }
 
@@ -102,12 +111,14 @@ public class UserController {
     public EntityModel<Page<Order>> getOrders(@PathVariable int id,
                                               @RequestParam(defaultValue = "1") int page,
                                               @RequestParam(defaultValue = "3") int size,
-                                              @RequestParam(defaultValue = "asc") String sort) throws IdNotFound,
-            WrongSortOrder {
+                                              @RequestParam(defaultValue = "asc") String sort,
+                                              @RequestHeader Map<String, String> headers) throws BaseException,
+            IOException {
         Page<Order> orders = userService.getOrders(id, pageResponse.giveDynamicPageable(page, size, sort));
 
+        userService.checkIdentity(headers.get("authorization"), id, false);
         return EntityModel.of(orders,
-                linkTo(methodOn(UserController.class).getOrders(id, page, size, sort)).withSelfRel());
+                linkTo(methodOn(UserController.class).getOrders(id, page, size, sort, headers)).withSelfRel());
     }
 
 
@@ -120,7 +131,8 @@ public class UserController {
      * @throws NoTagInOrder     There are no Tags associated to the orders' certificates
      */
     @GetMapping("/mostWidelyUsedTag")
-    public Tag highestCostOrder() throws IdNotFound, NoExistingOrders, NoTagInOrder {
+    public Tag highestCostOrder(@RequestHeader Map<String, String> headers) throws BaseException, IOException {
+        userService.checkIdentity(headers.get("authorization"), 0, true);
         return userService.mostUsedTag();
     }
 }
