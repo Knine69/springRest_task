@@ -1,6 +1,8 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
+import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
 import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -30,15 +33,12 @@ public class UserServiceImpl implements UserService {
     private final OrderRepository orderRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, TagRepository tagRepository, OrderRepository orderRepository) {
+    public UserServiceImpl(UserRepository userRepository,
+                           TagRepository tagRepository,
+                           OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.tagRepository = tagRepository;
         this.orderRepository = orderRepository;
-    }
-
-    @Override
-    public User get(int id) throws IdNotFound {
-        return userRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     @Override
@@ -56,14 +56,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<Order> getOrders(int id, Pageable pageable) throws IdNotFound {
         User user = get(id);
-        return new PageImpl<>(new ArrayList<>(user.getOrders()), pageable, user.getOrders().size());
+        return new PageImpl<>(new ArrayList<>(user.getOrders()), pageable, user
+                .getOrders()
+                .size());
+    }
+
+    @Override
+    public User get(int id) throws IdNotFound {
+        return userRepository
+                .findById(id)
+                .orElseThrow(IdNotFound::new);
     }
 
     @Override
     public Order getOrder(int userId, int orderId) throws IdNotFound, OrderNotRelated {
         User user = get(userId);
-        return user.getOrders().stream()
-                .filter(x -> x.getId() == orderId).findAny().orElseThrow(OrderNotRelated::new);
+        return user
+                .getOrders()
+                .stream()
+                .filter(x -> x.getId() == orderId)
+                .findAny()
+                .orElseThrow(OrderNotRelated::new);
     }
 
 
@@ -84,18 +97,30 @@ public class UserServiceImpl implements UserService {
         Tag tag;
         Map<Integer, Integer> currentTags = mapCurrentTags();
 
-        order.getCertificates().forEach(c ->
-                c.getAssociatedTags()
+        order
+                .getCertificates()
+                .forEach(c -> c
+                        .getAssociatedTags()
                         .forEach(t -> currentTags.merge(t.getId(), 1, Integer::sum)));
 
         int tagID = getMaxTagID(currentTags);
 
         if (tagID > 0) {
-            tag = tagRepository.findById(tagID).orElseThrow(IdNotFound::new);
+            tag = tagRepository
+                    .findById(tagID)
+                    .orElseThrow(IdNotFound::new);
         } else {
             throw new NoTagInOrder();
         }
         return tag;
+    }
+
+    private Map<Integer, Integer> mapCurrentTags() {
+        Map<Integer, Integer> currentTags = new HashMap<>();
+        tagRepository
+                .findAll()
+                .forEach(t -> currentTags.put(t.getId(), 0));
+        return currentTags;
     }
 
     private Integer getMaxTagID(Map<Integer, Integer> tags) {
@@ -107,10 +132,25 @@ public class UserServiceImpl implements UserService {
                 .getValue();
     }
 
-    private Map<Integer, Integer> mapCurrentTags() {
-        Map<Integer, Integer> currentTags = new HashMap<>();
-        tagRepository.findAll().forEach(t -> currentTags.put(t.getId(), 0));
-        return currentTags;
+    @Override
+    public User signIn(User user) throws MissingEntity, MissingRequiredFields {
+        if (!Objects.isNull(user)) {
+            userEntityValidations(user);
+            userRepository.save(user);
+        } else {
+            throw new MissingEntity();
+        }
+        return null;
+    }
+
+    private void userEntityValidations(User user) throws MissingRequiredFields {
+        if (user
+                .getPassword()
+                .equals("") || user
+                .getUsername()
+                .equals("")) {
+            throw new MissingRequiredFields();
+        }
     }
 
 }

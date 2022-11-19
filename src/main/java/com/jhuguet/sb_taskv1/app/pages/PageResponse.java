@@ -1,6 +1,7 @@
 package com.jhuguet.sb_taskv1.app.pages;
 
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
+import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -14,10 +15,15 @@ public class PageResponse {
         }
     }
 
-    public PageRequest giveDynamicPageable(int page, int size, String sorted) {
-        return PageRequest.of(page - 1, size, sorted.equalsIgnoreCase("asc") ?
-                Sort.by("id").ascending() :
-                Sort.by("id").descending()
-        );
+    public PageRequest giveDynamicPageable(int page, int size, String sorted) throws WrongSortOrder {
+        return PageRequest.of(page - 1, size, validateSorting(sorted) ? Sort.by("id").ascending() :
+                Sort.by("id").descending());
+    }
+
+    private boolean validateSorting(String sorted) throws WrongSortOrder {
+        if (!(sorted.equalsIgnoreCase("asc") || sorted.equalsIgnoreCase("desc"))) {
+            throw new WrongSortOrder();
+        }
+        return sorted.equalsIgnoreCase("asc");
     }
 }

@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
+import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdAlreadyInUse;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
@@ -74,14 +75,15 @@ public class GiftCertificateController {
     @GetMapping
     public EntityModel<Page<GiftCertificate>> getAll(@RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "3") int size,
-                                                     @RequestParam(defaultValue = "asc") String sort) throws IdNotFound, InvalidInputInformation, PageNotFound {
+                                                     @RequestParam(defaultValue = "asc") String sort) throws
+            BaseException {
         pageResponse.validateInput(page, size);
 
-        Page<GiftCertificate> certificates = giftCertificateService
-                .getAllPageable(pageResponse.giveDynamicPageable(page, size, sort));
+        Page<GiftCertificate> certificates = giftCertificateService.getAllPageable(
+                pageResponse.giveDynamicPageable(page, size, sort));
 
-        return EntityModel.of(certificates, linkTo(methodOn(GiftCertificateController.class)
-                .getAll(page, size, sort)).withSelfRel());
+        return EntityModel.of(certificates,
+                linkTo(methodOn(GiftCertificateController.class).getAll(page, size, sort)).withSelfRel());
     }
 
 
@@ -95,17 +97,21 @@ public class GiftCertificateController {
      * @return Filtered and/or sorted List of GiftCertificates
      */
     @GetMapping("/getBy")
-    public EntityModel<Page<GiftCertificate>> getBy(@RequestParam String partOfNameOrDescription, @RequestParam String tagName,
-                                                    @RequestParam String nameOrDate, @RequestParam String order,
+    public EntityModel<Page<GiftCertificate>> getBy(@RequestParam String partOfNameOrDescription,
+                                                    @RequestParam String tagName,
+                                                    @RequestParam String nameOrDate,
+                                                    @RequestParam String order,
                                                     @RequestParam(defaultValue = "0") int page,
-                                                    @RequestParam(defaultValue = "3") int size) throws InvalidInputInformation, PageNotFound {
+                                                    @RequestParam(defaultValue = "3") int size) throws
+            InvalidInputInformation, PageNotFound {
         pageResponse.validateInput(size, page);
 
         Page<GiftCertificate> certificates = giftCertificateService.filterCertificates(tagName, partOfNameOrDescription,
                 nameOrDate, order, PageRequest.of(page, size));
 
-        return EntityModel.of(certificates, linkTo(methodOn(GiftCertificateController.class)
-                .getBy(partOfNameOrDescription, tagName, nameOrDate, order, page, size)).withSelfRel());
+        return EntityModel.of(certificates,
+                linkTo(methodOn(GiftCertificateController.class).getBy(partOfNameOrDescription, tagName, nameOrDate,
+                        order, page, size)).withSelfRel());
     }
 
     /**
@@ -115,7 +121,8 @@ public class GiftCertificateController {
      * @return GiftCertificate object saved into Database
      */
     @PostMapping
-    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity, InvalidInputInformation, IdAlreadyInUse {
+    public GiftCertificate save(@RequestBody GiftCertificate giftCertificate) throws MissingEntity,
+            InvalidInputInformation, IdAlreadyInUse {
         return giftCertificateService.save(giftCertificate);
     }
 
@@ -123,8 +130,7 @@ public class GiftCertificateController {
     @PostMapping("/users/{userId}")
     public Order placeNewOrder(@RequestParam List<Integer> certificatesIds,
                                @PathVariable(name = "userId") int userId) throws IdNotFound {
-        return giftCertificateService
-                .placeNewOrder(certificatesIds, userId);
+        return giftCertificateService.placeNewOrder(certificatesIds, userId);
     }
 
     /**
@@ -137,8 +143,8 @@ public class GiftCertificateController {
      * @throws InvalidInputInformation Exception thrown when given ID is incorrectly entered
      */
     @PatchMapping("/{certId}")
-    public GiftCertificate update(@PathVariable("certId") int id,
-                                  @RequestBody Map<String, Object> patch) throws IdNotFound, InvalidInputInformation {
+    public GiftCertificate update(@PathVariable("certId") int id, @RequestBody Map<String, Object> patch) throws
+            IdNotFound, InvalidInputInformation {
         return giftCertificateService.update(id, patch);
     }
 

@@ -6,6 +6,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -54,11 +55,12 @@ public class UserController {
     @GetMapping
     public EntityModel<Page<User>> getAll(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "3") int size,
-                                          @RequestParam(defaultValue = "asc") String sort) throws PageNotFound, InvalidInputInformation {
+                                          @RequestParam(defaultValue = "asc") String sort) throws PageNotFound,
+            InvalidInputInformation, WrongSortOrder {
         pageResponse.validateInput(page, size);
         Page<User> users = userService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
-        return EntityModel.of(users, linkTo(methodOn(UserController.class)
-                .getAll(page, size, sort)).withSelfRel());
+
+        return EntityModel.of(users, linkTo(methodOn(UserController.class).getAll(page, size, sort)).withSelfRel());
     }
 
     /**
@@ -84,8 +86,7 @@ public class UserController {
      * @throws OrderNotRelated Exception thrown when given order ID is not associated to user
      */
     @GetMapping("/{userId}/orders/{orderId}")
-    public Order getOrder(@PathVariable int userId,
-                          @PathVariable int orderId) throws IdNotFound, OrderNotRelated {
+    public Order getOrder(@PathVariable int userId, @PathVariable int orderId) throws IdNotFound, OrderNotRelated {
         logger.info("Retrieving order " + orderId + " of user: " + userId);
         return userService.getOrder(userId, orderId);
     }
@@ -101,11 +102,12 @@ public class UserController {
     public EntityModel<Page<Order>> getOrders(@PathVariable int id,
                                               @RequestParam(defaultValue = "1") int page,
                                               @RequestParam(defaultValue = "3") int size,
-                                              @RequestParam(defaultValue = "asc") String sort) throws IdNotFound {
+                                              @RequestParam(defaultValue = "asc") String sort) throws IdNotFound,
+            WrongSortOrder {
         Page<Order> orders = userService.getOrders(id, pageResponse.giveDynamicPageable(page, size, sort));
-        logger.info("Retrieving orders of user " + id);
-        return EntityModel.of(orders, linkTo(methodOn(UserController.class)
-                .getOrders(id, page, size, sort)).withSelfRel());
+
+        return EntityModel.of(orders,
+                linkTo(methodOn(UserController.class).getOrders(id, page, size, sort)).withSelfRel());
     }
 
 

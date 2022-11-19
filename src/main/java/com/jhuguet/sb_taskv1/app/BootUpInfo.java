@@ -7,6 +7,7 @@ import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,17 +41,15 @@ public class BootUpInfo {
         GiftCertificate certificate = buildGiftCertificate(i);
 
         Tag tag = new Tag("Tag" + i);
-        User user = new User("user" + i, "user" + i + "@domain.com", new HashSet<>());
+        User user = new User("user" + i, "user" + i + "@domain.com", "password",
+                new HashSet<>());
         Order order = new Order(i);
 
         certificate.assignTag(tag);
         order.addCertificate(certificate);
         order.setUser(user);
 
-        giftCertificateRepository.save(certificate);
-        userRepository.save(user);
-        user.placeOrder(order);
-        userRepository.save(user);
+        saveUserAndRepository(certificate, user, order);
     }
 
     private void addCertificate(int i) {
@@ -59,14 +58,26 @@ public class BootUpInfo {
     }
 
     GiftCertificate buildGiftCertificate(int i) {
-        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        return GiftCertificate.builder()
+        String localDate = LocalDateTime
+                .now()
+                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return GiftCertificate
+                .builder()
                 .name("Certificate" + i)
                 .description("Description" + i)
                 .price(BigDecimal.valueOf(10.00))
                 .duration(10)
                 .createDate(localDate)
                 .lastUpdateDate(localDate)
-                .associatedTags(new HashSet<>()).build();
+                .associatedTags(new HashSet<>())
+                .build();
+    }
+
+
+    private void saveUserAndRepository(GiftCertificate certificate, User user, Order order) {
+        giftCertificateRepository.save(certificate);
+        userRepository.save(user);
+        user.placeOrder(order);
+        userRepository.save(user);
     }
 }

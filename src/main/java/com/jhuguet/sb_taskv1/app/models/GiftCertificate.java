@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.CascadeType;
@@ -18,6 +17,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -25,7 +25,6 @@ import java.util.Set;
 @DynamicUpdate
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class GiftCertificate {
     @Id
@@ -43,19 +42,16 @@ public class GiftCertificate {
     private String lastUpdateDate;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "certificate_tags",
-            joinColumns = {
-                    @JoinColumn(name = "certificate_id", referencedColumnName = "id")
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(name = "tag_id", referencedColumnName = "id")
-            })
+    @JoinTable(name = "certificate_tags", joinColumns = {@JoinColumn(name = "certificate_id", referencedColumnName = "id")}, inverseJoinColumns = {@JoinColumn(name = "tag_id", referencedColumnName = "id")})
     private Set<Tag> associatedTags;
 
     @ManyToMany(cascade = CascadeType.ALL, mappedBy = "certificates")
     @JsonIgnore
     private Set<Order> userOrder;
 
+    public GiftCertificate() {
+        this.associatedTags = new HashSet<>();
+    }
 
     public void setName(String name) {
         this.name = name;
