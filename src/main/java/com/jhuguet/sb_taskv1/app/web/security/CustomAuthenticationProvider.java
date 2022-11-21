@@ -16,9 +16,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         String username = authentication.getName();
-        String password = authentication
-                .getCredentials()
-                .toString();
+        String password = authentication.getCredentials().toString();
 
         UserDetails userDetails = giveUserDetails(username);
 
@@ -29,12 +27,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
-    UserDetails giveUserDetails(String username) {
-        return User
-                .withUsername(username)
-                .password("*")
-                .roles("USER")
-                .build();
+    public UserDetails giveUserDetails(String username) {
+        return User.withUsername(username).password("*").roles(
+                username.equalsIgnoreCase("administrator") ? "ADMIN" : "USER").build();
     }
 
     @Override
