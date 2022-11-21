@@ -1,7 +1,6 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
-import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
-import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
+import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.models.AuthenticationRequest;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -42,7 +41,7 @@ public class GuestController {
     }
 
     @PostMapping("signin")
-    public Map<String, String> signIn(@RequestBody User user) throws IOException, MissingRequiredFields, MissingEntity {
+    public Map<String, String> signIn(@RequestBody User user) throws IOException, BaseException {
         userService.signIn(user);
         manager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
