@@ -34,7 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.equals("/login") || path.equals("/signin") || path.equals("/users");
+        return path.equals("/login") || path.equals("/signin") || path.equals("/users") || path.equals("/h2-console");
     }
 
     @SneakyThrows
@@ -83,7 +83,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private boolean validateRequest(String username, UserDetails details, Key key, String jwt) throws JwtExpired {
-        if (!validateExpiration(key, jwt)) {
+        if (validateExpiration(key, jwt)) {
             throw new JwtExpired();
         }
 
@@ -91,7 +91,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private boolean validateExpiration(Key key, String jwt) {
-        return !Jwts
+        return Jwts
                 .parserBuilder()
                 .setSigningKey(key)
                 .build()
