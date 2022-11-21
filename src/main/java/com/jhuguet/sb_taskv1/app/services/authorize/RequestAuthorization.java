@@ -23,19 +23,19 @@ public class RequestAuthorization {
 
 
     public void confirmRoles(String jwt) throws IOException, UnqualifiedAuthority {
-        String username = String.valueOf(Jwts
-                .parserBuilder()
-                .setSigningKey(giveSignKey())
-                .build()
-                .parseClaimsJws(jwt.split(" ")[1])
-                .getBody()
-                .get("sub"));
-        UserDetails user = detailsService.loadUserByUsername(username);
-        if (!user
-                .getAuthorities()
-                .contains("ROLE_ADMIN")) {
+        String username = givePropertyValue("sub", jwt.split(" ")[1]);
+        if (!authContainsAdmin(detailsService.loadUserByUsername(username))) {
             throw new UnqualifiedAuthority();
         }
+    }
+
+    private String givePropertyValue(String property, String jwt) throws IOException {
+        return String.valueOf(Jwts.parserBuilder().setSigningKey(giveSignKey()).build().parseClaimsJws(jwt).getBody()
+                                  .get(property));
+    }
+
+    private boolean authContainsAdmin(UserDetails user) {
+        return user.getAuthorities().stream().anyMatch(auth -> auth.getAuthority().equalsIgnoreCase("ROLE_ADMIN"));
     }
 
     private Key giveSignKey() throws IOException {
@@ -43,17 +43,14 @@ public class RequestAuthorization {
     }
 
     public void confirmUser(int givenId, String jwt) throws IOException, NotAuthorized {
-        String id = String.valueOf(Jwts
-                .parserBuilder()
-                .setSigningKey(giveSignKey())
-                .build()
-                .parseClaimsJws(jwt.split(" ")[1])
-                .getBody()
-                .get("id"));
-        if (Integer.parseInt(id) != givenId) {
-            throw new NotAuthorized();
+        jwt = jwt.split(" ")[1];
+        String username = givePropertyValue("sub", jwt);
+        if (!username.equalsIgnoreCase("administrator")) {
+            String id = givePropertyValue("id", jwt);
+            if (Integer.parseInt(id) != givenId) {
+                throw new NotAuthorized();
+            }
         }
     }
-
 
 }
