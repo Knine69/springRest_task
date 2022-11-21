@@ -29,7 +29,7 @@ public interface UserService {
 
     Tag mostUsedTag() throws IdNotFound, NoExistingOrders, NoTagInOrder;
 
-    void signIn(User user) throws MissingEntity, MissingRequiredFields;
+    void signIn(User user) throws MissingEntity, MissingRequiredFields, UnqualifiedAuthority;
 
     void matchPasswords(String username, String password) throws WrongCredentials;
 

