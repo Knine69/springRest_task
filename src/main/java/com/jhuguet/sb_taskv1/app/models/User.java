@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -29,9 +30,12 @@ public class User {
     private int id;
     private String username;
     private String email;
+    @Column(unique = true)
     private String password;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private Set<Order> orders;
+
+    private String role;
 
     public User(String username, String password) {
         this.username = username;
@@ -51,11 +55,12 @@ public class User {
         this.password = password;
     }
 
-    public User(String username, String email, String password, Set<Order> orders) {
+    public User(String username, String email, String password, Set<Order> orders, String role) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.orders = orders;
+        this.role = role;
     }
 
     public void placeOrder(Order order) {
