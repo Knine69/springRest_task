@@ -45,7 +45,7 @@ public class BootUpInfo {
 
         Tag tag = new Tag("Tag" + i);
         User user = new User("user" + i, "user" + i + "@domain.com", passwordEncoder.encode("password"),
-                new HashSet<>());
+                new HashSet<>(), "USER");
         Order order = new Order(i);
 
         certificate.assignTag(tag);
