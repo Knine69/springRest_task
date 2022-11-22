@@ -46,7 +46,7 @@ public class JwtUtils {
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() * 1000l * 60l * 10l))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000l * 60l * 10l))
                 .signWith(Keys.hmacShaKeyFor(new FileInputStream("secret-key.pub").readAllBytes()))
                 .compact();
     }
