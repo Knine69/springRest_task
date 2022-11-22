@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 
@@ -127,8 +128,7 @@ public class UserServiceImpl implements UserService {
     public void signIn(User user) throws MissingEntity, MissingRequiredFields, UnqualifiedAuthority {
         if (!Objects.isNull(user)) {
             userEntityValidations(user);
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            userRepository.save(user);
+            userRepository.save(assembleUserToSave(user));
         } else {
             throw new MissingEntity();
         }
@@ -144,10 +144,15 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private User assembleUserToSave(User user) {
+        return new User(user.getUsername(), user.getEmail(), passwordEncoder.encode(user.getPassword()),
+                new HashSet<>(), "USER");
+    }
+
     public void matchPasswords(String username, String password) throws WrongCredentials {
         User user = userRepository.findByUsername(username);
-        if (!passwordEncoder.matches(password, user.getPassword()) &&
-                !user.getUsername().equalsIgnoreCase("administrator")) {
+        if (!passwordEncoder.matches(password, user.getPassword()) && !user.getUsername().equalsIgnoreCase(
+                "administrator")) {
             throw new WrongCredentials();
         }
     }
