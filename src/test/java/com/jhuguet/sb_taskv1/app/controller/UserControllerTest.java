@@ -71,7 +71,7 @@ class UserControllerTest {
 
         when(orderRepository.existsById(anyInt())).thenReturn(true);
         when(orderRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleOrder()));
-        when(orderRepository.getHighestCostOrder()).thenReturn(utils.sampleOrder());
+        when(orderRepository.findTop1ByCost()).thenReturn(utils.sampleOrder());
 
         when(tagRepository.existsById(anyInt())).thenReturn(true);
         when(tagRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleTag()));
@@ -165,7 +165,7 @@ class UserControllerTest {
 
     @Test
     void highestCostOrderReturningMostUsedTagInHighestCostOrderNoExistingOrder() throws NoExistingOrders {
-        when(orderRepository.getHighestCostOrder()).thenReturn(null);
+        when(orderRepository.findTop1ByCost()).thenReturn(null);
         assertThrows(NoExistingOrders.class, () -> controller.highestCostOrder(new HashMap<>()));
     }
 
