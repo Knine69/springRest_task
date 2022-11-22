@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Tag mostUsedTag() throws NoExistingOrders, NoTagInOrder, IdNotFound {
         Tag tag;
-        Order order = orderRepository.getHighestCostOrder();
+        Order order = orderRepository.findTop1ByCost();
         if (order != null) {
             tag = countTagIterations(order);
         } else {
