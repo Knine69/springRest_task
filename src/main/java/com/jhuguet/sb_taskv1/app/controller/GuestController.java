@@ -2,6 +2,7 @@ package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
+import com.jhuguet.sb_taskv1.app.models.AuthenticatedAccount;
 import com.jhuguet.sb_taskv1.app.models.AuthenticationRequest;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.services.UserService;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/")
@@ -33,7 +33,7 @@ public class GuestController {
     }
 
     @PostMapping("login")
-    public Map<String, String> login(@RequestBody AuthenticationRequest auth) throws IOException, WrongCredentials {
+    public AuthenticatedAccount login(@RequestBody AuthenticationRequest auth) throws IOException, WrongCredentials {
         userService.matchPasswords(auth.getUsername(), auth.getPassword());
         manager.authenticate(new UsernamePasswordAuthenticationToken(auth.getUsername(), auth.getPassword()));
 
@@ -41,7 +41,7 @@ public class GuestController {
     }
 
     @PostMapping("signin")
-    public Map<String, String> signIn(@RequestBody User user) throws IOException, BaseException {
+    public AuthenticatedAccount signIn(@RequestBody User user) throws IOException, BaseException {
         userService.signIn(user);
         manager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
