@@ -260,14 +260,14 @@ class GiftCertificateControllerTest {
         Assertions.assertEquals(utils
                 .sampleOrder()
                 .getId(), controller
-                .placeNewOrder(new ArrayList<>(), 1, new HashMap<>())
+                .placeNewOrder(new ArrayList<>(), new HashMap<>())
                 .getId());
     }
 
     @Test
     void placeNewOrderExceptionIfIdNotFound() {
         Assertions.assertThrows(IdNotFound.class, () -> controller
-                .placeNewOrder(new ArrayList<>(), 10, new HashMap<>())
+                .placeNewOrder(new ArrayList<>(), new HashMap<>())
                 .getTimestamp());
     }
 

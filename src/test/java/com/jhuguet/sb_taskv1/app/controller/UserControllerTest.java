@@ -65,9 +65,7 @@ class UserControllerTest {
         when(userRepository.existsById(anyInt())).thenReturn(true);
         when(userRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleUser()));
         when(userRepository.findAll(any(Pageable.class))).thenReturn(
-                new PageImpl<>(new ArrayList<>(utils.sampleUsers()), PageRequest.of(1, 1), utils
-                        .sampleTags()
-                        .size()));
+                new PageImpl<>(new ArrayList<>(utils.sampleUsers()), PageRequest.of(1, 1), utils.sampleTags().size()));
 
         when(orderRepository.existsById(anyInt())).thenReturn(true);
         when(orderRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleOrder()));
@@ -81,47 +79,32 @@ class UserControllerTest {
 
     @Test
     void getAllUsersIfPagingParamsAreCorrectlyPassed() throws InvalidInputInformation, PageNotFound, WrongSortOrder {
-        assertEquals(utils
-                .sampleOrders()
-                .size(), controller
-                .getAll(1, 1, "asc")
-                .getContent()
-                .getTotalElements());
+        assertEquals(utils.sampleOrders().size(), controller.getAll(1, 1, "asc").getContent().getTotalElements());
     }
 
     @Test
     void getAllUsersInvalidInputInformationIfPagingParamsAreNotComplying() {
         assertThrows(InvalidInputInformation.class, () -> {
-            controller
-                    .getAll(0, 0, "asc")
-                    .getContent()
-                    .getTotalElements();
+            controller.getAll(0, 0, "asc").getContent().getTotalElements();
         });
     }
 
     @Test
     void getAllUsersErrorIfPageNotFound() {
         assertThrows(PageNotFound.class, () -> {
-            controller
-                    .getAll(10, 1, "asc")
-                    .getContent()
-                    .getTotalElements();
+            controller.getAll(10, 1, "asc").getContent().getTotalElements();
         });
     }
 
     @Test
     void getUserWhenGivingExistingId() throws BaseException, IOException {
-        assertEquals(utils
-                .sampleOrder()
-                .getId(), controller
-                .get(1, new HashMap<>())
-                .getId());
+        assertEquals(utils.sampleOrder().getId(), controller.get(new HashMap<>()).getId());
     }
 
     @Test
     void getUserWhenGivingNonExistingIdNotFound() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.get(2, new HashMap<>()));
+        assertThrows(IdNotFound.class, () -> controller.get(new HashMap<>()));
     }
 
     private void toggleMockIdFound() {
@@ -130,37 +113,29 @@ class UserControllerTest {
 
     @Test
     void getOrderRelatedToUserIfGivenCorrectlySetOfIds() throws BaseException, IOException {
-        assertEquals(utils
-                .sampleOrder()
-                .getId(), controller
-                .getOrder(1, 1, new HashMap<>())
-                .getId());
+        assertEquals(utils.sampleOrder().getId(), controller.getOrder(1, new HashMap<>()).getId());
     }
 
     @Test
     void getOrderExceptionIfNotRelatedToUser() {
-        assertThrows(OrderNotRelated.class, () -> controller.getOrder(1, 10, new HashMap<>()));
+        assertThrows(OrderNotRelated.class, () -> controller.getOrder(10, new HashMap<>()));
     }
 
     @Test
     void getOrderRelatedToUserExceptionIfIdIsNonExistent() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.getOrder(1, 1, new HashMap<>()));
+        assertThrows(IdNotFound.class, () -> controller.getOrder(1, new HashMap<>()));
     }
 
     @Test
     void getAllOrdersRelatedToAUserExceptionIfIdNotFound() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.getOrders(1, 1, 1, "asc", new HashMap<>()));
+        assertThrows(IdNotFound.class, () -> controller.getOrders(1, 1, "asc", new HashMap<>()));
     }
 
     @Test
     void highestCostOrderReturningMostUsedTagInHighestCostOrder() throws BaseException, IOException {
-        assertEquals(utils
-                .sampleTag()
-                .getId(), controller
-                .highestCostOrder(new HashMap<>())
-                .getId());
+        assertEquals(utils.sampleTag().getId(), controller.highestCostOrder(new HashMap<>()).getId());
     }
 
     @Test
