@@ -5,6 +5,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
 import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.services.impl.TagServiceImpl;
@@ -52,7 +53,7 @@ class TagControllerTest {
     }
 
     @Test
-    void getAllTagsIfCorrectlyGivenPagingParams() throws InvalidInputInformation, PageNotFound {
+    void getAllTagsIfCorrectlyGivenPagingParams() throws InvalidInputInformation, PageNotFound, WrongSortOrder {
         assertEquals(utils.sampleTags().size(), controller.getAll(1, 1, "asc").getContent().getTotalElements());
     }
 
