@@ -3,13 +3,10 @@ package com.jhuguet.sb_taskv1.app.controller;
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
-import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
-import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
 import com.jhuguet.sb_taskv1.app.models.Order;
-import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.UserService;
@@ -129,16 +126,4 @@ public class UserController {
                 linkTo(methodOn(UserController.class).getOrders(page, size, sort, headers)).withSelfRel());
     }
 
-    /**
-     * Will look for the most used Tag of the user with the highest order cost
-     *
-     * @return Tag most widely used
-     * @throws IdNotFound       Exception thrown when given ID is not found
-     * @throws NoExistingOrders There are no orders associated to this user
-     * @throws NoTagInOrder     There are no Tags associated to the orders' certificates
-     */
-    @GetMapping("/mostWidelyUsedTag")
-    public Tag highestCostOrder(@RequestHeader Map<String, String> headers) throws BaseException {
-        return userService.mostUsedTag();
-    }
 }
