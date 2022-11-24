@@ -22,7 +22,7 @@ public class RequestAuthorization {
 
 
     public void confirmRoles(String jwt) throws IOException, UnqualifiedAuthority {
-        String username = givePropertyValue("sub", jwt.split(" ")[1]);
+        String username = givePropertyValue("sub", jwt);
         if (!authContainsAdmin(detailsService.loadUserByUsername(username))) {
             throw new UnqualifiedAuthority();
         }
