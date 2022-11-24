@@ -33,7 +33,8 @@ public interface UserService {
 
     void matchPasswords(String username, String password) throws WrongCredentials;
 
-    void checkIdentity(String jwt, int givenId, boolean requiresAdmin) throws IOException, NotAuthorized,
-            UnqualifiedAuthority;
+    void checkIdentity(String jwt, boolean requiresAdmin) throws IOException, NotAuthorized, UnqualifiedAuthority;
+
+    Integer getIdFromJwt(String jwt) throws IOException;
 
 }

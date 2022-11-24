@@ -157,17 +157,21 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    public void checkIdentity(String jwt, int givenId, boolean requiresAdmin) throws NotAuthorized, IOException,
+    public void checkIdentity(String jwt, boolean requiresAdmin) throws NotAuthorized, IOException,
             UnqualifiedAuthority {
         RequestAuthorization authorization = giveRequestAuthorization();
         if (requiresAdmin) {
             authorization.confirmRoles(jwt);
         }
-        authorization.confirmUser(givenId, jwt);
     }
 
     private RequestAuthorization giveRequestAuthorization() {
         return new RequestAuthorization(detailsService);
+    }
+
+    @Override
+    public Integer getIdFromJwt(String jwt) throws IOException {
+        return Integer.valueOf(giveRequestAuthorization().givePropertyValue("id", jwt));
     }
 
 }
