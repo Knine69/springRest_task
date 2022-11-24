@@ -10,6 +10,8 @@ import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
+import com.jhuguet.sb_taskv1.app.services.UserService;
+import com.jhuguet.sb_taskv1.app.web.utils.ControllerJwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,13 +42,18 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class GiftCertificateController {
 
     private final PageResponse pageResponse;
-
     private final GiftCertificateService giftCertificateService;
 
+    private final UserService userService;
+    private final ControllerJwtUtils utils = new ControllerJwtUtils();
+
     @Autowired
-    public GiftCertificateController(PageResponse pageResponse, GiftCertificateService giftCertificateService) {
+    public GiftCertificateController(PageResponse pageResponse,
+                                     GiftCertificateService giftCertificateService,
+                                     UserService userService) {
         this.pageResponse = pageResponse;
         this.giftCertificateService = giftCertificateService;
+        this.userService = userService;
     }
 
 
@@ -129,10 +136,11 @@ public class GiftCertificateController {
     }
 
 
-    @PostMapping("/users/{userId}")
+    @PostMapping("/users/current")
     public Order placeNewOrder(@RequestParam List<Integer> certificatesIds,
-                               @PathVariable(name = "userId") int userId,
                                @RequestHeader Map<String, String> headers) throws IOException, BaseException {
+        String jwt = utils.retrieveJwt(headers);
+        int userId = userService.getIdFromJwt(jwt);
         giftCertificateService.checkIdentity(headers.get("authorization"), userId, false);
         return giftCertificateService.placeNewOrder(certificatesIds, userId);
     }

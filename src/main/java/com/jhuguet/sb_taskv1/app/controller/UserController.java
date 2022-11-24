@@ -13,6 +13,7 @@ import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.UserService;
+import com.jhuguet.sb_taskv1.app.web.utils.ControllerJwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
@@ -39,6 +40,7 @@ public class UserController {
 
     private final Logger logger = Logger.getLogger(GiftCertificateController.class.getName());
     private final PageResponse pageResponse = new PageResponse();
+    private final ControllerJwtUtils utils = new ControllerJwtUtils();
     private final UserService userService;
 
     @Autowired
@@ -76,7 +78,7 @@ public class UserController {
      */
     @GetMapping("/current")
     public User get(@RequestHeader Map<String, String> headers) throws IOException, BaseException {
-        String jwt = retrieveJwt(headers);
+        String jwt = utils.retrieveJwt(headers);
         int id = userService.getIdFromJwt(jwt);
 
         logger.info("Retrieving User: " + id);
@@ -84,9 +86,6 @@ public class UserController {
         return userService.get(id);
     }
 
-    private String retrieveJwt(Map<String, String> headers) {
-        return headers.get("authorization").split(" ")[1];
-    }
 
     /**
      * Will look for specific order related to user
@@ -99,7 +98,7 @@ public class UserController {
     @GetMapping("/orders/{orderId}")
     public Order getOrder(@PathVariable int orderId, @RequestHeader Map<String, String> headers) throws BaseException,
             IOException {
-        String jwt = retrieveJwt(headers);
+        String jwt = utils.retrieveJwt(headers);
         int id = userService.getIdFromJwt(jwt);
         userService.checkIdentity(headers.get("authorization"), false);
         logger.info("Retrieving order " + orderId + " of user: " + id);
@@ -119,7 +118,7 @@ public class UserController {
                                               @RequestParam(defaultValue = "asc") String sort,
                                               @RequestHeader Map<String, String> headers) throws BaseException,
             IOException {
-        String jwt = retrieveJwt(headers);
+        String jwt = utils.retrieveJwt(headers);
         int id = userService.getIdFromJwt(jwt);
         Page<Order> orders = userService.getOrders(id, pageResponse.giveDynamicPageable(page, size, sort));
 
@@ -139,7 +138,7 @@ public class UserController {
      * @throws NoTagInOrder     There are no Tags associated to the orders' certificates
      */
     @GetMapping("/mostWidelyUsedTag")
-    public Tag highestCostOrder(@RequestHeader Map<String, String> headers) throws BaseException, IOException {
+    public Tag highestCostOrder(@RequestHeader Map<String, String> headers) throws BaseException {
         return userService.mostUsedTag();
     }
 }
