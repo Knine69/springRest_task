@@ -6,6 +6,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
+import com.jhuguet.sb_taskv1.app.exceptions.UnqualifiedAuthority;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
 import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = GiftCertificateServiceImplTest.class)
@@ -53,6 +55,9 @@ class GiftCertificateServiceImplTest {
         when(giftCertificateRepository.findAll()).thenReturn(utils.sampleCertificates());
         when(giftCertificateRepository.findAll(any(Pageable.class))).thenReturn(utils.samplePageCertificates());
 
+        when(detailsService.loadUserByUsername(anyString())).thenReturn(utils.sampleUserDetails());
+        when(detailsService.getUserByUsername(anyString())).thenReturn(utils.sampleUser());
+
         when(tagRepository.existsById(anyInt())).thenReturn(true);
         when(tagRepository.findById(0)).thenReturn(Optional.ofNullable(utils.sampleTag()));
         when(tagRepository.findAll()).thenReturn(new ArrayList<>(utils.sampleTags()));
@@ -64,20 +69,14 @@ class GiftCertificateServiceImplTest {
 
     @Test
     void checkAllCertificatesFromRepositoryAreReturnedSuccessfully() throws PageNotFound {
-        assertEquals(utils
-                .sampleCertificates()
-                .size(), giftCertificateService
-                .getAllPageable(PageRequest.of(1, 1))
-                .getContent()
-                .size());
+        assertEquals(utils.sampleCertificates().size(), giftCertificateService.getAllPageable(PageRequest.of(1, 1))
+                                                                              .getContent().size());
     }
 
     @Test
     void getGiftCertificateIdExists() throws IdNotFound {
         GiftCertificate certificate = utils.sampleCertificate();
-        assertEquals(certificate.getName(), giftCertificateService
-                .get(anyInt())
-                .getName());
+        assertEquals(certificate.getName(), giftCertificateService.get(anyInt()).getName());
     }
 
     @Test
@@ -87,47 +86,37 @@ class GiftCertificateServiceImplTest {
 
     @Test
     void filterCertificatesByTagNameIfSpecified() throws PageNotFound {
-        assertEquals(utils
-                .sampleCertificates()
-                .size(), giftCertificateService
-                .filterCertificates("Cloud", "", "", "", PageRequest.of(1, 1))
-                .getTotalElements());
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("Cloud", "", "", "", PageRequest.of(1, 1))
+                                      .getTotalElements());
     }
 
     @Test
     void filterCertificatesByPartOfNameOrDescriptionIfSpecified() throws PageNotFound {
-        assertEquals(utils
-                .sampleCertificates()
-                .size(), giftCertificateService
-                .filterCertificates("", "Master", "", "", PageRequest.of(1, 1))
-                .getTotalElements());
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("", "Master", "", "", PageRequest.of(1, 1))
+                                      .getTotalElements());
     }
 
     @Test
     void filterCertificatesByCreateDateIfSpecified() throws PageNotFound {
-        assertEquals(utils
-                .sampleCertificates()
-                .size(), giftCertificateService
-                .filterCertificates("", "", "createDate", "asc", PageRequest.of(1, 1))
-                .getTotalElements());
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("", "", "createDate", "asc", PageRequest.of(1, 1))
+                                      .getTotalElements());
     }
 
     @Test
     void filterCertificatesByLastUpdateDateIfSpecified() throws PageNotFound {
-        assertEquals(utils
-                .sampleCertificates()
-                .size(), giftCertificateService
-                .filterCertificates("", "", "lastUpdateDate", "asc", PageRequest.of(1, 1))
-                .getTotalElements());
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("", "", "lastUpdateDate", "asc", PageRequest.of(1, 1))
+                                      .getTotalElements());
     }
 
     @Test
     void filterCertificatesByName() throws PageNotFound {
-        assertEquals(utils
-                .sampleCertificates()
-                .size(), giftCertificateService
-                .filterCertificates("", "", "name", "asc", PageRequest.of(1, 1))
-                .getTotalElements());
+        assertEquals(utils.sampleCertificates().size(),
+                giftCertificateService.filterCertificates("", "", "name", "asc", PageRequest.of(1, 1))
+                                      .getTotalElements());
     }
 
     @Test
@@ -158,11 +147,7 @@ class GiftCertificateServiceImplTest {
                 entry("description", "AWS Master's certificate"), entry("price", 8.99), entry("duration", 10),
                 entry("lastUpdateDate", "2022-09-20T14:33:15.1301054"),
                 entry("associatedTags", JsonParser.parseString("[{\"id\":\"1\",\"name\":\"Cloud\"}]")), entry("", ""));
-        assertEquals(utils
-                .sampleCertificate()
-                .getName(), giftCertificateService
-                .update(anyInt(), patchTest)
-                .getName());
+        assertEquals(utils.sampleCertificate().getName(), giftCertificateService.update(anyInt(), patchTest).getName());
     }
 
 
@@ -177,10 +162,12 @@ class GiftCertificateServiceImplTest {
 
     @Test
     void deleteGiftCertificateCorrectlyIfGivenIdExists() throws IdNotFound {
-        assertEquals(giftCertificateService
-                .delete(anyInt())
-                .getName(), utils
-                .sampleCertificate()
-                .getName());
+        assertEquals(giftCertificateService.delete(anyInt()).getName(), utils.sampleCertificate().getName());
+    }
+
+    @Test
+    public void checkIdentity() {
+        assertThrows(UnqualifiedAuthority.class,
+                () -> giftCertificateService.checkIdentity(utils.sampleToken(), 1, true));
     }
 }
