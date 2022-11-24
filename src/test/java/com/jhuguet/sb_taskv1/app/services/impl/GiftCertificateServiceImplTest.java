@@ -16,7 +16,8 @@ import com.jhuguet.sb_taskv1.app.services.utils.SetUpUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
@@ -39,14 +40,19 @@ import static org.mockito.Mockito.when;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GiftCertificateServiceImplTest {
 
-    static final GiftCertificateRepository giftCertificateRepository = Mockito.mock(GiftCertificateRepository.class);
-    static final TagRepository tagRepository = Mockito.mock(TagRepository.class);
-    static final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private static final SetUpUtils utils = new SetUpUtils();
-    private static final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
-    private final CustomUserDetailsServiceImpl detailsService = Mockito.mock(CustomUserDetailsServiceImpl.class);
-    GiftCertificateServiceImpl giftCertificateService = new GiftCertificateServiceImpl(giftCertificateRepository,
-            tagRepository, userRepository, orderRepository, detailsService);
+    @Mock
+    GiftCertificateRepository giftCertificateRepository;
+    @Mock
+    TagRepository tagRepository;
+    @Mock
+    UserRepository userRepository;
+    @Mock
+    OrderRepository orderRepository;
+    @Mock
+    CustomUserDetailsServiceImpl detailsService;
+    @InjectMocks
+    GiftCertificateServiceImpl giftCertificateService;
 
     @BeforeAll
     private void setMocks() {
@@ -63,9 +69,7 @@ class GiftCertificateServiceImplTest {
         when(tagRepository.findAll()).thenReturn(new ArrayList<>(utils.sampleTags()));
 
         when(tagRepository.findAll(any(Pageable.class))).thenReturn(utils.samplePageTags());
-
     }
-
 
     @Test
     void checkAllCertificatesFromRepositoryAreReturnedSuccessfully() throws PageNotFound {
