@@ -3,15 +3,12 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
-import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
-import com.jhuguet.sb_taskv1.app.exceptions.NoTagInOrder;
 import com.jhuguet.sb_taskv1.app.exceptions.NotAuthorized;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.UnqualifiedAuthority;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.models.Order;
-import com.jhuguet.sb_taskv1.app.models.Tag;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
@@ -27,9 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -81,47 +76,6 @@ public class UserServiceImpl implements UserService {
     public Order getOrder(int userId, int orderId) throws IdNotFound, OrderNotRelated {
         User user = get(userId);
         return user.getOrders().stream().filter(x -> x.getId() == orderId).findAny().orElseThrow(OrderNotRelated::new);
-    }
-
-
-    @Override
-    public Tag mostUsedTag() throws NoExistingOrders, NoTagInOrder, IdNotFound {
-        Tag tag;
-        Order order = orderRepository.findTop1ByCost();
-        if (order != null) {
-            tag = countTagIterations(order);
-        } else {
-            throw new NoExistingOrders();
-        }
-
-        return tag;
-    }
-
-    private Tag countTagIterations(Order order) throws IdNotFound, NoTagInOrder {
-        Tag tag;
-        Map<Integer, Integer> currentTags = mapCurrentTags();
-
-        order.getCertificates().forEach(
-                c -> c.getAssociatedTags().forEach(t -> currentTags.merge(t.getId(), 1, Integer::sum)));
-
-        int tagID = getMaxTagID(currentTags);
-
-        if (tagID > 0) {
-            tag = tagRepository.findById(tagID).orElseThrow(IdNotFound::new);
-        } else {
-            throw new NoTagInOrder();
-        }
-        return tag;
-    }
-
-    private Map<Integer, Integer> mapCurrentTags() {
-        Map<Integer, Integer> currentTags = new HashMap<>();
-        tagRepository.findAll().forEach(t -> currentTags.put(t.getId(), 0));
-        return currentTags;
-    }
-
-    private Integer getMaxTagID(Map<Integer, Integer> tags) {
-        return tags.entrySet().stream().max(Map.Entry.comparingByValue()).get().getValue();
     }
 
     @Override
