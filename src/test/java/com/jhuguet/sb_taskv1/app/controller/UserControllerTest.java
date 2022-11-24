@@ -19,13 +19,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -56,20 +54,19 @@ class UserControllerTest {
     private final UserController controller = new UserController(userService);
 
     @AfterEach
-    public void resetMocks() throws NoExistingOrders, WrongSortOrder {
+    public void resetMocks() throws NoExistingOrders, WrongSortOrder, IOException {
         setMocks();
     }
 
     @BeforeAll
-    private static void setMocks() throws NoExistingOrders, WrongSortOrder {
+    private static void setMocks() throws NoExistingOrders, WrongSortOrder, IOException {
         when(userRepository.existsById(anyInt())).thenReturn(true);
         when(userRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleUser()));
-        when(userRepository.findAll(any(Pageable.class))).thenReturn(
-                new PageImpl<>(new ArrayList<>(utils.sampleUsers()), PageRequest.of(1, 1), utils.sampleTags().size()));
+        when(userRepository.findAll(any(Pageable.class))).thenReturn(utils.samplePageUsers());
 
         when(orderRepository.existsById(anyInt())).thenReturn(true);
         when(orderRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleOrder()));
-        when(orderRepository.findTop1ByCost()).thenReturn(utils.sampleOrder());
+        when(orderRepository.findAll()).thenReturn(utils.sampleOrders());
 
         when(tagRepository.existsById(anyInt())).thenReturn(true);
         when(tagRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleTag()));
@@ -98,13 +95,13 @@ class UserControllerTest {
 
     @Test
     void getUserWhenGivingExistingId() throws BaseException, IOException {
-        assertEquals(utils.sampleOrder().getId(), controller.get(new HashMap<>()).getId());
+        assertEquals(utils.sampleUser().getId(), controller.get(new HashMap<>(utils.sampleJwt())).getId());
     }
 
     @Test
     void getUserWhenGivingNonExistingIdNotFound() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.get(new HashMap<>()));
+        assertThrows(IdNotFound.class, () -> controller.get(new HashMap<>(utils.sampleJwt())));
     }
 
     private void toggleMockIdFound() {
@@ -113,40 +110,23 @@ class UserControllerTest {
 
     @Test
     void getOrderRelatedToUserIfGivenCorrectlySetOfIds() throws BaseException, IOException {
-        assertEquals(utils.sampleOrder().getId(), controller.getOrder(1, new HashMap<>()).getId());
+        assertEquals(utils.sampleOrder().getId(), controller.getOrder(1, new HashMap<>(utils.sampleJwt())).getId());
     }
 
     @Test
     void getOrderExceptionIfNotRelatedToUser() {
-        assertThrows(OrderNotRelated.class, () -> controller.getOrder(10, new HashMap<>()));
+        assertThrows(OrderNotRelated.class, () -> controller.getOrder(10, new HashMap<>(utils.sampleJwt())));
     }
 
     @Test
     void getOrderRelatedToUserExceptionIfIdIsNonExistent() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.getOrder(1, new HashMap<>()));
+        assertThrows(IdNotFound.class, () -> controller.getOrder(1, new HashMap<>(utils.sampleJwt())));
     }
 
     @Test
-    void getAllOrdersRelatedToAUserExceptionIfIdNotFound() {
-        toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.getOrders(1, 1, "asc", new HashMap<>()));
-    }
-
-    @Test
-    void highestCostOrderReturningMostUsedTagInHighestCostOrder() throws BaseException, IOException {
-        assertEquals(utils.sampleTag().getId(), controller.highestCostOrder(new HashMap<>()).getId());
-    }
-
-    @Test
-    void highestCostOrderReturningMostUsedTagInHighestCostOrderNoExistingOrder() throws NoExistingOrders {
-        when(orderRepository.findTop1ByCost()).thenReturn(null);
-        assertThrows(NoExistingOrders.class, () -> controller.highestCostOrder(new HashMap<>()));
-    }
-
-    @Test
-    void highestCostOrderReturningMostUsedTagInHighestCostOrderIdNotFound() {
-        when(tagRepository.findById(anyInt())).thenReturn(Optional.ofNullable(null));
-        assertThrows(IdNotFound.class, () -> controller.highestCostOrder(new HashMap<>()));
+    void getAllOrdersRelatedToUserIfUserExists() throws IOException, BaseException {
+        assertEquals(utils.sampleOrders().size(), controller.getOrders(1, 1, "asc", new HashMap<>(utils.sampleJwt()))
+                                                            .getContent().getTotalElements());
     }
 }
