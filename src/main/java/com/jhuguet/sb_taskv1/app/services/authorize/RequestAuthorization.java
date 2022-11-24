@@ -1,6 +1,5 @@
 package com.jhuguet.sb_taskv1.app.services.authorize;
 
-import com.jhuguet.sb_taskv1.app.exceptions.NotAuthorized;
 import com.jhuguet.sb_taskv1.app.exceptions.UnqualifiedAuthority;
 import com.jhuguet.sb_taskv1.app.services.impl.CustomUserDetailsServiceImpl;
 import io.jsonwebtoken.Jwts;
@@ -29,7 +28,7 @@ public class RequestAuthorization {
         }
     }
 
-    private String givePropertyValue(String property, String jwt) throws IOException {
+    public String givePropertyValue(String property, String jwt) throws IOException {
         return String.valueOf(Jwts.parserBuilder().setSigningKey(giveSignKey()).build().parseClaimsJws(jwt).getBody()
                                   .get(property));
     }
@@ -40,17 +39,6 @@ public class RequestAuthorization {
 
     private Key giveSignKey() throws IOException {
         return Keys.hmacShaKeyFor(new FileInputStream("secret-key.pub").readAllBytes());
-    }
-
-    public void confirmUser(int givenId, String jwt) throws IOException, NotAuthorized {
-        jwt = jwt.split(" ")[1];
-        String username = givePropertyValue("sub", jwt);
-        if (!username.equalsIgnoreCase("administrator")) {
-            String id = givePropertyValue("id", jwt);
-            if (Integer.parseInt(id) != givenId) {
-                throw new NotAuthorized();
-            }
-        }
     }
 
 }
