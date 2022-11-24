@@ -84,14 +84,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     private void certificateValidations(GiftCertificate certificate) throws InvalidInputInformation {
-        String localDate = LocalDateTime
-                .now()
-                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String localDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         validateNegative(certificate.getDuration());
-        validateNegative((certificate
-                .getPrice()
-                .intValue()));
+        validateNegative((certificate.getPrice().intValue()));
 
         certificate.setCreateDate(localDate);
         certificate.setLastUpdateDate(localDate);
@@ -100,12 +96,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     private void tagValidations(Set<Tag> tags) throws InvalidInputInformation, IdAlreadyInUse {
         for (Tag t : tags) {
             validateNegative(t.getId());
-            Tag tag = tagRepository
-                    .findById(t.getId())
-                    .get();
-            if (!t
-                    .getName()
-                    .equalsIgnoreCase(tag.getName())) {
+            Tag tag = tagRepository.findById(t.getId()).get();
+            if (!t.getName().equalsIgnoreCase(tag.getName())) {
                 throw new IdAlreadyInUse();
             }
         }
@@ -181,28 +173,20 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                     break;
             }
         }
-        certificate.setLastUpdateDate(LocalDateTime
-                .now()
-                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        certificate.setLastUpdateDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         return certificate;
     }
 
     public GiftCertificate get(int id) throws IdNotFound {
-        return giftRepository
-                .findById(id)
-                .orElseThrow(IdNotFound::new);
+        return giftRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     private void updateTags(GiftCertificate certificate, Set<Tag> tags) {
         certificate.cleanTags();
         tags.forEach(tag -> {
             if (tag.getId() != 0) {
-                boolean isRepeated = certificate
-                        .getAssociatedTags()
-                        .stream()
-                        .anyMatch(c -> c
-                                .getName()
-                                .equalsIgnoreCase(tag.getName()));
+                boolean isRepeated = certificate.getAssociatedTags().stream().anyMatch(
+                        c -> c.getName().equalsIgnoreCase(tag.getName()));
                 if (!isRepeated) {
                     if (validateTagPassed(tag)) {
                         certificate.assignTag(tag);
@@ -223,28 +207,17 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     private boolean validateTagPassed(Tag tag) {
-        boolean isTagIDInRepository = tagRepository
-                .findAll()
-                .stream()
-                .anyMatch(x -> x.getId() == tag.getId());
-        boolean isTagNameInRepository = tagRepository
-                .findAll()
-                .stream()
-                .anyMatch(x -> x
-                        .getName()
-                        .equalsIgnoreCase(tag.getName()));
+        boolean isTagIDInRepository = tagRepository.findAll().stream().anyMatch(x -> x.getId() == tag.getId());
+        boolean isTagNameInRepository = tagRepository.findAll().stream().anyMatch(
+                x -> x.getName().equalsIgnoreCase(tag.getName()));
 
         return (isTagIDInRepository && isTagNameInRepository) || (!isTagIDInRepository && !isTagNameInRepository);
     }
 
     @Override
     public Order placeNewOrder(List<Integer> certificatesIds, int userId) throws IdNotFound {
-        User user = userRepository
-                .findById(userId)
-                .orElseThrow(IdNotFound::new);
-        Order order = new Order(orderRepository
-                .findAll()
-                .size() + 1);
+        User user = userRepository.findById(userId).orElseThrow(IdNotFound::new);
+        Order order = new Order(orderRepository.findAll().size() + 1);
 
         for (Integer id : certificatesIds) {
             GiftCertificate certificate = get(id);
@@ -318,42 +291,28 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         Predicate<GiftCertificate> predicate = null;
         switch (parameter) {
             case "nameDescriptionPart":
-                predicate = certificate -> certificate
-                        .getName()
-                        .contains(filterField) || certificate
-                        .getDescription()
-                        .contains(filterField);
+                predicate = certificate -> certificate.getName().contains(filterField) || certificate.getDescription()
+                                                                                                     .contains(
+                                                                                                             filterField);
                 break;
             case "createDate":
-                predicate = certificate -> certificate
-                        .getCreateDate()
-                        .contains(filterField);
+                predicate = certificate -> certificate.getCreateDate().contains(filterField);
                 break;
             case "lastUpdateDate":
-                predicate = certificate -> certificate
-                        .getLastUpdateDate()
-                        .contains(filterField);
+                predicate = certificate -> certificate.getLastUpdateDate().contains(filterField);
                 break;
             case "name":
-                predicate = certificate -> certificate
-                        .getName()
-                        .contains(filterField);
+                predicate = certificate -> certificate.getName().contains(filterField);
                 break;
             case "tagName":
-                predicate = certificate -> certificate
-                        .getAssociatedTags()
-                        .stream()
-                        .anyMatch(tag -> tag
-                                .getName()
-                                .equalsIgnoreCase(filterField));
+                predicate = certificate -> certificate.getAssociatedTags().stream().anyMatch(
+                        tag -> tag.getName().equalsIgnoreCase(filterField));
             default:
                 logger.warning("Please input variant correctly.");
                 break;
         }
-        return predicate != null ? currentList
-                .stream()
-                .filter(predicate)
-                .collect(Collectors.toList()) : new ArrayList<>();
+        return predicate != null ? currentList.stream().filter(predicate).collect(
+                Collectors.toList()) : new ArrayList<>();
     }
 
     private boolean validateNameAndDateTypes(String sortBy, String order) {
@@ -401,13 +360,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 break;
         }
 
-        return order.equalsIgnoreCase("asc") || order.equals("") ? certificatesList
-                .stream()
-                .sorted(comparator)
-                .collect(Collectors.toList()) : certificatesList
-                .stream()
-                .sorted(comparator.reversed())
-                .collect(Collectors.toList());
+        return order.equalsIgnoreCase("asc") || order.equals("") ? certificatesList.stream().sorted(comparator).collect(
+                Collectors.toList()) : certificatesList.stream().sorted(comparator.reversed()).collect(
+                Collectors.toList());
     }
 
     @Transactional
@@ -424,7 +379,6 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         if (requiresAdmin) {
             authorization.confirmRoles(jwt);
         }
-        authorization.confirmUser(givenId, jwt);
     }
 
     private RequestAuthorization giveRequestAuthorization() {
