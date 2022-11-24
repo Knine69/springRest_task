@@ -141,7 +141,7 @@ public class GiftCertificateController {
                                @RequestHeader Map<String, String> headers) throws IOException, BaseException {
         String jwt = utils.retrieveJwt(headers);
         int userId = userService.getIdFromJwt(jwt);
-        giftCertificateService.checkIdentity(headers.get("authorization"), userId, false);
+        giftCertificateService.checkIdentity(jwt, userId, false);
         return giftCertificateService.placeNewOrder(certificatesIds, userId);
     }
 
