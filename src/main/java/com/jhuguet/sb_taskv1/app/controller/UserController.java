@@ -63,6 +63,7 @@ public class UserController {
             InvalidInputInformation, WrongSortOrder {
         pageResponse.validateInput(page, size);
         Page<User> users = userService.getAll(pageResponse.giveDynamicPageable(page, size, sort));
+        logger.info("Retrieving all users");
 
         return EntityModel.of(users, linkTo(methodOn(UserController.class).getAll(page, size, sort)).withSelfRel());
     }
@@ -70,57 +71,64 @@ public class UserController {
     /**
      * Will retrieve User from Database
      *
-     * @param id ID to look for in Database
      * @return will return pertaining User retrieved from DB
      * @throws IdNotFound Exception thrown when given ID is not found
      */
-    @GetMapping("/{id}")
-    public User get(@PathVariable int id, @RequestHeader Map<String, String> headers) throws IOException,
-            BaseException {
+    @GetMapping("/current")
+    public User get(@RequestHeader Map<String, String> headers) throws IOException, BaseException {
+        String jwt = retrieveJwt(headers);
+        int id = userService.getIdFromJwt(jwt);
+
         logger.info("Retrieving User: " + id);
-        userService.checkIdentity(headers.get("authorization"), id, false);
+        userService.checkIdentity(jwt, false);
         return userService.get(id);
+    }
+
+    private String retrieveJwt(Map<String, String> headers) {
+        return headers.get("authorization").split(" ")[1];
     }
 
     /**
      * Will look for specific order related to user
      *
-     * @param userId  User ID to look for in database
      * @param orderId Order ID to look for in database
      * @return Order related to user
      * @throws IdNotFound      Exception thrown when given ID is not found
      * @throws OrderNotRelated Exception thrown when given order ID is not associated to user
      */
-    @GetMapping("/{userId}/orders/{orderId}")
-    public Order getOrder(@PathVariable int userId,
-                          @PathVariable int orderId,
-                          @RequestHeader Map<String, String> headers) throws BaseException, IOException {
-        logger.info("Retrieving order " + orderId + " of user: " + userId);
-        userService.checkIdentity(headers.get("authorization"), userId, false);
-        return userService.getOrder(userId, orderId);
+    @GetMapping("/orders/{orderId}")
+    public Order getOrder(@PathVariable int orderId, @RequestHeader Map<String, String> headers) throws BaseException,
+            IOException {
+        String jwt = retrieveJwt(headers);
+        int id = userService.getIdFromJwt(jwt);
+        userService.checkIdentity(headers.get("authorization"), false);
+        logger.info("Retrieving order " + orderId + " of user: " + id);
+
+        return userService.getOrder(id, orderId);
     }
 
     /**
      * Will look for all orders associated to a user
      *
-     * @param id User ID to look for in database
      * @return List of orders related to User
      * @throws IdNotFound Exception thrown when given ID is not found
      */
-    @GetMapping("/{id}/orders")
-    public EntityModel<Page<Order>> getOrders(@PathVariable int id,
-                                              @RequestParam(defaultValue = "1") int page,
+    @GetMapping("/orders")
+    public EntityModel<Page<Order>> getOrders(@RequestParam(defaultValue = "1") int page,
                                               @RequestParam(defaultValue = "3") int size,
                                               @RequestParam(defaultValue = "asc") String sort,
                                               @RequestHeader Map<String, String> headers) throws BaseException,
             IOException {
+        String jwt = retrieveJwt(headers);
+        int id = userService.getIdFromJwt(jwt);
         Page<Order> orders = userService.getOrders(id, pageResponse.giveDynamicPageable(page, size, sort));
 
-        userService.checkIdentity(headers.get("authorization"), id, false);
-        return EntityModel.of(orders,
-                linkTo(methodOn(UserController.class).getOrders(id, page, size, sort, headers)).withSelfRel());
-    }
+        userService.checkIdentity(jwt, false);
+        logger.info("Retrieving orders from user: " + id);
 
+        return EntityModel.of(orders,
+                linkTo(methodOn(UserController.class).getOrders(page, size, sort, headers)).withSelfRel());
+    }
 
     /**
      * Will look for the most used Tag of the user with the highest order cost
@@ -132,7 +140,6 @@ public class UserController {
      */
     @GetMapping("/mostWidelyUsedTag")
     public Tag highestCostOrder(@RequestHeader Map<String, String> headers) throws BaseException, IOException {
-        userService.checkIdentity(headers.get("authorization"), 0, true);
         return userService.mostUsedTag();
     }
 }
