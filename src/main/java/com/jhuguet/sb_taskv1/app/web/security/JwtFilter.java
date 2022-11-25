@@ -47,21 +47,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (authHeader.startsWith("Bearer ") && authHeader != null) {
             jwt = authHeader.split(" ")[1];
-
-            username = (String) Jwts
-                    .parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(jwt)
-                    .getBody()
-                    .get("sub");
+            username = (String) Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody().get(
+                    "sub");
         } else {
             throw new NotAuthorized();
         }
 
-        if (username != null && SecurityContextHolder
-                .getContext()
-                .getAuthentication() == null) {
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = detailsService.loadUserByUsername(username);
 
@@ -72,9 +64,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authToken);
+                SecurityContextHolder.getContext().setAuthentication(authToken);
 
             }
 
@@ -91,13 +81,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private boolean validateExpiration(Key key, String jwt) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(jwt)
-                .getBody()
-                .getExpiration()
-                .before(new Date());
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody().getExpiration().before(
+                new Date());
     }
 }
