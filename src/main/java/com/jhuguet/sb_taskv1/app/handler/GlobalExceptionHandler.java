@@ -15,6 +15,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.NotAuthorized;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.UnqualifiedAuthority;
+import com.jhuguet.sb_taskv1.app.exceptions.UsernameNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
 import org.springframework.http.HttpStatus;
@@ -118,6 +119,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UnqualifiedAuthority.class)
     public ResponseEntity<?> unqualifiedAuthority(UnqualifiedAuthority exception) {
+        ExceptionDetails details = new ExceptionDetails(exception.getMessage());
+        return new ResponseEntity<>(details, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(UsernameNotFound.class)
+    public ResponseEntity<?> usernameNotFound(UsernameNotFound exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
         return new ResponseEntity<>(details, HttpStatus.FORBIDDEN);
     }
