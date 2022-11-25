@@ -10,19 +10,19 @@ import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.UserService;
+import com.jhuguet.sb_taskv1.app.services.impl.CustomUserDetailsServiceImpl;
 import com.jhuguet.sb_taskv1.app.web.utils.ControllerJwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.Map;
+import java.security.Principal;
 import java.util.logging.Logger;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -39,10 +39,12 @@ public class UserController {
     private final PageResponse pageResponse = new PageResponse();
     private final ControllerJwtUtils utils = new ControllerJwtUtils();
     private final UserService userService;
+    private final CustomUserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    public UserController(UserService service) {
+    public UserController(UserService service, CustomUserDetailsServiceImpl userDetailsService) {
         this.userService = service;
+        this.userDetailsService = userDetailsService;
     }
 
     /**
@@ -73,13 +75,11 @@ public class UserController {
      * @return will return pertaining User retrieved from DB
      * @throws IdNotFound Exception thrown when given ID is not found
      */
-    @GetMapping("/current")
-    public User get(@RequestHeader Map<String, String> headers) throws IOException, BaseException {
-        String jwt = utils.retrieveJwt(headers);
-        int id = userService.getIdFromJwt(jwt);
+    @GetMapping("/session")
+    public User get(Principal principal) throws BaseException {
+        int id = userDetailsService.getUserByUsername(principal.getName()).getId();
 
         logger.info("Retrieving User: " + id);
-        userService.checkIdentity(jwt, false);
         return userService.get(id);
     }
 
@@ -93,11 +93,8 @@ public class UserController {
      * @throws OrderNotRelated Exception thrown when given order ID is not associated to user
      */
     @GetMapping("/orders/{orderId}")
-    public Order getOrder(@PathVariable int orderId, @RequestHeader Map<String, String> headers) throws BaseException,
-            IOException {
-        String jwt = utils.retrieveJwt(headers);
-        int id = userService.getIdFromJwt(jwt);
-        userService.checkIdentity(headers.get("authorization"), false);
+    public Order getOrder(@PathVariable int orderId, Principal principal) throws BaseException, IOException {
+        int id = userDetailsService.getUserByUsername(principal.getName()).getId();
         logger.info("Retrieving order " + orderId + " of user: " + id);
 
         return userService.getOrder(id, orderId);
@@ -113,17 +110,14 @@ public class UserController {
     public EntityModel<Page<Order>> getOrders(@RequestParam(defaultValue = "1") int page,
                                               @RequestParam(defaultValue = "3") int size,
                                               @RequestParam(defaultValue = "asc") String sort,
-                                              @RequestHeader Map<String, String> headers) throws BaseException,
-            IOException {
-        String jwt = utils.retrieveJwt(headers);
-        int id = userService.getIdFromJwt(jwt);
+                                              Principal principal) throws BaseException, IOException {
+        int id = userDetailsService.getUserByUsername(principal.getName()).getId();
         Page<Order> orders = userService.getOrders(id, pageResponse.giveDynamicPageable(page, size, sort));
 
-        userService.checkIdentity(jwt, false);
         logger.info("Retrieving orders from user: " + id);
 
         return EntityModel.of(orders,
-                linkTo(methodOn(UserController.class).getOrders(page, size, sort, headers)).withSelfRel());
+                linkTo(methodOn(UserController.class).getOrders(page, size, sort, principal)).withSelfRel());
     }
 
 }

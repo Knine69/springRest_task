@@ -21,10 +21,13 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,14 +47,13 @@ class UserControllerTest {
     private static final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private static final TagRepository tagRepository = Mockito.mock(TagRepository.class);
     private static final CustomUserDetailsServiceImpl detailsService = Mockito.mock(CustomUserDetailsServiceImpl.class);
-
     private static final PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
-
     @Autowired
     private static final UserServiceImpl userService = new UserServiceImpl(userRepository, tagRepository,
             orderRepository, detailsService, passwordEncoder);
-
-    private final UserController controller = new UserController(userService);
+    private static final CustomUserDetailsServiceImpl userDetailsService = Mockito.mock(
+            CustomUserDetailsServiceImpl.class);
+    private final UserController controller = new UserController(userService, userDetailsService);
 
     @AfterEach
     public void resetMocks() throws NoExistingOrders, WrongSortOrder, IOException {
@@ -59,10 +61,12 @@ class UserControllerTest {
     }
 
     @BeforeAll
-    private static void setMocks() throws NoExistingOrders, WrongSortOrder, IOException {
+    private static void setMocks() throws WrongSortOrder {
         when(userRepository.existsById(anyInt())).thenReturn(true);
         when(userRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleUser()));
         when(userRepository.findAll(any(Pageable.class))).thenReturn(utils.samplePageUsers());
+
+        Mockito.when(userDetailsService.getUserByUsername(Mockito.anyString())).thenReturn(utils.sampleUser());
 
         when(orderRepository.existsById(anyInt())).thenReturn(true);
         when(orderRepository.findById(anyInt())).thenReturn(Optional.ofNullable(utils.sampleOrder()));
@@ -95,13 +99,17 @@ class UserControllerTest {
 
     @Test
     void getUserWhenGivingExistingId() throws BaseException, IOException {
-        assertEquals(utils.sampleUser().getId(), controller.get(new HashMap<>(utils.sampleJwt())).getId());
+        assertEquals(utils.sampleUser().getId(), controller
+                .get(new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))).getId());
     }
 
     @Test
     void getUserWhenGivingNonExistingIdNotFound() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.get(new HashMap<>(utils.sampleJwt())));
+        assertThrows(IdNotFound.class, () -> controller.get(
+                new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))));
     }
 
     private void toggleMockIdFound() {
@@ -110,23 +118,30 @@ class UserControllerTest {
 
     @Test
     void getOrderRelatedToUserIfGivenCorrectlySetOfIds() throws BaseException, IOException {
-        assertEquals(utils.sampleOrder().getId(), controller.getOrder(1, new HashMap<>(utils.sampleJwt())).getId());
+        assertEquals(utils.sampleOrder().getId(), controller.getOrder(1,
+                new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))).getId());
     }
 
     @Test
     void getOrderExceptionIfNotRelatedToUser() {
-        assertThrows(OrderNotRelated.class, () -> controller.getOrder(10, new HashMap<>(utils.sampleJwt())));
+        assertThrows(OrderNotRelated.class, () -> controller.getOrder(10,
+                new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))));
     }
 
     @Test
     void getOrderRelatedToUserExceptionIfIdIsNonExistent() {
         toggleMockIdFound();
-        assertThrows(IdNotFound.class, () -> controller.getOrder(1, new HashMap<>(utils.sampleJwt())));
+        assertThrows(IdNotFound.class, () -> controller.getOrder(1,
+                new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))));
     }
 
     @Test
     void getAllOrdersRelatedToUserIfUserExists() throws IOException, BaseException {
-        assertEquals(utils.sampleOrders().size(), controller.getOrders(1, 1, "asc", new HashMap<>(utils.sampleJwt()))
-                                                            .getContent().getTotalElements());
+        assertEquals(utils.sampleOrders().size(), controller.getOrders(1, 1, "asc",
+                new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))).getContent().getTotalElements());
     }
 }
