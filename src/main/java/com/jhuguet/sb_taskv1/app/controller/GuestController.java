@@ -34,7 +34,6 @@ public class GuestController {
 
     @PostMapping("login")
     public AuthenticatedAccount login(@RequestBody AuthenticationRequest auth) throws IOException, WrongCredentials {
-        userService.matchPasswords(auth.getUsername(), auth.getPassword());
         manager.authenticate(new UsernamePasswordAuthenticationToken(auth.getUsername(), auth.getPassword()));
 
         return jwtUtils.createJwt(auth.getUsername());
