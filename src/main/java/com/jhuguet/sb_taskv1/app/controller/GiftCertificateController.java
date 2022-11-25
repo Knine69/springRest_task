@@ -10,8 +10,7 @@ import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
-import com.jhuguet.sb_taskv1.app.services.UserService;
-import com.jhuguet.sb_taskv1.app.web.utils.ControllerJwtUtils;
+import com.jhuguet.sb_taskv1.app.services.impl.CustomUserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,12 +21,12 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -44,16 +43,15 @@ public class GiftCertificateController {
     private final PageResponse pageResponse;
     private final GiftCertificateService giftCertificateService;
 
-    private final UserService userService;
-    private final ControllerJwtUtils utils = new ControllerJwtUtils();
+    private final CustomUserDetailsServiceImpl userDetailsService;
 
     @Autowired
     public GiftCertificateController(PageResponse pageResponse,
                                      GiftCertificateService giftCertificateService,
-                                     UserService userService) {
+                                     CustomUserDetailsServiceImpl userService) {
         this.pageResponse = pageResponse;
         this.giftCertificateService = giftCertificateService;
-        this.userService = userService;
+        this.userDetailsService = userService;
     }
 
 
@@ -136,12 +134,9 @@ public class GiftCertificateController {
     }
 
 
-    @PostMapping("/users/current")
-    public Order placeNewOrder(@RequestParam List<Integer> certificatesIds,
-                               @RequestHeader Map<String, String> headers) throws IOException, BaseException {
-        String jwt = utils.retrieveJwt(headers);
-        int userId = userService.getIdFromJwt(jwt);
-        giftCertificateService.checkIdentity(jwt, userId, false);
+    @PostMapping("/users/placeOrder")
+    public Order placeNewOrder(@RequestParam List<Integer> certificatesIds, Principal principal) throws BaseException {
+        int userId = userDetailsService.getUserByUsername(principal.getName()).getId();
         return giftCertificateService.placeNewOrder(certificatesIds, userId);
     }
 

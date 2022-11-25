@@ -9,7 +9,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
-import com.jhuguet.sb_taskv1.app.services.UserService;
+import com.jhuguet.sb_taskv1.app.services.impl.CustomUserDetailsServiceImpl;
 import com.jhuguet.sb_taskv1.app.services.impl.GiftCertificateServiceImpl;
 import com.jhuguet.sb_taskv1.app.services.utils.SetUpUtils;
 import org.junit.jupiter.api.Assertions;
@@ -24,12 +24,13 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -40,7 +41,7 @@ class GiftCertificateControllerTest {
     @Mock
     PageResponse pageResponse = new PageResponse();
     @Mock
-    UserService userService;
+    CustomUserDetailsServiceImpl userService;
     @Mock
     GiftCertificateServiceImpl giftCertificateService;
     @Mock
@@ -55,7 +56,7 @@ class GiftCertificateControllerTest {
         Mockito.when(pageResponse.giveDynamicPageable(1, 1, "asc")).thenReturn(PageRequest.of(1, 1));
         Mockito.when(giftCertificateService.delete(0)).thenReturn(utils.sampleCertificate());
         Mockito.when(giftCertificateService.delete(10)).thenThrow(IdNotFound.class);
-        Mockito.when(giftCertificateService.placeNewOrder(new ArrayList<>(), 1)).thenReturn(utils.sampleOrder());
+        Mockito.when(giftCertificateService.placeNewOrder(new ArrayList<>(), 0)).thenReturn(utils.sampleOrder());
         Mockito.when(giftCertificateService.placeNewOrder(new ArrayList<>(), 10)).thenThrow(IdNotFound.class);
         Mockito.when(giftCertificateService.get(0)).thenReturn(utils.sampleCertificate());
         Mockito.when(giftCertificateService.save(Mockito.any(GiftCertificate.class))).thenReturn(
@@ -80,7 +81,7 @@ class GiftCertificateControllerTest {
                 utils.samplePageCertificates());
         Mockito.when(giftCertificateService.filterCertificates("", "Master", "", "", PageRequest.of(1, 1))).thenReturn(
                 utils.samplePageCertificates());
-        Mockito.when(userService.getIdFromJwt(Mockito.anyString())).thenReturn(1);
+        Mockito.when(userService.getUserByUsername(Mockito.anyString())).thenReturn(utils.sampleUser());
     }
 
     @Test
@@ -178,17 +179,18 @@ class GiftCertificateControllerTest {
     }
 
     @Test
-    void placeNewOrderCorrectlyIfIdExists() throws BaseException, IOException {
-        Assertions.assertEquals(utils.sampleOrder().getId(),
-                controller.placeNewOrder(new ArrayList<>(), new HashMap<>(Map.of("authorization", "Bearer abcd")))
-                          .getId());
+    void placeNewOrderCorrectlyIfIdExists() throws BaseException {
+        Assertions.assertEquals(utils.sampleOrder().getId(), controller.placeNewOrder(new ArrayList<>(),
+                new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))).getId());
     }
 
     @Test
-    void placeNewOrderExceptionIfIdNotFound() throws IOException {
-        Mockito.when(userService.getIdFromJwt(Mockito.anyString())).thenReturn(10);
-        Assertions.assertThrows(IdNotFound.class, () -> controller.placeNewOrder(new ArrayList<>(List.of()),
-                new HashMap<>(Map.of("authorization", "Bearer abcd"))));
+    void placeNewOrderExceptionIfIdNotFound() throws IdNotFound {
+        Mockito.when(giftCertificateService.placeNewOrder(new ArrayList<>(), 0)).thenThrow(IdNotFound.class);
+        Assertions.assertThrows(IdNotFound.class, () -> controller.placeNewOrder(new ArrayList<>(),
+                new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))).getId());
     }
 
 }
