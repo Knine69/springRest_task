@@ -7,7 +7,6 @@ import com.jhuguet.sb_taskv1.app.exceptions.NotAuthorized;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.UnqualifiedAuthority;
-import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.User;
 import org.springframework.data.domain.Page;
@@ -25,8 +24,6 @@ public interface UserService {
     Page<Order> getOrders(int id, Pageable pageable) throws IdNotFound;
 
     void signIn(User user) throws MissingEntity, MissingRequiredFields, UnqualifiedAuthority;
-
-    void matchPasswords(String username, String password) throws WrongCredentials;
 
     void checkIdentity(String jwt, boolean requiresAdmin) throws IOException, NotAuthorized, UnqualifiedAuthority;
 

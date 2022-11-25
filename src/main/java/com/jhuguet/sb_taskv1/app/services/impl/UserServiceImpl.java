@@ -103,14 +103,6 @@ public class UserServiceImpl implements UserService {
                 new HashSet<>(), "USER");
     }
 
-    public void matchPasswords(String username, String password) throws WrongCredentials {
-        User user = userRepository.findByUsername(username);
-        if (!passwordEncoder.matches(password, user.getPassword()) && !user.getUsername().equalsIgnoreCase(
-                "administrator")) {
-            throw new WrongCredentials();
-        }
-    }
-
     public void checkIdentity(String jwt, boolean requiresAdmin) throws NotAuthorized, IOException,
             UnqualifiedAuthority {
         RequestAuthorization authorization = giveRequestAuthorization();
