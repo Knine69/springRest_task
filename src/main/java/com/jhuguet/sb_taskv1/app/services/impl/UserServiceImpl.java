@@ -3,18 +3,13 @@ package com.jhuguet.sb_taskv1.app.services.impl;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
-import com.jhuguet.sb_taskv1.app.exceptions.NotAuthorized;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.UnqualifiedAuthority;
-import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.User;
-import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
-import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.UserService;
-import com.jhuguet.sb_taskv1.app.services.authorize.RequestAuthorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
@@ -31,21 +25,11 @@ import java.util.Objects;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final TagRepository tagRepository;
-    private final OrderRepository orderRepository;
-    private final CustomUserDetailsServiceImpl detailsService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository,
-                           TagRepository tagRepository,
-                           OrderRepository orderRepository,
-                           CustomUserDetailsServiceImpl detailsService,
-                           PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.tagRepository = tagRepository;
-        this.orderRepository = orderRepository;
-        this.detailsService = detailsService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -101,23 +85,6 @@ public class UserServiceImpl implements UserService {
     private User assembleUserToSave(User user) {
         return new User(user.getUsername(), user.getEmail(), passwordEncoder.encode(user.getPassword()),
                 new HashSet<>(), "USER");
-    }
-
-    public void checkIdentity(String jwt, boolean requiresAdmin) throws NotAuthorized, IOException,
-            UnqualifiedAuthority {
-        RequestAuthorization authorization = giveRequestAuthorization();
-        if (requiresAdmin) {
-            authorization.confirmRoles(jwt);
-        }
-    }
-
-    private RequestAuthorization giveRequestAuthorization() {
-        return new RequestAuthorization(detailsService);
-    }
-
-    @Override
-    public Integer getIdFromJwt(String jwt) throws IOException {
-        return Integer.valueOf(giveRequestAuthorization().givePropertyValue("id", jwt));
     }
 
 }

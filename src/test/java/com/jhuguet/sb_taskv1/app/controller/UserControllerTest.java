@@ -3,7 +3,6 @@ package com.jhuguet.sb_taskv1.app.controller;
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
 import com.jhuguet.sb_taskv1.app.exceptions.IdNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
-import com.jhuguet.sb_taskv1.app.exceptions.NoExistingOrders;
 import com.jhuguet.sb_taskv1.app.exceptions.OrderNotRelated;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
@@ -28,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,17 +46,15 @@ class UserControllerTest {
     private static final OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
     private static final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private static final TagRepository tagRepository = Mockito.mock(TagRepository.class);
-    private static final CustomUserDetailsServiceImpl detailsService = Mockito.mock(CustomUserDetailsServiceImpl.class);
     private static final PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
     @Autowired
-    private static final UserServiceImpl userService = new UserServiceImpl(userRepository, tagRepository,
-            orderRepository, detailsService, passwordEncoder);
+    private static final UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder);
     private static final CustomUserDetailsServiceImpl userDetailsService = Mockito.mock(
             CustomUserDetailsServiceImpl.class);
     private final UserController controller = new UserController(userService, userDetailsService);
 
     @AfterEach
-    public void resetMocks() throws NoExistingOrders, WrongSortOrder, IOException {
+    public void resetMocks() throws WrongSortOrder {
         setMocks();
     }
 
@@ -80,25 +78,24 @@ class UserControllerTest {
 
     @Test
     void getAllUsersIfPagingParamsAreCorrectlyPassed() throws InvalidInputInformation, PageNotFound, WrongSortOrder {
-        assertEquals(utils.sampleOrders().size(), controller.getAll(1, 1, "asc").getContent().getTotalElements());
+        assertEquals(utils.sampleOrders().size(),
+                Objects.requireNonNull(controller.getAll(1, 1, "asc").getContent()).getTotalElements());
     }
 
     @Test
     void getAllUsersInvalidInputInformationIfPagingParamsAreNotComplying() {
-        assertThrows(InvalidInputInformation.class, () -> {
-            controller.getAll(0, 0, "asc").getContent().getTotalElements();
-        });
+        assertThrows(InvalidInputInformation.class,
+                () -> Objects.requireNonNull(controller.getAll(0, 0, "asc").getContent()).getTotalElements());
     }
 
     @Test
     void getAllUsersErrorIfPageNotFound() {
-        assertThrows(PageNotFound.class, () -> {
-            controller.getAll(10, 1, "asc").getContent().getTotalElements();
-        });
+        assertThrows(PageNotFound.class,
+                () -> Objects.requireNonNull(controller.getAll(10, 1, "asc").getContent()).getTotalElements());
     }
 
     @Test
-    void getUserWhenGivingExistingId() throws BaseException, IOException {
+    void getUserWhenGivingExistingId() throws BaseException {
         assertEquals(utils.sampleUser().getId(), controller
                 .get(new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
                         new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))).getId());
@@ -113,7 +110,7 @@ class UserControllerTest {
     }
 
     private void toggleMockIdFound() {
-        when(userRepository.findById(anyInt())).thenReturn(Optional.ofNullable(null));
+        when(userRepository.findById(anyInt())).thenReturn(Optional.empty());
     }
 
     @Test
@@ -140,8 +137,9 @@ class UserControllerTest {
 
     @Test
     void getAllOrdersRelatedToUserIfUserExists() throws IOException, BaseException {
-        assertEquals(utils.sampleOrders().size(), controller.getOrders(1, 1, "asc",
-                new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
-                        new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))).getContent().getTotalElements());
+        assertEquals(utils.sampleOrders().size(), Objects.requireNonNull(controller.getOrders(1, 1, "asc",
+                                                                 new AnonymousAuthenticationToken("key", utils.sampleUserDetails(),
+                                                                         new ArrayList<>(List.of(new SimpleGrantedAuthority("USER"))))).getContent())
+                                                         .getTotalElements());
     }
 }

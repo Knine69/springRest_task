@@ -25,8 +25,4 @@ public interface UserService {
 
     void signIn(User user) throws MissingEntity, MissingRequiredFields, UnqualifiedAuthority;
 
-    void checkIdentity(String jwt, boolean requiresAdmin) throws IOException, NotAuthorized, UnqualifiedAuthority;
-
-    Integer getIdFromJwt(String jwt) throws IOException;
-
 }
