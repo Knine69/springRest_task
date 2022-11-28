@@ -52,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/login", "/signin").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/certificates/users/*").authenticated()
-                .antMatchers(HttpMethod.GET, "/users/*", "/certificates/**").authenticated()
+                .antMatchers(HttpMethod.GET, "/users/**", "/certificates/**").authenticated()
                 .antMatchers("/users/**", "/certificates/**", "/tags/**").hasRole("ADMIN")
                 .and().exceptionHandling()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
