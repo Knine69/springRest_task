@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,10 +40,8 @@ class TagControllerTest {
     @BeforeAll
     private static void mocksSetuUp() {
         when(repository.existsById(anyInt())).thenReturn(true);
-        when(repository.findById(0))
-                .thenReturn(Optional.ofNullable(utils.sampleTag()));
-        when(repository.findAll())
-                .thenReturn(new ArrayList<>(utils.sampleTags()));
+        when(repository.findById(0)).thenReturn(Optional.ofNullable(utils.sampleTag()));
+        when(repository.findAll()).thenReturn(new ArrayList<>(utils.sampleTags()));
         when(repository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(new ArrayList<>(utils.sampleTags())));
     }
 
@@ -54,7 +53,8 @@ class TagControllerTest {
 
     @Test
     void getAllTagsIfCorrectlyGivenPagingParams() throws InvalidInputInformation, PageNotFound, WrongSortOrder {
-        assertEquals(utils.sampleTags().size(), controller.getAll(1, 1, "asc").getContent().getTotalElements());
+        assertEquals(utils.sampleTags().size(),
+                Objects.requireNonNull(controller.getAll(1, 1, "asc").getContent()).getTotalElements());
     }
 
     @Test
@@ -69,11 +69,9 @@ class TagControllerTest {
 
     @Test
     void deleteTagIfCorrectlyGivenId() throws IdNotFound, CertificateAssociatedException {
-        when(repository.findById(0))
-                .thenReturn(Optional.ofNullable(new Tag(0, "Cloud", new HashSet<>())));
+        when(repository.findById(0)).thenReturn(Optional.of(new Tag(0, "Cloud", new HashSet<>())));
         assertEquals(utils.sampleTag().getName(), controller.delete(0).getName());
-        when(repository.findById(0))
-                .thenReturn(Optional.ofNullable(utils.sampleTag()));
+        when(repository.findById(0)).thenReturn(Optional.ofNullable(utils.sampleTag()));
     }
 
     @Test

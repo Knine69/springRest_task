@@ -27,7 +27,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +50,7 @@ class GiftCertificateControllerTest {
     GiftCertificateController controller;
 
     @BeforeAll
-    void mocksSetuUp() throws BaseException, IOException {
+    void mocksSetuUp() throws BaseException {
         MockitoAnnotations.openMocks(this);
         Mockito.when(pageResponse.giveDynamicPageable(1, 1, "asc")).thenReturn(PageRequest.of(1, 1));
         Mockito.when(giftCertificateService.delete(0)).thenReturn(utils.sampleCertificate());
@@ -147,7 +146,7 @@ class GiftCertificateControllerTest {
     }
 
     @Test
-    void saveGiftCertificateMissingEntity() throws InvalidInputInformation, MissingEntity, IdAlreadyInUse {
+    void saveGiftCertificateMissingEntity() {
         Assertions.assertThrows(MissingEntity.class, () -> controller.save(null));
     }
 
