@@ -9,8 +9,8 @@ import com.jhuguet.sb_taskv1.app.exceptions.WrongSortOrder;
 import com.jhuguet.sb_taskv1.app.models.Order;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.pages.PageResponse;
+import com.jhuguet.sb_taskv1.app.services.CustomUserDetailsService;
 import com.jhuguet.sb_taskv1.app.services.UserService;
-import com.jhuguet.sb_taskv1.app.services.impl.CustomUserDetailsServiceImpl;
 import com.jhuguet.sb_taskv1.app.web.utils.ControllerJwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -39,10 +39,10 @@ public class UserController {
     private final PageResponse pageResponse = new PageResponse();
     private final ControllerJwtUtils utils = new ControllerJwtUtils();
     private final UserService userService;
-    private final CustomUserDetailsServiceImpl userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
     @Autowired
-    public UserController(UserService service, CustomUserDetailsServiceImpl userDetailsService) {
+    public UserController(UserService service, CustomUserDetailsService userDetailsService) {
         this.userService = service;
         this.userDetailsService = userDetailsService;
     }

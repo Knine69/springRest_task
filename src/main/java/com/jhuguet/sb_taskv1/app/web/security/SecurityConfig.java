@@ -33,7 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder authentication) throws Exception {
+    protected void configure(AuthenticationManagerBuilder authentication) {
         authentication.authenticationProvider(authenticationProvider);
     }
 
@@ -44,18 +44,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
-                .headers().frameOptions().sameOrigin()
-                .and()
-                .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/login", "/signin").permitAll()
-                .antMatchers("/h2-console/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/certificates/users/*").authenticated()
-                .antMatchers(HttpMethod.GET, "/users/**", "/certificates/**").authenticated()
-                .antMatchers("/users/**", "/certificates/**", "/tags/**").hasRole("ADMIN")
-                .and().exceptionHandling()
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.csrf().disable().headers().frameOptions().sameOrigin().and().authorizeRequests().antMatchers(
+                HttpMethod.POST, "/login", "/signin").permitAll().antMatchers("/h2-console/**").permitAll().antMatchers(
+                HttpMethod.POST, "/certificates/users/*").authenticated().antMatchers(HttpMethod.GET, "/users/**",
+                "/certificates/**").authenticated().antMatchers("/users/**", "/certificates/**", "/tags/**").hasRole(
+                "ADMIN").and().exceptionHandling().and().sessionManagement().sessionCreationPolicy(
+                SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
 

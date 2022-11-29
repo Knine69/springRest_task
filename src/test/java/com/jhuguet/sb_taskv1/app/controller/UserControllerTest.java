@@ -10,7 +10,7 @@ import com.jhuguet.sb_taskv1.app.pages.PageResponse;
 import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
 import com.jhuguet.sb_taskv1.app.repositories.TagRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
-import com.jhuguet.sb_taskv1.app.services.impl.CustomUserDetailsServiceImpl;
+import com.jhuguet.sb_taskv1.app.services.CustomUserDetailsService;
 import com.jhuguet.sb_taskv1.app.services.impl.UserServiceImpl;
 import com.jhuguet.sb_taskv1.app.services.utils.SetUpUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -49,8 +49,7 @@ class UserControllerTest {
     private static final PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
     @Autowired
     private static final UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder);
-    private static final CustomUserDetailsServiceImpl userDetailsService = Mockito.mock(
-            CustomUserDetailsServiceImpl.class);
+    private static final CustomUserDetailsService userDetailsService = Mockito.mock(CustomUserDetailsService.class);
     private final UserController controller = new UserController(userService, userDetailsService);
 
     @AfterEach
