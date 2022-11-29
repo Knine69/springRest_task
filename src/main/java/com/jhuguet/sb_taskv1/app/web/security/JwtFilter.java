@@ -19,7 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -34,7 +36,11 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.equals("/login") || path.equals("/signin") || path.equals("/users") || path.equals("/h2-console");
+        return allowedRoutes().contains(path);
+    }
+
+    private List<String> allowedRoutes() {
+        return new ArrayList<>(List.of("/login", "/signin", "/h2-console"));
     }
 
     @SneakyThrows
