@@ -7,6 +7,7 @@ import com.jhuguet.sb_taskv1.app.exceptions.InvalidInputInformation;
 import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
 import com.jhuguet.sb_taskv1.app.exceptions.PageNotFound;
 import com.jhuguet.sb_taskv1.app.exceptions.UnqualifiedAuthority;
+import com.jhuguet.sb_taskv1.app.exceptions.UsernameNotFound;
 import com.jhuguet.sb_taskv1.app.models.GiftCertificate;
 import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
 import com.jhuguet.sb_taskv1.app.repositories.OrderRepository;
@@ -55,7 +56,7 @@ class GiftCertificateServiceImplTest {
     GiftCertificateServiceImpl giftCertificateService;
 
     @BeforeAll
-    private void setMocks() {
+    private void setMocks() throws UsernameNotFound {
         when(giftCertificateRepository.existsById(anyInt())).thenReturn(true);
         when(giftCertificateRepository.findById(0)).thenReturn(Optional.ofNullable(utils.sampleCertificate()));
         when(giftCertificateRepository.findAll()).thenReturn(utils.sampleCertificates());

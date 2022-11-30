@@ -1,7 +1,7 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
-import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
+import com.jhuguet.sb_taskv1.app.exceptions.UsernameNotFound;
 import com.jhuguet.sb_taskv1.app.services.UserService;
 import com.jhuguet.sb_taskv1.app.services.utils.SetUpUtils;
 import com.jhuguet.sb_taskv1.app.web.utils.JwtUtils;
@@ -27,12 +27,12 @@ class GuestControllerTest {
     private GuestController controller = new GuestController(jwtUtils, authenticationManager, userService);
 
     @BeforeAll
-    public void setUpMocks() throws IOException {
+    public void setUpMocks() throws IOException, UsernameNotFound {
         when(jwtUtils.createJwt(anyString())).thenReturn(utils.sampleAuthAccount());
     }
 
     @Test
-    void loginCorrectlyIfCredentialsMatch() throws IOException, WrongCredentials {
+    void loginCorrectlyIfCredentialsMatch() throws IOException, UsernameNotFound {
         assertEquals(utils.sampleAuthAccount().getTimestamp().toString(), controller.login(utils.sampleAuthRequest())
                                                                                     .getTimestamp().toString());
     }

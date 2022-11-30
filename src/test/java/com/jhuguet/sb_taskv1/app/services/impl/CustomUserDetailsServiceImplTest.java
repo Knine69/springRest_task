@@ -1,11 +1,14 @@
 package com.jhuguet.sb_taskv1.app.services.impl;
 
+import com.jhuguet.sb_taskv1.app.exceptions.UsernameNotFound;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.utils.SetUpUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -20,7 +23,7 @@ class CustomUserDetailsServiceImplTest {
 
     @BeforeAll
     public void setUpMocks() {
-        when(userRepository.findByUsername(anyString())).thenReturn(utils.sampleUser());
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.ofNullable(utils.sampleUser()));
     }
 
     @Test
@@ -29,7 +32,7 @@ class CustomUserDetailsServiceImplTest {
     }
 
     @Test
-    void getUserByUsernameIfUserNameIsCorrect() {
+    void getUserByUsernameIfUserNameIsCorrect() throws UsernameNotFound {
         assertEquals(utils.sampleUser().getUsername(), userService.getUserByUsername("username").getUsername());
     }
 }
