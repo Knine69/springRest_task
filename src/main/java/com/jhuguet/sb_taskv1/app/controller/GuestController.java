@@ -1,6 +1,7 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
+import com.jhuguet.sb_taskv1.app.exceptions.UsernameNotFound;
 import com.jhuguet.sb_taskv1.app.models.AuthenticatedAccount;
 import com.jhuguet.sb_taskv1.app.models.AuthenticationRequest;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -32,7 +33,7 @@ public class GuestController {
     }
 
     @PostMapping("login")
-    public AuthenticatedAccount login(@RequestBody AuthenticationRequest auth) throws IOException {
+    public AuthenticatedAccount login(@RequestBody AuthenticationRequest auth) throws IOException, UsernameNotFound {
         manager.authenticate(new UsernamePasswordAuthenticationToken(auth.getUsername(), auth.getPassword()));
 
         return jwtUtils.createJwt(auth.getUsername());
