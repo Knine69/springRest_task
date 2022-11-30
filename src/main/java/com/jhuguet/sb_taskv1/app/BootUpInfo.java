@@ -8,6 +8,7 @@ import com.jhuguet.sb_taskv1.app.repositories.GiftCertificateRepository;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,12 +19,14 @@ public class BootUpInfo {
 
     private final UserRepository userRepository;
     private final GiftCertificateRepository giftCertificateRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Autowired
     public BootUpInfo(UserRepository userRepository, GiftCertificateRepository giftCertificateRepository) {
         this.userRepository = userRepository;
         this.giftCertificateRepository = giftCertificateRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     public void prepareInfo() {
@@ -41,8 +44,8 @@ public class BootUpInfo {
         GiftCertificate certificate = buildGiftCertificate(i);
 
         Tag tag = new Tag("Tag" + i);
-        User user = new User("user" + i, "user" + i + "@domain.com", "password",
-                new HashSet<>());
+        User user = new User("user" + i, "user" + i + "@domain.com", passwordEncoder.encode("password"),
+                new HashSet<>(), "USER");
         Order order = new Order(i);
 
         certificate.assignTag(tag);

@@ -1,7 +1,8 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
-import com.jhuguet.sb_taskv1.app.exceptions.MissingEntity;
-import com.jhuguet.sb_taskv1.app.exceptions.MissingRequiredFields;
+import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
+import com.jhuguet.sb_taskv1.app.exceptions.UsernameNotFound;
+import com.jhuguet.sb_taskv1.app.models.AuthenticatedAccount;
 import com.jhuguet.sb_taskv1.app.models.AuthenticationRequest;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.services.UserService;
@@ -22,7 +23,6 @@ public class GuestController {
 
     private JwtUtils jwtUtils;
     private AuthenticationManager manager;
-
     private UserService userService;
 
     @Autowired
@@ -33,16 +33,15 @@ public class GuestController {
     }
 
     @PostMapping("login")
-    public String login(@RequestBody AuthenticationRequest auth) throws IOException {
+    public AuthenticatedAccount login(@RequestBody AuthenticationRequest auth) throws IOException, UsernameNotFound {
         manager.authenticate(new UsernamePasswordAuthenticationToken(auth.getUsername(), auth.getPassword()));
 
         return jwtUtils.createJwt(auth.getUsername());
     }
 
     @PostMapping("signin")
-    public String signIn(@RequestBody User user) throws IOException, MissingRequiredFields, MissingEntity {
+    public AuthenticatedAccount signIn(@RequestBody User user) throws IOException, BaseException {
         userService.signIn(user);
-        manager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
         return jwtUtils.createJwt(user.getUsername());
 

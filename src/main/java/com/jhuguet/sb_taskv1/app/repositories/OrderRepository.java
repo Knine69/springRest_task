@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     @Query(value = "SELECT * FROM ORDERS o ORDER BY o.cost DESC LIMIT 1", nativeQuery = true)
-    Order getHighestCostOrder() throws NoExistingOrders;
+    Order findTop1ByCost() throws NoExistingOrders;
 }

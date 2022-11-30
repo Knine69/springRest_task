@@ -19,7 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -34,7 +36,11 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.equals("/login") || path.equals("/signin") || path.equals("/users");
+        return allowedRoutes().contains(path);
+    }
+
+    private List<String> allowedRoutes() {
+        return new ArrayList<>(List.of("/login", "/signin", "/h2-console"));
     }
 
     @SneakyThrows
@@ -45,23 +51,15 @@ public class JwtFilter extends OncePerRequestFilter {
         String username;
         String jwt;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        if (authHeader.startsWith("Bearer ") && authHeader != null) {
             jwt = authHeader.split(" ")[1];
-
-            username = (String) Jwts
-                    .parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(jwt)
-                    .getBody()
-                    .get("sub");
+            username = (String) Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody().get(
+                    "sub");
         } else {
             throw new NotAuthorized();
         }
 
-        if (username != null && SecurityContextHolder
-                .getContext()
-                .getAuthentication() == null) {
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = detailsService.loadUserByUsername(username);
 
@@ -72,9 +70,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authToken);
+                SecurityContextHolder.getContext().setAuthentication(authToken);
 
             }
 
@@ -83,7 +79,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private boolean validateRequest(String username, UserDetails details, Key key, String jwt) throws JwtExpired {
-        if (!validateExpiration(key, jwt)) {
+        if (validateExpiration(key, jwt)) {
             throw new JwtExpired();
         }
 
@@ -91,13 +87,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private boolean validateExpiration(Key key, String jwt) {
-        return !Jwts
-                .parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(jwt)
-                .getBody()
-                .getExpiration()
-                .before(new Date());
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody().getExpiration().before(
+                new Date());
     }
 }
