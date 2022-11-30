@@ -1,7 +1,6 @@
 package com.jhuguet.sb_taskv1.app.controller;
 
 import com.jhuguet.sb_taskv1.app.exceptions.BaseException;
-import com.jhuguet.sb_taskv1.app.exceptions.WrongCredentials;
 import com.jhuguet.sb_taskv1.app.models.AuthenticatedAccount;
 import com.jhuguet.sb_taskv1.app.models.AuthenticationRequest;
 import com.jhuguet.sb_taskv1.app.models.User;
@@ -33,7 +32,7 @@ public class GuestController {
     }
 
     @PostMapping("login")
-    public AuthenticatedAccount login(@RequestBody AuthenticationRequest auth) throws IOException, WrongCredentials {
+    public AuthenticatedAccount login(@RequestBody AuthenticationRequest auth) throws IOException {
         manager.authenticate(new UsernamePasswordAuthenticationToken(auth.getUsername(), auth.getPassword()));
 
         return jwtUtils.createJwt(auth.getUsername());
@@ -42,7 +41,6 @@ public class GuestController {
     @PostMapping("signin")
     public AuthenticatedAccount signIn(@RequestBody User user) throws IOException, BaseException {
         userService.signIn(user);
-        manager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
         return jwtUtils.createJwt(user.getUsername());
 

@@ -126,7 +126,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UsernameNotFound.class)
     public ResponseEntity<?> usernameNotFound(UsernameNotFound exception) {
         ExceptionDetails details = new ExceptionDetails(exception.getMessage());
-        return new ResponseEntity<>(details, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(details, HttpStatus.UNAUTHORIZED);
     }
 
 }
