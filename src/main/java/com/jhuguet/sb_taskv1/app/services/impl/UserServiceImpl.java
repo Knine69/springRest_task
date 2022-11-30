@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
             throw new MissingRequiredFields();
         }
 
-        if (user.getUsername().equalsIgnoreCase("administrator")) {
+        if (userRepository.findByUsername(user.getUsername()) != null) {
             throw new UnqualifiedAuthority();
         }
     }
