@@ -29,18 +29,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) {
         String username = authentication.getName();
         String password = authentication.getCredentials().toString();
-        com.jhuguet.sb_taskv1.app.models.User user = userRepository.findByUsername(username);
-        if (user != null) {
-            UserDetails userDetails = giveUserDetails(username);
+        com.jhuguet.sb_taskv1.app.models.User user = userRepository.findByUsername(username).orElseThrow(
+                UsernameNotFound::new);
+        UserDetails userDetails = giveUserDetails(username);
 
-            if (matchPasswords(password, user.getPassword())) {
-                return new UsernamePasswordAuthenticationToken(username, password, userDetails.getAuthorities());
-            } else {
-                throw new WrongCredentials();
-            }
-
+        if (matchPasswords(password, user.getPassword())) {
+            return new UsernamePasswordAuthenticationToken(username, password, userDetails.getAuthorities());
         } else {
-            throw new UsernameNotFound();
+            throw new WrongCredentials();
         }
     }
 
