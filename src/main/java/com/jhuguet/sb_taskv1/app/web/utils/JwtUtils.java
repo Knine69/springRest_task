@@ -1,5 +1,6 @@
 package com.jhuguet.sb_taskv1.app.web.utils;
 
+import com.jhuguet.sb_taskv1.app.exceptions.UsernameNotFound;
 import com.jhuguet.sb_taskv1.app.models.AuthenticatedAccount;
 import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
@@ -24,14 +25,14 @@ public class JwtUtils {
         this.userRepository = userRepository;
     }
 
-    public AuthenticatedAccount createJwt(String username) throws IOException {
+    public AuthenticatedAccount createJwt(String username) throws IOException, UsernameNotFound {
         Map<String, Object> claims = new HashMap<>();
         return assembleToken(claims, username);
     }
 
-    public AuthenticatedAccount assembleToken(Map<String, Object> claims, String username) throws IOException {
-        Map<String, String> jwtResponse = new HashMap<>();
-        User user = userRepository.findByUsername(username);
+    public AuthenticatedAccount assembleToken(Map<String, Object> claims, String username) throws IOException,
+            UsernameNotFound {
+        User user = userRepository.findByUsername(username).orElseThrow(UsernameNotFound::new);
         claims.put("id", user.getId());
         return new AuthenticatedAccount(createToken(claims, username), new Date());
     }
