@@ -11,9 +11,11 @@ import com.jhuguet.sb_taskv1.app.models.User;
 import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +29,18 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value(value = "${kafka.topic.name}")
+    private String topicName;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           KafkaTemplate<String, String> kafkaTemplate) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
@@ -42,23 +52,30 @@ public class UserServiceImpl implements UserService {
             throw new PageNotFound();
         }
 
+        kafkaTemplate.send(topicName, "Getting all users");
+
         return page;
     }
 
     @Override
     public Page<Order> getOrders(int id, Pageable pageable) throws IdNotFound {
         User user = get(id);
+
+        kafkaTemplate.send(topicName, "Getting all orders from user: " + id);
         return new PageImpl<>(new ArrayList<>(user.getOrders()), pageable, user.getOrders().size());
     }
 
     @Override
     public User get(int id) throws IdNotFound {
+        kafkaTemplate.send(topicName, "Getting user: " + id);
         return userRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     @Override
     public Order getOrder(int userId, int orderId) throws IdNotFound, OrderNotRelated {
+        kafkaTemplate.send(topicName, "Getting order: " + orderId + "from user: " + userId);
         User user = get(userId);
+
         return user.getOrders().stream().filter(x -> x.getId() == orderId).findAny().orElseThrow(OrderNotRelated::new);
     }
 
@@ -67,6 +84,7 @@ public class UserServiceImpl implements UserService {
         if (!Objects.isNull(user)) {
             userEntityValidations(user);
             userRepository.save(assembleUserToSave(user));
+            kafkaTemplate.send(topicName, "Signing in with user: " + user.getUsername());
         } else {
             throw new MissingEntity();
         }
