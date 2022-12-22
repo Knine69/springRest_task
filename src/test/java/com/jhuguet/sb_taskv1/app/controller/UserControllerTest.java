@@ -21,6 +21,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,8 +49,10 @@ class UserControllerTest {
     private static final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private static final TagRepository tagRepository = Mockito.mock(TagRepository.class);
     private static final PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
+    private static final KafkaTemplate<String, String> kafkaMessenger = Mockito.mock(KafkaTemplate.class);
     @Autowired
-    private static final UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder);
+    private static final UserServiceImpl userService = new UserServiceImpl(userRepository, passwordEncoder,
+            kafkaMessenger);
     private static final CustomUserDetailsService userDetailsService = Mockito.mock(CustomUserDetailsService.class);
     private final UserController controller = new UserController(userService, userDetailsService);
 
