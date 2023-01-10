@@ -67,14 +67,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(int id) throws IdNotFound {
-        kafkaTemplate.send(topicName, "Getting user: " + id);
         return userRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
     @Override
     public Order getOrder(int userId, int orderId) throws IdNotFound, OrderNotRelated {
-        kafkaTemplate.send(topicName, "Getting order: " + orderId + "from user: " + userId);
         User user = get(userId);
+        kafkaTemplate.send(topicName, "Getting order: " + orderId + " from user: " + userId);
 
         return user.getOrders().stream().filter(x -> x.getId() == orderId).findAny().orElseThrow(OrderNotRelated::new);
     }
