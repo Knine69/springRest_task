@@ -20,9 +20,11 @@ import com.jhuguet.sb_taskv1.app.repositories.UserRepository;
 import com.jhuguet.sb_taskv1.app.services.GiftCertificateService;
 import com.jhuguet.sb_taskv1.app.services.authorize.RequestAuthorization;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -48,21 +50,25 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
-
     private final CustomUserDetailsServiceImpl detailsService;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final Logger logger = Logger.getLogger(GiftCertificateServiceImpl.class.getName());
+    @Value(value = "${kafka.topic.name}")
+    private String topicName;
 
     @Autowired
     public GiftCertificateServiceImpl(GiftCertificateRepository giftRepository,
                                       TagRepository tagRepository,
                                       UserRepository userRepository,
                                       OrderRepository orderRepository,
-                                      CustomUserDetailsServiceImpl detailsService) {
+                                      CustomUserDetailsServiceImpl detailsService,
+                                      KafkaTemplate<String, String> kafkaTemplate) {
         this.giftRepository = giftRepository;
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.detailsService = detailsService;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Transactional
@@ -71,6 +77,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         if (!Objects.isNull(giftCertificate)) {
             savingValidations(giftCertificate);
             giftRepository.save(giftCertificate);
+            kafkaTemplate.send(topicName, "Saved certificate: " + giftCertificate.getName());
         } else {
             throw new MissingEntity();
         }
@@ -114,7 +121,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         validateEntity(id, "certificate");
         GiftCertificate certificate = partialUpdate(id, patch);
         giftRepository.save(certificate);
-
+        kafkaTemplate.send(topicName, "Updated certificate: " + certificate.getName());
         return certificate;
     }
 
@@ -178,6 +185,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     public GiftCertificate get(int id) throws IdNotFound {
+        kafkaTemplate.send(topicName, "Getting Certificate: " + id);
         return giftRepository.findById(id).orElseThrow(IdNotFound::new);
     }
 
@@ -225,7 +233,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         }
 
         userRepository.save(user);
-
+        kafkaTemplate.send(topicName, "Placed new order to user: " + order.getUser().getUsername());
         return order;
     }
 
@@ -258,7 +266,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     public Page<GiftCertificate> getAllPageable(Pageable pageable) throws PageNotFound {
         Page<GiftCertificate> page = giftRepository.findAll(pageable);
-
+        kafkaTemplate.send(topicName, "Getting all certificates");
         if (page.getTotalPages() <= pageable.getPageNumber()) {
             throw new PageNotFound();
         }
@@ -369,7 +377,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     public GiftCertificate delete(int id) throws IdNotFound {
         GiftCertificate certificate = get(id);
         giftRepository.deleteById(id);
-
+        kafkaTemplate.send(topicName, "Deleted certificate: " + certificate.getName());
         return certificate;
     }
 
